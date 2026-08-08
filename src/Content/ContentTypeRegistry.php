@@ -65,14 +65,14 @@ final class ContentTypeRegistry implements ContentTypeRegistryInterface {
 				continue;
 			}
 
-			$name        = sanitize_key( $object->name );
-			$label       = ! empty( $object->label ) ? $object->label : $name;
-			$public      = ! empty( $object->public );
-			$built_in    = ! empty( $object->_builtin );
-			$reason      = $this->exclusion_rules->reason_for( $name );
-			$supported   = $this->post_detector->supports( $name ) || $this->cpt_detector->supports( $object );
-			$translate   = $public && $supported && '' === $reason;
-			$types[]     = new TranslatableContentType( $name, $label, $public, $built_in, $translate, $reason );
+			$name      = sanitize_key( $object->name );
+			$label     = ! empty( $object->label ) ? $object->label : $name;
+			$public    = ! empty( $object->public );
+			$built_in  = ! empty( $object->_builtin );
+			$reason    = $this->exclusion_rules->reason_for( $name );
+			$supported = $this->post_detector->supports( $name ) || $this->cpt_detector->supports( $object );
+			$translate = $public && $supported && '' === $reason;
+			$types[]   = new TranslatableContentType( $name, $label, $public, $built_in, $translate, $reason );
 		}
 
 		usort(

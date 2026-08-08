@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Added Composer development dependencies for the quality configuration that already existed: PHP_CodeSniffer, WordPress Coding Standards, PHPStan, and the WordPress PHPStan extension.
+- Added Composer scripts, with `composer check` as the local quality gate running validation, syntax checks, PHPCS, and PHPStan.
+- Added a GitHub Actions CI workflow running syntax checks on PHP 7.4, 8.2, and 8.4, plus standards, static analysis, and repository-hygiene jobs on pull requests and pushes to main.
+- Scoped four WPCS sniff families to the specific files whose object-oriented patterns they cannot interpret, after a manual security audit of those files, and documented the audit and its follow-up in `docs/development/code-standards.md`.
+- Applied automatic coding-standard fixes and mechanical documentation-comment corrections, and replaced the deprecated `readonly()` call with `wp_readonly()`. All changes verified as behavior-neutral.
+- Added a PHPStan baseline recording two pre-existing findings, one of which is a genuine defect in `DatabaseLanguageRepository::create()` documented for Phase 10.
+- Updated contributor documentation and the pull request template with the quality gate.
+
 - Canonicalized the project into a standalone Git repository published at <https://github.com/mcorucu/mclogiora>, with the development WordPress installation referencing it through a symlink.
 - Recorded the permanent fully free and open-source product model in ADR 0009, covering the absence of licence keys, feature gates, upgrade nags, default tracking or telemetry, remote kill switches, and SaaS dependencies for core functionality.
 - Removed obsolete premium and paid add-on terminology from planning, architecture, and admin copy. WooCommerce and LMS support are now described as future free compatibility modules rather than premium add-ons. No feature gate, licence check, or scope boundary changed.

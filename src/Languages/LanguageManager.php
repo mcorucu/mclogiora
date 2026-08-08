@@ -45,7 +45,7 @@ final class LanguageManager implements ModuleInterface {
 	 */
 	public function register( Container $container ) {
 		$capabilities           = $container->get( CapabilityRegistry::class );
-		$this->capability      = $capabilities->resolve( CapabilityRegistry::MANAGE_LANGUAGES );
+		$this->capability       = $capabilities->resolve( CapabilityRegistry::MANAGE_LANGUAGES );
 		$this->language_service = $container->get( LanguageServiceInterface::class );
 
 		$registry = $container->get( AdminScreenRegistry::class );
@@ -444,7 +444,7 @@ final class LanguageManager implements ModuleInterface {
 		?>
 		<label>
 			<span><?php esc_html_e( 'Language code', 'mclogiora' ); ?></span>
-			<input type="text" name="language_code" value="<?php echo esc_attr( $is_edit ? $language->code() : '' ); ?>" placeholder="<?php esc_attr_e( 'en', 'mclogiora' ); ?>" <?php readonly( $is_edit ); ?> required>
+			<input type="text" name="language_code" value="<?php echo esc_attr( $is_edit ? $language->code() : '' ); ?>" placeholder="<?php esc_attr_e( 'en', 'mclogiora' ); ?>" <?php wp_readonly( $is_edit ); ?> required>
 		</label>
 		<label>
 			<span><?php esc_html_e( 'Locale', 'mclogiora' ); ?></span>

@@ -56,7 +56,7 @@ final class InMemoryTranslationRelationRepository implements TranslationRelation
 	 * @return TranslationGroup|\WP_Error
 	 */
 	public function create_empty_group() {
-		$group = new TranslationGroup( 'group-memory-' . ( count( $this->groups ) + 1 ), array() );
+		$group          = new TranslationGroup( 'group-memory-' . ( count( $this->groups ) + 1 ), array() );
 		$this->groups[] = $group;
 
 		return $group;

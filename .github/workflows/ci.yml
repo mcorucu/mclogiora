@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Syntax (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Minimum supported version, a current version, and the latest.
+        php: ['7.4', '8.2', '8.4']
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - name: Lint PHP files
+        run: find mclogiora.php uninstall.php src tools -name '*.php' -print0 | xargs -0 -n1 -P4 php -l
+
+  quality:
+    name: Standards and static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Coding standards
+        run: composer phpcs
+
+      - name: Static analysis
+        run: composer phpstan
+
+  hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Reject committed dependencies and local artifacts
+        run: |
+          if git ls-files --error-unmatch vendor node_modules 2>/dev/null; then
+            echo "::error::Dependency directories must never be committed."
+            exit 1
+          fi
+          offenders="$(git ls-files | grep -E '(^|/)(\.env($|\.)|\.DS_Store$|Thumbs\.db$|.*\.(log|bak|swp|sql|sqlite3?|dump|zip|tar|tar\.gz|tgz)$)' || true)"
+          if [ -n "$offenders" ]; then
+            echo "::error::Local or generated artifacts are tracked:"
+            echo "$offenders"
+            exit 1
+          fi
+
+      - name: Reject committed credentials
+        run: |
+          matches="$(git grep -nIE \
+            -e '-----BEGIN [A-Z ]*PRIVATE KEY-----' \
+            -e 'AKIA[0-9A-Z]{16}' \
+            -e 'gh[pousr]_[A-Za-z0-9]{30,}' \
+            -e 'sk-[A-Za-z0-9]{32,}' \
+            -e 'xox[baprs]-[A-Za-z0-9-]{10,}' \
+            -- . ':(exclude).github/workflows/ci.yml' || true)"
+          if [ -n "$matches" ]; then
+            echo "::error::Possible credential committed:"
+            echo "$matches"
+            exit 1
+          fi
+
+      - name: Confirm the plugin ships no telemetry or licensing code
+        run: |
+          matches="$(git grep -nIE \
+            -e 'wp_remote_(get|post|request|head)' \
+            -e 'curl_init|fsockopen' \
+            -- src mclogiora.php uninstall.php || true)"
+          if [ -n "$matches" ]; then
+            echo "::error::Unexpected outbound HTTP call. External services need an explicit phase decision and WordPress.org disclosure:"
+            echo "$matches"
+            exit 1
+          fi

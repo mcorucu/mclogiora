@@ -68,7 +68,7 @@ final class TranslationManager implements ModuleInterface {
 	 */
 	public function register( Container $container ) {
 		$capabilities           = $container->get( CapabilityRegistry::class );
-		$this->capability      = $capabilities->resolve( CapabilityRegistry::MANAGE_TRANSLATIONS );
+		$this->capability       = $capabilities->resolve( CapabilityRegistry::MANAGE_TRANSLATIONS );
 		$this->relation_service = $container->get( TranslationRelationServiceInterface::class );
 		$this->language_service = $container->get( LanguageServiceInterface::class );
 		$this->content_service  = $container->get( ContentTranslationServiceInterface::class );
@@ -96,12 +96,12 @@ final class TranslationManager implements ModuleInterface {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'mclogiora' ) );
 		}
 
-		$groups    = $this->relation_service instanceof TranslationRelationServiceInterface ? $this->relation_service->get_placeholder_groups() : array();
-		$languages = $this->language_service instanceof LanguageServiceInterface ? $this->language_service->get_active_languages() : array();
-		$codes     = $this->language_codes( $languages );
-		$content_types = $this->content_service instanceof ContentTranslationServiceInterface ? $this->content_service->get_translatable_content_types() : array();
-		$taxonomies    = $this->taxonomy_service instanceof TaxonomyTranslationServiceInterface ? $this->taxonomy_service->get_translatable_taxonomies() : array();
-		$excluded_types = $this->content_service instanceof ContentTranslationServiceInterface ? $this->content_service->get_excluded_content_types() : array();
+		$groups              = $this->relation_service instanceof TranslationRelationServiceInterface ? $this->relation_service->get_placeholder_groups() : array();
+		$languages           = $this->language_service instanceof LanguageServiceInterface ? $this->language_service->get_active_languages() : array();
+		$codes               = $this->language_codes( $languages );
+		$content_types       = $this->content_service instanceof ContentTranslationServiceInterface ? $this->content_service->get_translatable_content_types() : array();
+		$taxonomies          = $this->taxonomy_service instanceof TaxonomyTranslationServiceInterface ? $this->taxonomy_service->get_translatable_taxonomies() : array();
+		$excluded_types      = $this->content_service instanceof ContentTranslationServiceInterface ? $this->content_service->get_excluded_content_types() : array();
 		$excluded_taxonomies = $this->taxonomy_service instanceof TaxonomyTranslationServiceInterface ? $this->taxonomy_service->get_excluded_taxonomies() : array();
 
 		?>
@@ -229,7 +229,17 @@ final class TranslationManager implements ModuleInterface {
 				<?php endforeach; ?>
 			</ul>
 			<?php if ( ! empty( $excluded_types ) ) : ?>
-				<p class="mclogiora-muted-line"><?php echo esc_html( sprintf( _n( '%d excluded content type detected.', '%d excluded content types detected.', count( $excluded_types ), 'mclogiora' ), count( $excluded_types ) ) ); ?></p>
+				<p class="mclogiora-muted-line">
+					<?php
+					echo esc_html(
+						sprintf(
+							/* translators: %d: number of excluded content types. */
+							_n( '%d excluded content type detected.', '%d excluded content types detected.', count( $excluded_types ), 'mclogiora' ),
+							count( $excluded_types )
+						)
+					);
+					?>
+				</p>
 			<?php endif; ?>
 		</article>
 		<?php
@@ -255,7 +265,17 @@ final class TranslationManager implements ModuleInterface {
 				<?php endforeach; ?>
 			</ul>
 			<?php if ( ! empty( $excluded_taxonomies ) ) : ?>
-				<p class="mclogiora-muted-line"><?php echo esc_html( sprintf( _n( '%d excluded taxonomy detected.', '%d excluded taxonomies detected.', count( $excluded_taxonomies ), 'mclogiora' ), count( $excluded_taxonomies ) ) ); ?></p>
+				<p class="mclogiora-muted-line">
+					<?php
+					echo esc_html(
+						sprintf(
+							/* translators: %d: number of excluded taxonomies. */
+							_n( '%d excluded taxonomy detected.', '%d excluded taxonomies detected.', count( $excluded_taxonomies ), 'mclogiora' ),
+							count( $excluded_taxonomies )
+						)
+					);
+					?>
+				</p>
 			<?php endif; ?>
 		</article>
 		<?php
@@ -269,12 +289,12 @@ final class TranslationManager implements ModuleInterface {
 	 * @return void
 	 */
 	private function render_group_row( TranslationGroup $group, array $language_codes ) {
-		$original  = $group->original();
-		$targets   = $group->targets();
-		$missing   = $this->relation_service instanceof TranslationRelationServiceInterface ? $this->relation_service->determine_missing_languages_placeholder( $group, $language_codes ) : array();
-		$outdated  = $this->relation_service instanceof TranslationRelationServiceInterface ? $this->relation_service->determine_outdated_translations_placeholder( $group ) : array();
-		$type      = $original instanceof TranslationItem ? $original->content_type() : __( 'Unknown', 'mclogiora' );
-		$source    = $original instanceof TranslationItem ? $original->language_code() . ':' . $original->object_key() : __( 'No source', 'mclogiora' );
+		$original = $group->original();
+		$targets  = $group->targets();
+		$missing  = $this->relation_service instanceof TranslationRelationServiceInterface ? $this->relation_service->determine_missing_languages_placeholder( $group, $language_codes ) : array();
+		$outdated = $this->relation_service instanceof TranslationRelationServiceInterface ? $this->relation_service->determine_outdated_translations_placeholder( $group ) : array();
+		$type     = $original instanceof TranslationItem ? $original->content_type() : __( 'Unknown', 'mclogiora' );
+		$source   = $original instanceof TranslationItem ? $original->language_code() . ':' . $original->object_key() : __( 'No source', 'mclogiora' );
 
 		?>
 		<tr>
@@ -300,7 +320,7 @@ final class TranslationManager implements ModuleInterface {
 	 * Renders item status pills.
 	 *
 	 * @param TranslationItem[] $items Translation items.
-	 * @param string           $empty Empty label.
+	 * @param string            $empty Empty label.
 	 * @return void
 	 */
 	private function render_item_pills( array $items, $empty = '' ) {

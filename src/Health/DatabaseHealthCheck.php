@@ -65,15 +65,15 @@ final class DatabaseHealthCheck {
 	/**
 	 * Constructor.
 	 *
-	 * @param DatabaseVersionManager $version_manager Version manager.
-	 * @param MigrationRunner        $migration_runner Migration runner.
-	 * @param SchemaBuilder          $schema_builder Schema helper.
-	 * @param TableNames             $tables Table names.
-	 * @param LanguageRepositoryInterface $languages Language repository.
+	 * @param DatabaseVersionManager                 $version_manager Version manager.
+	 * @param MigrationRunner                        $migration_runner Migration runner.
+	 * @param SchemaBuilder                          $schema_builder Schema helper.
+	 * @param TableNames                             $tables Table names.
+	 * @param LanguageRepositoryInterface            $languages Language repository.
 	 * @param TranslationRelationRepositoryInterface $relations Relation repository.
 	 */
 	public function __construct( DatabaseVersionManager $version_manager, MigrationRunner $migration_runner, SchemaBuilder $schema_builder, TableNames $tables, LanguageRepositoryInterface $languages, TranslationRelationRepositoryInterface $relations ) {
-		$this->version_manager = $version_manager;
+		$this->version_manager  = $version_manager;
 		$this->migration_runner = $migration_runner;
 		$this->schema_builder   = $schema_builder;
 		$this->tables           = $tables;
