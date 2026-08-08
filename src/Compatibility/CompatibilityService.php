@@ -46,10 +46,10 @@ final class CompatibilityService {
 	/**
 	 * Constructor.
 	 *
-	 * @param EditorDetector $editor_detector Editor detector.
+	 * @param EditorDetector  $editor_detector Editor detector.
 	 * @param BuilderDetector $builder_detector Builder detector.
-	 * @param PluginDetector $plugin_detector Plugin detector.
-	 * @param ThemeDetector  $theme_detector Theme detector.
+	 * @param PluginDetector  $plugin_detector Plugin detector.
+	 * @param ThemeDetector   $theme_detector Theme detector.
 	 */
 	public function __construct( EditorDetector $editor_detector, BuilderDetector $builder_detector, PluginDetector $plugin_detector, ThemeDetector $theme_detector ) {
 		$this->editor_detector  = $editor_detector;
@@ -65,10 +65,10 @@ final class CompatibilityService {
 	 */
 	public function snapshot() {
 		return array(
-			'editors' => $this->editor_detector->detect(),
+			'editors'  => $this->editor_detector->detect(),
 			'builders' => $this->builder_detector->detect(),
-			'plugins' => $this->plugin_detector->detect_known(),
-			'theme' => $this->theme_detector->detect(),
+			'plugins'  => $this->plugin_detector->detect_known(),
+			'theme'    => $this->theme_detector->detect(),
 		);
 	}
 }

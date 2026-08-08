@@ -43,11 +43,27 @@ final class PluginDetector {
 	 * @return array[]
 	 */
 	public function detect_known() {
-		$known = array(
-			array( 'id' => 'classic-editor', 'label' => __( 'Classic Editor', 'mclogiora' ), 'basename' => 'classic-editor/classic-editor.php' ),
-			array( 'id' => 'elementor', 'label' => __( 'Elementor', 'mclogiora' ), 'basename' => 'elementor/elementor.php' ),
-			array( 'id' => 'advanced-custom-fields', 'label' => __( 'Advanced Custom Fields', 'mclogiora' ), 'basename' => 'advanced-custom-fields/acf.php' ),
-			array( 'id' => 'woocommerce', 'label' => __( 'WooCommerce', 'mclogiora' ), 'basename' => 'woocommerce/woocommerce.php' ),
+		$known    = array(
+			array(
+				'id'       => 'classic-editor',
+				'label'    => __( 'Classic Editor', 'mclogiora' ),
+				'basename' => 'classic-editor/classic-editor.php',
+			),
+			array(
+				'id'       => 'elementor',
+				'label'    => __( 'Elementor', 'mclogiora' ),
+				'basename' => 'elementor/elementor.php',
+			),
+			array(
+				'id'       => 'advanced-custom-fields',
+				'label'    => __( 'Advanced Custom Fields', 'mclogiora' ),
+				'basename' => 'advanced-custom-fields/acf.php',
+			),
+			array(
+				'id'       => 'woocommerce',
+				'label'    => __( 'WooCommerce', 'mclogiora' ),
+				'basename' => 'woocommerce/woocommerce.php',
+			),
 		);
 		$detected = array();
 

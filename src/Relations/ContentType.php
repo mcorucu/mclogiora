@@ -13,11 +13,11 @@ defined( 'ABSPATH' ) || exit;
  * Defines translatable object types for relation records.
  */
 final class ContentType {
-	const POST = 'post';
-	const TERM = 'term';
+	const POST   = 'post';
+	const TERM   = 'term';
 	const STRING = 'string';
-	const MEDIA = 'media';
-	const MENU = 'menu';
+	const MEDIA  = 'media';
+	const MENU   = 'menu';
 	const WIDGET = 'widget';
 	const FUTURE = 'future';
 

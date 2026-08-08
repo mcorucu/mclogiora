@@ -81,14 +81,14 @@ If the working tree is unexpectedly dirty, stop and report what is dirty. Do not
 
 ## Before committing
 
-Run whatever validation applies to the change:
+Run the quality gate:
 
 ```bash
-find . -name "*.php" -not -path "./vendor/*" -exec php -l {} \;
-composer validate --strict
-composer exec -- phpcs      # when dev dependencies are installed
-composer exec -- phpstan    # when dev dependencies are installed
+composer install
+composer check
 ```
+
+This runs `composer validate --strict`, a PHP syntax check, PHPCS, and PHPStan. CI runs the same checks, so a green `composer check` should mean a green build. See `docs/development/code-standards.md` for what each check covers and which findings are currently baselined.
 
 Then review the change properly:
 
@@ -125,7 +125,17 @@ git push -u origin <branch>
 
 ## Integration
 
-Integration is pull-request based. Open a PR from the task branch into `main`, let validation run, review the diff, and merge deliberately.
+Integration is pull-request based. Open a PR from the task branch into `main`, let CI run, review the diff, and merge deliberately.
+
+CI (`.github/workflows/ci.yml`) runs on every pull request and on pushes to `main`:
+
+| Job | Checks |
+| --- | --- |
+| Syntax | `php -l` on PHP 7.4, 8.2, and 8.4 |
+| Standards and static analysis | `composer validate --strict`, PHPCS, PHPStan |
+| Repository hygiene | No committed dependencies or local artifacts, no credentials, no unexpected outbound HTTP calls |
+
+**CI must be green before merge.** It uses the same checks as `composer check`, so failures should be reproducible locally.
 
 Direct feature commits to `main` are not permitted. The only commit made directly on `main` was the initial v0.8.0 baseline import.
 

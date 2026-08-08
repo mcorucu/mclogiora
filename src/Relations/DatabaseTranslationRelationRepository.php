@@ -23,7 +23,7 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 	const GROUP_STATUS_ARCHIVED = 'archived';
 
 	/**
-	 * wpdb instance.
+	 * WordPress database instance.
 	 *
 	 * @var \wpdb
 	 */

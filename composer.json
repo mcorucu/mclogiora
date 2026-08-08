@@ -19,6 +19,35 @@
 	},
 	"config": {
 		"optimize-autoloader": true,
-		"sort-packages": true
+		"sort-packages": true,
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
+	"require-dev": {
+		"dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+		"phpstan/phpstan": "^2.2",
+		"squizlabs/php_codesniffer": "^3.9",
+		"szepeviktor/phpstan-wordpress": "^2.0",
+		"wp-coding-standards/wpcs": "^3.1"
+	},
+	"scripts": {
+		"lint": "find mclogiora.php uninstall.php src tools -name '*.php' -print0 | xargs -0 -n1 -P4 php -l",
+		"phpcs": "phpcs",
+		"phpcbf": "phpcbf",
+		"phpstan": "phpstan analyse --memory-limit=512M",
+		"check": [
+			"@composer validate --strict",
+			"@lint",
+			"@phpcs",
+			"@phpstan"
+		]
+	},
+	"scripts-descriptions": {
+		"lint": "Checks every PHP file for syntax errors.",
+		"phpcs": "Checks coding standards.",
+		"phpcbf": "Fixes the coding-standard violations that can be fixed automatically.",
+		"phpstan": "Runs static analysis.",
+		"check": "Runs the full local quality gate. Run this before opening a pull request."
 	}
 }

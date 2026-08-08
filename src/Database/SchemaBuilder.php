@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class SchemaBuilder {
 	/**
-	 * wpdb instance.
+	 * WordPress database instance.
 	 *
 	 * @var \wpdb
 	 */

@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class DatabaseLanguageRepository implements LanguageRepositoryInterface {
 	/**
-	 * wpdb instance.
+	 * WordPress database instance.
 	 *
 	 * @var \wpdb
 	 */
