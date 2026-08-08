@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- Canonicalized the project into a standalone Git repository published at <https://github.com/mcorucu/mclogiora>, with the development WordPress installation referencing it through a symlink.
+- Recorded the permanent fully free and open-source product model in ADR 0009, covering the absence of licence keys, feature gates, upgrade nags, default tracking or telemetry, remote kill switches, and SaaS dependencies for core functionality.
+- Removed obsolete premium and paid add-on terminology from planning, architecture, and admin copy. WooCommerce and LMS support are now described as future free compatibility modules rather than premium add-ons. No feature gate, licence check, or scope boundary changed.
+- Reconciled the development roadmap with actual executed history. Phases 01 through 09 now reflect what was built, and Phases 10 through 18 are defined.
+- Added development workflow documentation covering the repository layout, branch model, validation steps, and prohibited operations.
+- Documented that the original Skylearn design authority file is unavailable, froze the existing admin UI as the reference implementation, and recorded design-system recovery as a separate future task.
+
+No functional, schema, migration, or runtime behavior changes are included.
+
 ## 0.8.0
 
 - Added the Phase 09 editor integration foundation with editor contracts, context, registry, factory, detector, and manager.

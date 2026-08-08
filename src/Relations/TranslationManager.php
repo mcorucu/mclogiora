@@ -152,7 +152,7 @@ final class TranslationManager implements ModuleInterface {
 					<span class="mclogiora-status-card__icon" aria-hidden="true">i</span>
 					<div>
 						<h2><?php esc_html_e( 'Excluded Integrations', 'mclogiora' ); ?></h2>
-						<p><?php esc_html_e( 'WooCommerce and LMS support will be handled by future premium add-ons. This free foundation focuses on posts, pages, public custom post types, categories, tags, and public custom taxonomies.', 'mclogiora' ); ?></p>
+						<p><?php esc_html_e( 'WooCommerce and LMS support are planned as future free compatibility modules. This foundation focuses on posts, pages, public custom post types, categories, tags, and public custom taxonomies.', 'mclogiora' ); ?></p>
 					</div>
 				</div>
 
