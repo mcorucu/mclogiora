@@ -43,7 +43,7 @@
 		"lint": "find mclogiora.php uninstall.php src tools -name '*.php' -print0 | xargs -0 -n1 -P4 php -l",
 		"phpcs": "phpcs",
 		"phpcbf": "phpcbf",
-		"phpstan": "phpstan analyse --memory-limit=512M",
+		"phpstan": "phpstan analyse --memory-limit=1G",
 		"test": "phpunit",
 		"test:integration": "phpunit -c phpunit-integration.xml.dist",
 		"pot": "wp i18n make-pot . languages/mclogiora.pot --domain=mclogiora --exclude=vendor,node_modules,tests,bin,tools --package-name=mcLogiora --skip-audit",

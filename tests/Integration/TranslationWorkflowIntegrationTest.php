@@ -103,8 +103,20 @@ final class TranslationWorkflowIntegrationTest extends WP_UnitTestCase {
 		$schema = $this->container->get( SchemaBuilder::class );
 		$tables = $this->container->get( TableNames::class );
 
+		global $wpdb;
+
+		$existing = $wpdb->get_col( 'SHOW TABLES' );
+
 		foreach ( $tables->all() as $table ) {
-			$this->assertTrue( $schema->table_exists( $table ), "Missing table: {$table}" );
+			$this->assertTrue(
+				$schema->table_exists( $table ),
+				sprintf(
+					'Missing table: %s. Stored schema version: %s. Tables present: %s',
+					$table,
+					(string) get_option( 'mclogiora_db_version', '(unset)' ),
+					implode( ', ', is_array( $existing ) ? $existing : array() )
+				)
+			);
 		}
 	}
 
