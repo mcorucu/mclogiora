@@ -67,6 +67,17 @@
 		placeholder. The only interpolated token is the table name, which
 		comes from McLogiora\Database\TableNames as $wpdb->prefix plus a
 		hard-coded suffix, and which MySQL cannot parameterize anyway.
+
+		Phase 10 attempted to remove DatabaseLanguageRepository from these
+		lists by assigning a local $wpdb before each query, which does make
+		PHPCS see prepare() correctly. It was reverted because the alias
+		changes how PHPStan resolves the return types of those queries and
+		reintroduces static-analysis errors. Converting these files needs a
+		fix that satisfies both tools and belongs in its own change; see
+		docs/development/code-standards.md.
+
+		This list must shrink over time and must never grow. Any new file
+		added here needs the same line-by-line audit.
 	-->
 	<rule ref="WordPress.DB.PreparedSQL">
 		<exclude-pattern>src/Database/SchemaBuilder\.php$</exclude-pattern>
