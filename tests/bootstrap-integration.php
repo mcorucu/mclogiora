@@ -9,6 +9,18 @@
  * @package McLogiora
  */
 
+require_once dirname( __DIR__ ) . '/vendor/autoload.php';
+
+/*
+ * The WordPress test suite requires the PHPUnit Polyfills library and looks
+ * for it at WP_TESTS_PHPUNIT_POLYFILLS_PATH. It is a dev dependency here, so
+ * point the suite at the installed copy rather than asking every contributor
+ * to install it separately.
+ */
+if ( ! getenv( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' ) ) {
+	putenv( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH=' . dirname( __DIR__ ) . '/vendor/yoast/phpunit-polyfills' );
+}
+
 $mclogiora_tests_dir = getenv( 'WP_TESTS_DIR' );
 
 if ( ! $mclogiora_tests_dir ) {
