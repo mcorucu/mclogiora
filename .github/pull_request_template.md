@@ -2,13 +2,16 @@
 
 - 
 
-## Scope
+## Checklist
 
-- [ ] Preserves Phase 02 foundation boundaries.
-- [ ] Adds no telemetry or tracking.
-- [ ] Adds no hidden external service calls.
+- [ ] `composer check` passes locally.
+- [ ] Scope is focused, with no unrelated refactors.
+- [ ] No secrets, credentials, or local artifacts are committed.
+- [ ] Adds no telemetry, tracking, or hidden external service calls.
 - [ ] Adds no database schema without an approved phase plan.
-- [ ] Follows Skylearn for admin UI decisions.
+- [ ] Follows Skylearn for admin UI decisions (see `docs/design/README.md`).
+- [ ] WordPress.org compatibility is preserved.
+- [ ] Documentation updated where relevant.
 
 ## Testing
 

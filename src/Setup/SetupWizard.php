@@ -62,7 +62,7 @@ final class SetupWizard implements ModuleInterface {
 	 */
 	public function register( Container $container ) {
 		$capabilities           = $container->get( CapabilityRegistry::class );
-		$this->capability      = $capabilities->resolve( CapabilityRegistry::MANAGE_SETTINGS );
+		$this->capability       = $capabilities->resolve( CapabilityRegistry::MANAGE_SETTINGS );
 		$this->language_service = $container->get( LanguageServiceInterface::class );
 
 		$registry = $container->get( AdminScreenRegistry::class );

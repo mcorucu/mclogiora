@@ -54,6 +54,8 @@ final class ElementorAdapter implements EditorInterface {
 
 	/**
 	 * {@inheritDoc}
+	 *
+	 * @param EditorContext $context Editor context.
 	 */
 	public function supports_context( EditorContext $context ) {
 		return $this->is_available() && '' !== $context->object_type();

@@ -77,11 +77,11 @@ final class AdminMenu implements ModuleInterface {
 	 */
 	public function register( Container $container ) {
 		$this->asset_loader        = $container->get( AssetLoader::class );
-		$this->screen_registry    = $container->get( AdminScreenRegistry::class );
+		$this->screen_registry     = $container->get( AdminScreenRegistry::class );
 		$this->capability_registry = $container->get( CapabilityRegistry::class );
-		$this->content_service    = $container->get( ContentTranslationServiceInterface::class );
-		$this->taxonomy_service   = $container->get( TaxonomyTranslationServiceInterface::class );
-		$this->capability         = $this->capability_registry->resolve( $this->planned_capability );
+		$this->content_service     = $container->get( ContentTranslationServiceInterface::class );
+		$this->taxonomy_service    = $container->get( TaxonomyTranslationServiceInterface::class );
+		$this->capability          = $this->capability_registry->resolve( $this->planned_capability );
 
 		add_action( 'admin_menu', array( $this, 'register_pages' ) );
 	}

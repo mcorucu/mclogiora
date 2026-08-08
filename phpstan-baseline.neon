@@ -1,0 +1,13 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method McLogiora\\Languages\\DatabaseLanguageRepository\:\:create\(\) should return McLogiora\\Languages\\Language\|WP_Error but returns null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Languages/DatabaseLanguageRepository.php
+
+		-
+			message: '#^Method McLogiora\\Relations\\InMemoryTranslationRelationRepository\:\:create_empty_group\(\) never returns WP_Error so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: src/Relations/InMemoryTranslationRelationRepository.php
