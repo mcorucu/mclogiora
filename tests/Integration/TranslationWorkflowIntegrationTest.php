@@ -69,6 +69,19 @@ final class TranslationWorkflowIntegrationTest extends WP_UnitTestCase {
 			'The migration reported a database error.'
 		);
 
+		$this->assertTrue(
+			$this->container->get( MigrationRunner::class )->is_current(),
+			sprintf(
+				'Migrations did not complete. Stored version: "%s". dbDelta result: %s',
+				(string) get_option( 'mclogiora_db_version', '(unset)' ),
+				wp_json_encode(
+					$this->container->get( SchemaBuilder::class )->apply(
+						array( 'CREATE TABLE ' . $this->container->get( TableNames::class )->languages() . ' ( id bigint(20) unsigned NOT NULL AUTO_INCREMENT, PRIMARY KEY  (id) );' )
+					)
+				)
+			)
+		);
+
 		$languages = $this->container->get( LanguageRepositoryInterface::class );
 
 		if ( ! $languages->find_by_code( 'en' ) instanceof Language ) {
