@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class DatabaseVersionManager {
 	const OPTION_NAME     = 'mclogiora_db_version';
-	const CURRENT_VERSION = '1';
+	const CURRENT_VERSION = '2';
 
 	/**
 	 * Returns the installed database version.

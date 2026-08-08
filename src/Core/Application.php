@@ -75,6 +75,27 @@ use McLogiora\Workflows\TaxonomyTranslationWorkflow;
 use McLogiora\Workflows\TranslationStatusTransitions;
 use McLogiora\Workflows\TranslationWorkflowService;
 use McLogiora\Workflows\TranslationWorkflowValidator;
+use McLogiora\Admin\MediaTranslationFields;
+use McLogiora\Admin\StringActionController;
+use McLogiora\Admin\StringManager;
+use McLogiora\Admin\WidgetTranslationManager;
+use McLogiora\Database\Migrations\Migration002TranslationDomains;
+use McLogiora\Media\DatabaseMediaTranslationRepository;
+use McLogiora\Media\MediaTranslationRepositoryInterface;
+use McLogiora\Media\MediaTranslationService;
+use McLogiora\Menus\MenuTranslationWorkflow;
+use McLogiora\Strings\DatabaseStringRepository;
+use McLogiora\Strings\ScanScope;
+use McLogiora\Strings\StringRegistry;
+use McLogiora\Strings\StringRepositoryInterface;
+use McLogiora\Strings\StringScanner;
+use McLogiora\Strings\StringTranslationService;
+use McLogiora\Widgets\DatabaseWidgetTranslationRepository;
+use McLogiora\Widgets\WidgetAdapterRegistry;
+use McLogiora\Widgets\WidgetTranslationRepositoryInterface;
+use McLogiora\Widgets\WidgetTranslationService;
+use McLogiora\WordPress\MenuGateway;
+use McLogiora\WordPress\MenuGatewayInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -164,6 +185,10 @@ final class Application {
 		$modules->add( new TranslationActionController() );
 		$modules->add( new TranslationColumns() );
 		$modules->add( new SourceChangeSubscriber() );
+		$modules->add( new StringManager() );
+		$modules->add( new WidgetTranslationManager() );
+		$modules->add( new StringActionController() );
+		$modules->add( new MediaTranslationFields() );
 		$modules->add( new EditorManager() );
 		$modules->add( new CompatibilityDashboard() );
 		$modules->add( new AdminMenu() );
@@ -341,6 +366,7 @@ final class Application {
 					$container->get( VersionChecker::class ),
 					array(
 						new Migration001InitialSchema( $container->get( TableNames::class ) ),
+						new Migration002TranslationDomains( $container->get( TableNames::class ) ),
 					)
 				);
 			}
@@ -547,6 +573,129 @@ final class Application {
 					$container->get( TranslationRelationRepositoryInterface::class ),
 					$container->get( TranslationRelationServiceInterface::class ),
 					$container->get( TranslationWorkflowValidator::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			MenuGatewayInterface::class,
+			static function () {
+				return new MenuGateway();
+			}
+		);
+
+		$this->container->set(
+			StringRepositoryInterface::class,
+			static function ( Container $container ) use ( $wpdb ) {
+				return new DatabaseStringRepository(
+					$wpdb,
+					$container->get( TableNames::class ),
+					$container->get( SchemaBuilder::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			StringScanner::class,
+			static function () {
+				return new StringScanner();
+			}
+		);
+
+		$this->container->set(
+			ScanScope::class,
+			static function () {
+				return ScanScope::from_wordpress();
+			}
+		);
+
+		$this->container->set(
+			StringRegistry::class,
+			static function ( Container $container ) {
+				return new StringRegistry(
+					$container->get( StringRepositoryInterface::class ),
+					$container->get( StringScanner::class ),
+					$container->get( ScanScope::class ),
+					$container->get( ContentGatewayInterface::class ),
+					$container->get( CapabilityRegistry::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			StringTranslationService::class,
+			static function ( Container $container ) {
+				return new StringTranslationService(
+					$container->get( StringRepositoryInterface::class ),
+					$container->get( CacheInterface::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			MediaTranslationRepositoryInterface::class,
+			static function ( Container $container ) use ( $wpdb ) {
+				return new DatabaseMediaTranslationRepository(
+					$wpdb,
+					$container->get( TableNames::class ),
+					$container->get( SchemaBuilder::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			MediaTranslationService::class,
+			static function ( Container $container ) {
+				return new MediaTranslationService(
+					$container->get( MediaTranslationRepositoryInterface::class ),
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( ContentGatewayInterface::class ),
+					$container->get( CapabilityRegistry::class ),
+					$container->get( CacheInterface::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			MenuTranslationWorkflow::class,
+			static function ( Container $container ) {
+				return new MenuTranslationWorkflow(
+					$container->get( MenuGatewayInterface::class ),
+					$container->get( ContentGatewayInterface::class ),
+					$container->get( TranslationRelationServiceInterface::class ),
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( CapabilityRegistry::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			WidgetAdapterRegistry::class,
+			static function () {
+				return WidgetAdapterRegistry::with_core_adapters();
+			}
+		);
+
+		$this->container->set(
+			WidgetTranslationRepositoryInterface::class,
+			static function ( Container $container ) use ( $wpdb ) {
+				return new DatabaseWidgetTranslationRepository(
+					$wpdb,
+					$container->get( TableNames::class ),
+					$container->get( SchemaBuilder::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			WidgetTranslationService::class,
+			static function ( Container $container ) {
+				return new WidgetTranslationService(
+					$container->get( WidgetTranslationRepositoryInterface::class ),
+					$container->get( WidgetAdapterRegistry::class ),
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( ContentGatewayInterface::class ),
+					$container->get( CapabilityRegistry::class )
 				);
 			}
 		);

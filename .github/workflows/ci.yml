@@ -86,6 +86,45 @@ jobs:
       - name: Run tests
         run: composer test
 
+  integration:
+    name: WordPress integration tests
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mysqli
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Install Subversion
+        run: sudo apt-get update && sudo apt-get install -y subversion
+
+      - name: Install the WordPress test suite
+        run: bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 latest
+
+      - name: Run integration tests
+        run: composer test:integration
+
   hygiene:
     name: Repository hygiene
     runs-on: ubuntu-latest

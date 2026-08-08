@@ -64,3 +64,73 @@ Columns:
 `translation_items` is the Phase 06 table name for the object-level mapping described as `translations` in the planning document. The current domain model uses `TranslationItem`, so the table name follows the current code contract while preserving the same purpose.
 
 Phase 08 uses generic `object_type` and `object_id` terminology in services and documentation. These map to the existing `content_type` and `content_id` database columns until a future non-destructive migration justifies column renaming.
+
+## Phase 11 tables (database version 2)
+
+Added by `Migration002TranslationDomains`. Migration001 is unchanged.
+
+### `{prefix}mclogiora_strings`
+
+Registered source strings, independent of any language.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | bigint unsigned | Primary key |
+| `string_hash` | char(40) | **Unique.** `sha1( text + domain + context )` |
+| `source_text` | longtext | Not indexed; the hash carries identity |
+| `text_domain` | varchar(191) | Indexed |
+| `context` | varchar(191) | Part of identity |
+| `source_type` | varchar(20) | Indexed. theme, plugin, core, manual |
+| `source_reference` | varchar(191) | Relative file path where known |
+| `source_line` | int unsigned | Line number where known |
+| `is_stale` | tinyint(1) | Indexed. Not seen in the last scan |
+| `first_seen_at` / `last_seen_at` | datetime | |
+
+The unique hash makes rescanning idempotent. Context is part of identity because the same word can require different translations in different contexts.
+
+### `{prefix}mclogiora_string_translations`
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | bigint unsigned | Primary key |
+| `string_id` | bigint unsigned | **Unique with `language_code`** |
+| `language_code` | varchar(20) | Indexed |
+| `translated_text` | longtext | |
+| `status` | varchar(20) | Indexed |
+| `updated_at` | datetime | |
+
+### `{prefix}mclogiora_media_translations`
+
+Language-specific text for one shared attachment. The file is never duplicated.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | bigint unsigned | Primary key |
+| `attachment_id` | bigint unsigned | **Unique with `language_code`** |
+| `language_code` | varchar(20) | Indexed |
+| `translated_title` | text | |
+| `translated_alt_text` | text | |
+| `translated_caption` | text | |
+| `translated_description` | longtext | |
+| `status` | varchar(20) | |
+| `updated_at` | datetime | |
+
+A plugin-owned table is used rather than postmeta so that "alt text for this attachment in this language" is a single indexed lookup rather than a `meta_key LIKE` scan, and so uninstall is a table drop rather than a meta sweep.
+
+### `{prefix}mclogiora_widget_translations`
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | bigint unsigned | Primary key |
+| `widget_key` | varchar(191) | **Unique with `language_code`.** `type:instance` |
+| `adapter_id` | varchar(64) | Indexed |
+| `language_code` | varchar(20) | Indexed |
+| `translated_fields` | longtext | JSON object of adapter-declared fields |
+| `status` | varchar(20) | |
+| `updated_at` | datetime | |
+
+Field sets differ per widget type, so a column per field is impossible; the adapter owns the shape. The source `widget_*` option is never modified, so this table is purely additive.
+
+### Menus
+
+Menus add no table. A WordPress menu is a term and its items are posts, so translated menus are recorded in the existing translation group and item tables.

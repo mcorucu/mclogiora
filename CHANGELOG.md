@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.10.0
+
+- Added Phase 11 string, media, menu, and widget translation.
+- Added a string registry whose identity is the source text, text domain, and gettext context together, so the same word in different contexts stays separately translatable.
+- Added a token-based source scanner that runs only from an explicit admin action, never during normal site traffic. It reads only, never writes to theme or plugin files, is confined to a single chosen directory, and reports dynamic calls as unresolvable instead of guessing at them.
+- Added the String Translation screen with search, text domain and origin filters, per-language editing, and scan controls.
+- Added an explicit-language string lookup API. Nothing hooks `gettext`; runtime language selection stays with a later phase.
+- Added per-language media metadata for title, alternative text, caption, and description. One attachment serves every language and no file is ever duplicated.
+- Added the featured image policy deferred from Phase 10: a translated post references the same attachment as its source, and an image chosen explicitly for one language is respected.
+- Added translated navigation menus as separate WordPress menus, preserving item order and nesting by remapping parents to the new item identifiers. Only whitelisted core menu item fields are copied, and theme locations are never reassigned.
+- Added widget translation through an adapter model with Text, Custom HTML, and Block widget adapters. Widget types without an adapter are reported as unsupported and are never modified, and source widget options are never rewritten.
+- Added `Migration002TranslationDomains` creating the string, string translation, media translation, and widget translation tables. Migration001 is unchanged.
+- Added a WordPress integration test harness using the official WordPress PHPUnit suite, covering behaviour that test doubles cannot prove.
+- Replaced the empty `languages/mclogiora.pot` scaffold with a real catalogue generated from source, and added `composer pot` to regenerate it.
+- Added `composer test:integration` and extended CI with an integration job backed by a real database service.
+
 ## 0.9.0
 
 - Added Phase 10 content and taxonomy translation workflows.
