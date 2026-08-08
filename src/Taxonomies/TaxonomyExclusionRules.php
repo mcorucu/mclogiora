@@ -52,11 +52,11 @@ final class TaxonomyExclusionRules {
 		$taxonomy = sanitize_key( $taxonomy );
 
 		if ( in_array( $taxonomy, $this->woocommerce_taxonomies, true ) || 0 === strpos( $taxonomy, 'pa_' ) ) {
-			return __( 'WooCommerce taxonomies are reserved for future add-ons.', 'mclogiora' );
+			return __( 'WooCommerce taxonomies are planned for a future free compatibility module.', 'mclogiora' );
 		}
 
 		if ( in_array( $taxonomy, $this->lms_taxonomies, true ) || false !== strpos( $taxonomy, 'learndash' ) || false !== strpos( $taxonomy, 'lifter' ) || false !== strpos( $taxonomy, 'sensei' ) ) {
-			return __( 'LMS taxonomies are reserved for future add-ons.', 'mclogiora' );
+			return __( 'LMS taxonomies are planned for a future free compatibility module.', 'mclogiora' );
 		}
 
 		return '';
