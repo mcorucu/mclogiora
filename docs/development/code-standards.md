@@ -24,11 +24,21 @@ CI runs the same four checks, plus a repository-hygiene job. If `composer check`
 
 ## PHPUnit
 
-There is **no test suite yet**, and PHPUnit is deliberately not installed.
+Phase 10 established the test suite. Run it with `composer test`, or as part of `composer check`.
 
-`tests/` currently contains a bootstrap constant and `FoundationTest.php`, which is a placeholder class with no assertions and no PHPUnit dependency — it documents an intended first test target rather than testing anything. Installing PHPUnit now would only produce a suite that passes because it asserts nothing, which is worse than no suite at all: it would imply coverage that does not exist.
+The workflow and domain layers contain no direct WordPress calls, so they are tested without a WordPress installation. `tests/bootstrap.php` stubs the few primitives they use — `WP_Error`, the translation functions, and a handful of sanitizers. These stubs are minimal and faithful; they are not a WordPress emulator, and tests must not rely on behaviour beyond what the bootstrap defines.
 
-Real tests belong with the first phase that adds real behaviour. Phase 10 introduces content and taxonomy mutation workflows and is the natural place to establish PHPUnit, WordPress test fixtures, and a `composer test` script wired into `composer check`.
+Test doubles live in `tests/Support/`:
+
+| Double | Replaces |
+| --- | --- |
+| `FakeContentGateway` | The WordPress post and term APIs, with injectable failures |
+| `FakeRelationRepository` | Relation persistence, enforcing the same integrity rules as the database repository |
+| `FakeLanguageService` | A fixed language set |
+| `FakeWpdb` | Enough of `wpdb` to test repository contracts, including read-back failure |
+| `WorkflowTestFactory` | Assembles the real workflow classes over those doubles |
+
+Only the WordPress and database edges are replaced; the classes under test are the production ones, wired as production wires them.
 
 ## PHPCS sniff scoping
 
@@ -50,6 +60,14 @@ Because these exclusions cover security-relevant sniffs, the affected files were
 **SQL** — `SchemaBuilder`, `DatabaseLanguageRepository`, `DatabaseTranslationRelationRepository`. Every user-supplied value is bound with a `%s` or `%d` placeholder through `prepare()`. The only interpolated token is the table name, which comes from `McLogiora\Database\TableNames` as `$wpdb->prefix` plus a hard-coded suffix, contains no user input, and cannot be parameterized in MySQL. No query builds SQL from request data.
 
 **Nonces and input** — `LanguageManager`, `SetupWizard`. Both verify a nonce and check a capability before acting on request data, and route input through the `Validation` helpers.
+
+### Phase 10 attempt and why it was reverted
+
+Phase 10 tried to remove `src/Languages/DatabaseLanguageRepository.php` from the SQL exclusion lists. Assigning a local `$wpdb` before each query does work for PHPCS: the sniff then sees `prepare()` normally, and the remaining table-name interpolation needs only a per-query `phpcs:ignore`. That took the file from 33 errors to zero.
+
+It was reverted because the alias changes how PHPStan resolves those queries and reintroduces static-analysis errors. Trading one tool's correctness for another's is not an improvement, and forcing it through inside a feature phase would have meant baselining new PHPStan errors to fix PHPCS ones.
+
+Converting these files needs a change that satisfies both tools, verified against both, in its own commit. That is the recommended shape of the follow-up below.
 
 ### Risk and follow-up
 
@@ -73,9 +91,9 @@ Renaming them would change public method signatures, which is an API change rath
 
 ## PHPStan baseline
 
-`phpstan-baseline.neon` records two pre-existing findings so CI can block **new** ones. The baseline exists to make debt visible, not to hide it. Do not regenerate it to make an error disappear — fix the error, or discuss it first.
+`phpstan-baseline.neon` records one pre-existing finding so CI can block **new** ones. The baseline exists to make debt visible, not to hide it. Do not regenerate it to make an error disappear — fix the error, or discuss it first.
 
-### 1. `DatabaseLanguageRepository::create()` may return `null` — genuine bug
+### Resolved in Phase 10: `DatabaseLanguageRepository::create()` may return `null`
 
 ```
 Method McLogiora\Languages\DatabaseLanguageRepository::create()
@@ -86,9 +104,11 @@ should return McLogiora\Languages\Language|WP_Error but returns null.
 
 In practice the row was just inserted, so the lookup normally succeeds. If it does not — a failed read, replication lag, or an unexpected database state — `create()` returns `null`. A caller written against the contract will test `instanceof WP_Error`, take the success path, and fatal on a method call against `null`.
 
-This is a real defect, not a false positive. It was left unfixed here because RE-ENTRY R3 is a tooling phase that must not change runtime behaviour, and the fix alters an error path. **Phase 10 should fix it**, most likely by returning a `WP_Error` when the post-insert lookup fails.
+**Fixed in Phase 10.** `create()` now returns a `WP_Error` with the code `mclogiora_language_created_but_unreadable` when the post-insert lookup fails, and the baseline entry was removed. `DatabaseLanguageRepositoryCreateTest` covers the unreadable, failed-insert, and success paths.
 
-### 2. `InMemoryTranslationRelationRepository::create_empty_group()` never returns `WP_Error`
+The read-back is performed through a small private `read_back_created_language()` method rather than calling `find_by_code()` a second time directly. The two lookups run against different database states, and separate call sites make that explicit to readers and keep static analysis from treating them as one memoized expression.
+
+### Remaining: `InMemoryTranslationRelationRepository::create_empty_group()` never returns `WP_Error`
 
 ```
 Method ...::create_empty_group() never returns WP_Error

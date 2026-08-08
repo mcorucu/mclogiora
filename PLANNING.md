@@ -1,6 +1,6 @@
 # mcLogiora Planning
 
-Current phase: Phase 09 complete (Editor Integration & Compatibility Foundation, v0.8.0). Next planned phase: Phase 10.
+Current phase: Phase 10 complete (Content & Taxonomy Translation Workflows, v0.9.0). Next planned phase: Phase 11.
 
 This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 
@@ -649,11 +649,11 @@ Phase 09: Editor Integration & Compatibility Foundation — v0.8.0
 
 - Editor contracts, context, registry, factory, detector, and manager; dormant Classic Editor, Block Editor, and Elementor adapters with no hooks, scripts, panels, or content writes; read-only compatibility detection for editors, builders, known plugins, and the active theme; Compatibility dashboard.
 
+Phase 10: Content & Taxonomy Translation Workflows - v0.9.0
+
+- Create, link, unlink, and status workflows for posts, pages, public custom post types, categories, tags, and public custom taxonomies; an explicit status state machine; conservative source change tracking; a list table language column; compensating rollback; and the first real test suite. See `docs/adr/0010-content-taxonomy-translation-workflows.md`.
+
 ### Planned phases
-
-Phase 10: Content & Taxonomy Translation Workflows
-
-- Turn the relation write placeholders into real workflows: create, link, unlink, and maintain translated posts, pages, custom post types, and terms with explicit user action and full capability and nonce coverage.
 
 Phase 11: String, Media, Menu & Widget Translation
 
@@ -720,4 +720,4 @@ These notes record the Phase 01 discovery environment. They are historical conte
 
 ## Next Phase
 
-Phases 02 through 09 are complete. The next implementation phase is **Phase 10: Content & Taxonomy Translation Workflows**, which replaces the relation write placeholders left in place by Phase 08 with real, explicitly user-triggered translation workflows.
+Phases 02 through 10 are complete. The next implementation phase is **Phase 11: String, Media, Menu & Widget Translation**, which extends the Phase 10 workflows beyond posts and terms.

@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.9.0
+
+- Added Phase 10 content and taxonomy translation workflows.
+- Added Create Translation for posts, pages, and supported public custom post types. The new object is always a draft, copying only the source title, content, excerpt, menu order, and author.
+- Added Link Existing Translation, which records a relation without copying or modifying any content.
+- Added Unlink, which removes the relation record only. The WordPress post or term keeps its content, meta, status, and revisions, and is never trashed or deleted.
+- Added translated term creation for categories, tags, and supported public custom taxonomies. The translated name is supplied by the user rather than duplicated from the source, and a translated parent is used only when one already exists in the target language.
+- Added an explicit translation status state machine. Invalid transitions are rejected, the source item is immutable, and the machine suggested status stays reserved for a later phase.
+- Added conservative source change tracking. Translations are marked as needing an update when the source title, content, or excerpt changes, while autosaves, revisions, bulk edits, and irrelevant status changes are ignored.
+- Added real Translation Manager actions with capability checks, nonces, sanitization, validation, safe redirects, and admin notices. No AJAX or REST is used.
+- Added a compact language status column to supported post list tables using standard WordPress column hooks.
+- Added a narrow WordPress content gateway so workflow behaviour can be tested without a database.
+- Added compensating rollback: if relation persistence fails after a draft or term was created by the same operation, that object is removed. Pre-existing content is never deleted.
+- Fixed `DatabaseLanguageRepository::create()` returning null when an inserted language could not be read back, which broke its documented `Language|WP_Error` contract.
+- Added a PHPUnit test suite covering workflow validation, relation integrity, status transitions, link and unlink semantics, taxonomy rules, source change tracking, and rollback behaviour.
+- Added `composer test` and wired it into `composer check`, and extended CI to run the test suite on PHP 7.4 and 8.3.
+
 ## Unreleased
 
 - Added Composer development dependencies for the quality configuration that already existed: PHP_CodeSniffer, WordPress Coding Standards, PHPStan, and the WordPress PHPStan extension.

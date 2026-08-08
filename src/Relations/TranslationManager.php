@@ -18,6 +18,8 @@ use McLogiora\Languages\Language;
 use McLogiora\Languages\LanguageServiceInterface;
 use McLogiora\Taxonomies\TaxonomyTranslationServiceInterface;
 use McLogiora\Taxonomies\TranslatableTaxonomy;
+use McLogiora\Admin\TranslationActionController;
+use McLogiora\Workflows\TranslationStatusTransitions;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -61,6 +63,13 @@ final class TranslationManager implements ModuleInterface {
 	private $capability = 'manage_options';
 
 	/**
+	 * Status transition policy.
+	 *
+	 * @var TranslationStatusTransitions|null
+	 */
+	private $transitions = null;
+
+	/**
 	 * Registers the Translation Manager screen.
 	 *
 	 * @param Container $container Service container.
@@ -73,6 +82,7 @@ final class TranslationManager implements ModuleInterface {
 		$this->language_service = $container->get( LanguageServiceInterface::class );
 		$this->content_service  = $container->get( ContentTranslationServiceInterface::class );
 		$this->taxonomy_service = $container->get( TaxonomyTranslationServiceInterface::class );
+		$this->transitions      = $container->get( TranslationStatusTransitions::class );
 
 		$registry = $container->get( AdminScreenRegistry::class );
 		$registry->add(
@@ -109,7 +119,10 @@ final class TranslationManager implements ModuleInterface {
 			<section class="mclogiora-panel" aria-labelledby="mclogiora-translation-manager-title">
 				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Translation Relations', 'mclogiora' ); ?></p>
 				<h1 id="mclogiora-translation-manager-title"><?php esc_html_e( 'Translation Manager', 'mclogiora' ); ?></h1>
-				<p class="mclogiora-lede"><?php esc_html_e( 'Review database-backed translation relation records. This screen does not create or change WordPress content.', 'mclogiora' ); ?></p>
+				<p class="mclogiora-lede"><?php esc_html_e( 'Review translation relations and run translation actions. Every action is explicit: nothing is translated automatically, and unlinking never deletes content.', 'mclogiora' ); ?></p>
+
+				<?php $this->render_action_notice(); ?>
+				<?php $this->render_create_translation_panel( $languages ); ?>
 
 				<div class="mclogiora-filter-bar" aria-label="<?php esc_attr_e( 'Translation manager filters', 'mclogiora' ); ?>">
 					<label>
@@ -305,15 +318,209 @@ final class TranslationManager implements ModuleInterface {
 			<td><?php $this->render_code_pills( $missing, __( 'None', 'mclogiora' ) ); ?></td>
 			<td><?php $this->render_item_pills( $outdated, __( 'None', 'mclogiora' ) ); ?></td>
 			<td>
-				<div class="mclogiora-action-row" aria-label="<?php esc_attr_e( 'Future translation actions', 'mclogiora' ); ?>">
-					<button type="button" class="button" disabled><?php esc_html_e( 'Attach Existing Object', 'mclogiora' ); ?></button>
-					<button type="button" class="button" disabled><?php esc_html_e( 'Mark Translated', 'mclogiora' ); ?></button>
-					<button type="button" class="button" disabled><?php esc_html_e( 'Mark Reviewed', 'mclogiora' ); ?></button>
-					<button type="button" class="button" disabled><?php esc_html_e( 'Archive Group', 'mclogiora' ); ?></button>
+				<div class="mclogiora-action-row" aria-label="<?php esc_attr_e( 'Translation actions', 'mclogiora' ); ?>">
+					<?php foreach ( $targets as $target ) : ?>
+						<?php $this->render_target_actions( $target ); ?>
+					<?php endforeach; ?>
+					<?php if ( empty( $targets ) ) : ?>
+						<span class="mclogiora-muted-line"><?php esc_html_e( 'No translations yet.', 'mclogiora' ); ?></span>
+					<?php endif; ?>
 				</div>
 			</td>
 		</tr>
 		<?php
+	}
+
+	/**
+	 * Renders the available actions for one translation item.
+	 *
+	 * Only transitions the status policy actually allows are offered, so the
+	 * screen never presents an action that will be rejected. The policy is
+	 * re-checked server side, because a hidden control is not a security
+	 * boundary.
+	 *
+	 * @param TranslationItem $item Translation item.
+	 * @return void
+	 */
+	private function render_target_actions( TranslationItem $item ) {
+		$object_type = $item->object_type();
+		$object_id   = $item->object_id();
+		$language    = $item->language_code();
+		$allowed     = $this->transitions instanceof TranslationStatusTransitions
+			? $this->transitions->allowed_from( $item->status() )
+			: array();
+
+		echo '<div class="mclogiora-action-group">';
+		echo '<span class="mclogiora-pill">' . esc_html( strtoupper( $language ) ) . '</span> ';
+
+		foreach ( array( TranslationStatus::NEEDS_REVIEW, TranslationStatus::TRANSLATED ) as $status ) {
+			if ( ! in_array( $status, $allowed, true ) ) {
+				continue;
+			}
+
+			$this->render_action_form(
+				'mclogiora_change_translation_status',
+				TranslationStatus::TRANSLATED === $status
+					? __( 'Mark Translated', 'mclogiora' )
+					: __( 'Mark Needs Review', 'mclogiora' ),
+				array(
+					'object_type' => $object_type,
+					'object_id'   => $object_id,
+					'language'    => $language,
+					'status'      => $status,
+				)
+			);
+		}
+
+		$this->render_action_form(
+			ContentType::TERM === $object_type ? 'mclogiora_unlink_term_translation' : 'mclogiora_unlink_translation',
+			__( 'Unlink', 'mclogiora' ),
+			array(
+				'object_id' => $object_id,
+				'language'  => $language,
+			)
+		);
+
+		echo '</div>';
+	}
+
+	/**
+	 * Renders one secured action form.
+	 *
+	 * @param string               $action Admin post action.
+	 * @param string               $label Button label.
+	 * @param array<string,string> $fields Hidden fields.
+	 * @return void
+	 */
+	private function render_action_form( $action, $label, array $fields ) {
+		?>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="mclogiora-inline-form">
+			<input type="hidden" name="action" value="<?php echo esc_attr( $action ); ?>">
+			<?php foreach ( $fields as $name => $value ) : ?>
+				<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value="<?php echo esc_attr( $value ); ?>">
+			<?php endforeach; ?>
+			<?php wp_nonce_field( TranslationActionController::NONCE_ACTION, TranslationActionController::NONCE_NAME ); ?>
+			<button type="submit" class="button"><?php echo esc_html( $label ); ?></button>
+		</form>
+		<?php
+	}
+
+	/**
+	 * Renders the create and link translation panel.
+	 *
+	 * @param Language[] $languages Active languages.
+	 * @return void
+	 */
+	private function render_create_translation_panel( array $languages ) {
+		if ( empty( $languages ) ) {
+			printf(
+				'<div class="notice notice-warning"><p>%s</p></div>',
+				esc_html__( 'Add and activate at least one language before creating translations.', 'mclogiora' )
+			);
+
+			return;
+		}
+
+		?>
+		<div class="mclogiora-card-grid mclogiora-card-grid--two">
+			<article class="mclogiora-info-card">
+				<h2><?php esc_html_e( 'Create Translation', 'mclogiora' ); ?></h2>
+				<p><?php esc_html_e( 'Creates a new draft in the target language and links it to the source. The draft starts from the source title, content, and excerpt.', 'mclogiora' ); ?></p>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<input type="hidden" name="action" value="mclogiora_create_translation">
+					<?php wp_nonce_field( TranslationActionController::NONCE_ACTION, TranslationActionController::NONCE_NAME ); ?>
+					<label>
+						<span><?php esc_html_e( 'Source content ID', 'mclogiora' ); ?></span>
+						<input type="number" name="source_id" min="1" step="1" required>
+					</label>
+					<label>
+						<span><?php esc_html_e( 'Target language', 'mclogiora' ); ?></span>
+						<select name="target_language" required>
+							<?php foreach ( $languages as $language ) : ?>
+								<?php if ( $language instanceof Language ) : ?>
+									<option value="<?php echo esc_attr( $language->code() ); ?>"><?php echo esc_html( $language->native_name() ); ?></option>
+								<?php endif; ?>
+							<?php endforeach; ?>
+						</select>
+					</label>
+					<button type="submit" class="button button-primary"><?php esc_html_e( 'Create Translation', 'mclogiora' ); ?></button>
+				</form>
+			</article>
+			<article class="mclogiora-info-card">
+				<h2><?php esc_html_e( 'Link Existing Translation', 'mclogiora' ); ?></h2>
+				<p><?php esc_html_e( 'Connects content that is already translated. No content is copied or changed; only the relation is recorded.', 'mclogiora' ); ?></p>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<input type="hidden" name="action" value="mclogiora_link_translation">
+					<?php wp_nonce_field( TranslationActionController::NONCE_ACTION, TranslationActionController::NONCE_NAME ); ?>
+					<label>
+						<span><?php esc_html_e( 'Source content ID', 'mclogiora' ); ?></span>
+						<input type="number" name="source_id" min="1" step="1" required>
+					</label>
+					<label>
+						<span><?php esc_html_e( 'Existing translation ID', 'mclogiora' ); ?></span>
+						<input type="number" name="target_id" min="1" step="1" required>
+					</label>
+					<label>
+						<span><?php esc_html_e( 'Target language', 'mclogiora' ); ?></span>
+						<select name="target_language" required>
+							<?php foreach ( $languages as $language ) : ?>
+								<?php if ( $language instanceof Language ) : ?>
+									<option value="<?php echo esc_attr( $language->code() ); ?>"><?php echo esc_html( $language->native_name() ); ?></option>
+								<?php endif; ?>
+							<?php endforeach; ?>
+						</select>
+					</label>
+					<button type="submit" class="button"><?php esc_html_e( 'Link Existing', 'mclogiora' ); ?></button>
+				</form>
+			</article>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Renders the admin notice for the last action, when present.
+	 *
+	 * @return void
+	 */
+	private function render_action_notice() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only redirect feedback, no state is changed here.
+		$notice = isset( $_GET['mclogiora_notice'] ) ? sanitize_key( wp_unslash( $_GET['mclogiora_notice'] ) ) : '';
+
+		if ( '' === $notice ) {
+			return;
+		}
+
+		if ( 'error' === $notice ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only redirect feedback, no state is changed here.
+			$message = isset( $_GET['mclogiora_message'] ) ? sanitize_text_field( wp_unslash( $_GET['mclogiora_message'] ) ) : '';
+
+			if ( '' === $message ) {
+				$message = __( 'The translation action could not be completed.', 'mclogiora' );
+			}
+
+			printf(
+				'<div class="notice notice-error"><p>%s</p></div>',
+				esc_html( $message )
+			);
+
+			return;
+		}
+
+		$messages = array(
+			'created'        => __( 'The translation was created as a draft.', 'mclogiora' ),
+			'linked'         => __( 'The existing content was linked as a translation.', 'mclogiora' ),
+			'unlinked'       => __( 'The translation was unlinked. The content itself was not changed.', 'mclogiora' ),
+			'status_changed' => __( 'The translation status was updated.', 'mclogiora' ),
+		);
+
+		if ( ! isset( $messages[ $notice ] ) ) {
+			return;
+		}
+
+		printf(
+			'<div class="notice notice-success"><p>%s</p></div>',
+			esc_html( $messages[ $notice ] )
+		);
 	}
 
 	/**
