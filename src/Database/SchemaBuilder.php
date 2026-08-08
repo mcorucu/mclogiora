@@ -65,8 +65,14 @@ final class SchemaBuilder {
 	 * @return bool
 	 */
 	public function table_exists( $table ) {
+		$db    = $this->wpdb;
 		$table = (string) $table;
 
-		return $table === $this->wpdb->get_var( $this->wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
+		/*
+		 * Underscores are LIKE wildcards, and every mcLogiora table name is
+		 * full of them. Escaping keeps the pattern literal so this cannot match
+		 * a differently named table.
+		 */
+		return $table === $db->get_var( $db->prepare( 'SHOW TABLES LIKE %s', $db->esc_like( $table ) ) );
 	}
 }
