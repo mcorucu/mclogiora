@@ -14,6 +14,8 @@ A modern multilingual platform foundation for WordPress.
 
 mcLogiora is planned as a modular multilingual platform for WordPress.
 
+mcLogiora is fully free and fully open source. There is no premium edition, no paid tier, no licence key, and no feature paywall. Every feature it ships is available to every user.
+
 This early foundation release contains the technical platform skeleton, initial persistence layer, persistence-backed language management, and database-backed relation records:
 
 * Thin plugin bootstrap.

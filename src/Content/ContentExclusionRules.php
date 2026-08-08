@@ -63,11 +63,11 @@ final class ContentExclusionRules {
 		}
 
 		if ( in_array( $post_type, $this->woocommerce_types, true ) || 0 === strpos( $post_type, 'wc_' ) ) {
-			return __( 'WooCommerce content is reserved for future add-ons.', 'mclogiora' );
+			return __( 'WooCommerce content is planned for a future free compatibility module.', 'mclogiora' );
 		}
 
 		if ( in_array( $post_type, $this->lms_types, true ) || false !== strpos( $post_type, 'learndash' ) || false !== strpos( $post_type, 'lifter' ) || false !== strpos( $post_type, 'sensei' ) ) {
-			return __( 'LMS content is reserved for future add-ons.', 'mclogiora' );
+			return __( 'LMS content is planned for a future free compatibility module.', 'mclogiora' );
 		}
 
 		return '';
