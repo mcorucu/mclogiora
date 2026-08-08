@@ -13,14 +13,14 @@ defined( 'ABSPATH' ) || exit;
  * Defines translation relation statuses.
  */
 final class TranslationStatus {
-	const ORIGINAL = 'original';
-	const MISSING = 'missing';
-	const DRAFT = 'draft';
-	const TRANSLATED = 'translated';
-	const NEEDS_REVIEW = 'needs_review';
-	const NEEDS_UPDATE = 'needs_update';
+	const ORIGINAL          = 'original';
+	const MISSING           = 'missing';
+	const DRAFT             = 'draft';
+	const TRANSLATED        = 'translated';
+	const NEEDS_REVIEW      = 'needs_review';
+	const NEEDS_UPDATE      = 'needs_update';
 	const MACHINE_SUGGESTED = 'machine_suggested';
-	const DISABLED = 'disabled';
+	const DISABLED          = 'disabled';
 
 	/**
 	 * Returns all supported statuses.

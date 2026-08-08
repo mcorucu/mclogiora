@@ -36,6 +36,8 @@ final class BlockEditorAdapter implements EditorInterface {
 
 	/**
 	 * {@inheritDoc}
+	 *
+	 * @param EditorContext $context Editor context.
 	 */
 	public function supports_context( EditorContext $context ) {
 		return in_array( $context->object_type(), array( 'post', 'page' ), true ) || '' !== $context->object_type();

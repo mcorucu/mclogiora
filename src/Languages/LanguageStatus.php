@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  * Defines language availability states.
  */
 final class LanguageStatus {
-	const ACTIVE = 'active';
+	const ACTIVE   = 'active';
 	const INACTIVE = 'inactive';
 
 	/**

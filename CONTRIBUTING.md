@@ -16,15 +16,24 @@ Thank you for helping improve mcLogiora.
 
 ## Local Checks
 
-Run syntax checks before opening a pull request:
+Before opening a pull request:
 
 ```bash
-find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
+composer install
+composer check
 ```
 
-When tooling is installed, also run PHPCS and PHPStan:
+`composer check` runs the full quality gate: `composer validate --strict`, a PHP syntax check across the source tree, PHPCS against WordPress Coding Standards, and PHPStan at level 5.
+
+CI runs the same checks and must pass before a pull request can be merged.
+
+Useful individual commands:
 
 ```bash
-vendor/bin/phpcs
-vendor/bin/phpstan analyse
+composer lint      # syntax only
+composer phpcs     # coding standards
+composer phpcbf    # auto-fix coding standards
+composer phpstan   # static analysis
 ```
+
+There is no test suite yet, and PHPUnit is intentionally not installed — see `docs/development/code-standards.md`, which also documents the PHPCS sniff scoping and the PHPStan baseline.

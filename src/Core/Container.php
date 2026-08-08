@@ -56,6 +56,7 @@ final class Container {
 	 *
 	 * @param string $id Service identifier.
 	 * @return mixed
+	 * @throws InvalidArgumentException When the service is not registered.
 	 */
 	public function get( $id ) {
 		if ( array_key_exists( $id, $this->resolved ) ) {

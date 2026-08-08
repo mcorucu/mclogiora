@@ -41,7 +41,7 @@ final class CompatibilityDashboard implements ModuleInterface {
 	 * @return void
 	 */
 	public function register( Container $container ) {
-		$this->service   = $container->get( CompatibilityService::class );
+		$this->service    = $container->get( CompatibilityService::class );
 		$this->capability = $container->get( CapabilityRegistry::class )->resolve( CapabilityRegistry::MANAGE );
 
 		$container->get( AdminScreenRegistry::class )->add(
@@ -84,7 +84,16 @@ final class CompatibilityDashboard implements ModuleInterface {
 					<article class="mclogiora-info-card">
 						<h2><?php esc_html_e( 'Detected Theme', 'mclogiora' ); ?></h2>
 						<p class="mclogiora-card-value mclogiora-card-value--text"><?php echo esc_html( isset( $theme['name'] ) ? $theme['name'] : __( 'Unavailable', 'mclogiora' ) ); ?></p>
-						<p><?php echo esc_html( ! empty( $theme['version'] ) ? sprintf( __( 'Version %s. Theme detection is read-only.', 'mclogiora' ), $theme['version'] ) : __( 'Theme detection is read-only.', 'mclogiora' ) ); ?></p>
+						<p>
+							<?php
+							echo esc_html(
+								! empty( $theme['version'] )
+									/* translators: %s: detected theme version number. */
+									? sprintf( __( 'Version %s. Theme detection is read-only.', 'mclogiora' ), $theme['version'] )
+									: __( 'Theme detection is read-only.', 'mclogiora' )
+							);
+							?>
+						</p>
 					</article>
 				</div>
 

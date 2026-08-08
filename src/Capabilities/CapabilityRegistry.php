@@ -13,10 +13,10 @@ defined( 'ABSPATH' ) || exit;
  * Defines future mcLogiora capabilities without mutating roles.
  */
 final class CapabilityRegistry {
-	const MANAGE = 'manage_mclogiora';
-	const MANAGE_LANGUAGES = 'manage_mclogiora_languages';
+	const MANAGE              = 'manage_mclogiora';
+	const MANAGE_LANGUAGES    = 'manage_mclogiora_languages';
 	const MANAGE_TRANSLATIONS = 'manage_mclogiora_translations';
-	const MANAGE_SETTINGS = 'manage_mclogiora_settings';
+	const MANAGE_SETTINGS     = 'manage_mclogiora_settings';
 
 	/**
 	 * Returns all planned capabilities.

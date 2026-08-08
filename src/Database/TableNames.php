@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class TableNames {
 	/**
-	 * wpdb instance.
+	 * WordPress database instance.
 	 *
 	 * @var \wpdb
 	 */
