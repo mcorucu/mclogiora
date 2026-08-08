@@ -64,6 +64,17 @@ use McLogiora\Taxonomies\TaxonomyRegistryInterface;
 use McLogiora\Taxonomies\TaxonomySupportDetector;
 use McLogiora\Taxonomies\TaxonomyTranslationService;
 use McLogiora\Taxonomies\TaxonomyTranslationServiceInterface;
+use McLogiora\Admin\TranslationActionController;
+use McLogiora\Admin\TranslationColumns;
+use McLogiora\WordPress\ContentGateway;
+use McLogiora\WordPress\ContentGatewayInterface;
+use McLogiora\Workflows\ContentTranslationWorkflow;
+use McLogiora\Workflows\SourceChangeTracker;
+use McLogiora\Workflows\SourceChangeSubscriber;
+use McLogiora\Workflows\TaxonomyTranslationWorkflow;
+use McLogiora\Workflows\TranslationStatusTransitions;
+use McLogiora\Workflows\TranslationWorkflowService;
+use McLogiora\Workflows\TranslationWorkflowValidator;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -150,6 +161,9 @@ final class Application {
 		$modules->add( new LanguageManager() );
 		$modules->add( new SetupWizard() );
 		$modules->add( new TranslationManager() );
+		$modules->add( new TranslationActionController() );
+		$modules->add( new TranslationColumns() );
+		$modules->add( new SourceChangeSubscriber() );
 		$modules->add( new EditorManager() );
 		$modules->add( new CompatibilityDashboard() );
 		$modules->add( new AdminMenu() );
@@ -457,6 +471,82 @@ final class Application {
 					$container->get( TableNames::class ),
 					$container->get( LanguageRepositoryInterface::class ),
 					$container->get( TranslationRelationRepositoryInterface::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			ContentGatewayInterface::class,
+			static function () {
+				return new ContentGateway();
+			}
+		);
+
+		$this->container->set(
+			TranslationStatusTransitions::class,
+			static function () {
+				return new TranslationStatusTransitions();
+			}
+		);
+
+		$this->container->set(
+			TranslationWorkflowValidator::class,
+			static function ( Container $container ) {
+				return new TranslationWorkflowValidator(
+					$container->get( ContentGatewayInterface::class ),
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( TranslationRelationRepositoryInterface::class ),
+					$container->get( ContentTypeRegistryInterface::class ),
+					$container->get( TaxonomyRegistryInterface::class ),
+					$container->get( CapabilityRegistry::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			ContentTranslationWorkflow::class,
+			static function ( Container $container ) {
+				return new ContentTranslationWorkflow(
+					$container->get( ContentGatewayInterface::class ),
+					$container->get( TranslationRelationServiceInterface::class ),
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( TranslationWorkflowValidator::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			TaxonomyTranslationWorkflow::class,
+			static function ( Container $container ) {
+				return new TaxonomyTranslationWorkflow(
+					$container->get( ContentGatewayInterface::class ),
+					$container->get( TranslationRelationServiceInterface::class ),
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( TranslationWorkflowValidator::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			SourceChangeTracker::class,
+			static function ( Container $container ) {
+				return new SourceChangeTracker(
+					$container->get( TranslationRelationRepositoryInterface::class ),
+					$container->get( TranslationStatusTransitions::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			TranslationWorkflowService::class,
+			static function ( Container $container ) {
+				return new TranslationWorkflowService(
+					$container->get( ContentTranslationWorkflow::class ),
+					$container->get( TaxonomyTranslationWorkflow::class ),
+					$container->get( TranslationStatusTransitions::class ),
+					$container->get( TranslationRelationRepositoryInterface::class ),
+					$container->get( TranslationRelationServiceInterface::class ),
+					$container->get( TranslationWorkflowValidator::class )
 				);
 			}
 		);

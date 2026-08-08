@@ -197,7 +197,39 @@ final class DatabaseLanguageRepository implements LanguageRepositoryInterface {
 			return $this->set_default( $language->code() );
 		}
 
-		return $this->find_by_code( $language->code() );
+		$created = $this->read_back_created_language( $language->code() );
+
+		if ( $created instanceof Language ) {
+			return $created;
+		}
+
+		/*
+		 * The row was inserted but cannot be read back. This should not
+		 * happen, but returning null here would break the documented
+		 * Language|WP_Error contract and make callers that test for WP_Error
+		 * fall through to the success path.
+		 */
+		return new \WP_Error(
+			'mclogiora_language_created_but_unreadable',
+			__( 'The language was created but could not be loaded afterwards.', 'mclogiora' ),
+			array( 'language_code' => $language->code() )
+		);
+	}
+
+	/**
+	 * Reads a language back immediately after inserting it.
+	 *
+	 * This exists as its own method because create() looks the same code up
+	 * twice: once before the insert to reject duplicates, and once after to
+	 * return the stored record. The two lookups run against different
+	 * database states, and keeping them as separate call sites makes that
+	 * explicit to readers and to static analysis alike.
+	 *
+	 * @param string $code Language code.
+	 * @return Language|null
+	 */
+	private function read_back_created_language( $code ) {
+		return $this->find_by_code( $code );
 	}
 
 	/**
