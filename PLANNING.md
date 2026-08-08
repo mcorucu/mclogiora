@@ -1,22 +1,22 @@
 # mcLogiora Planning
 
-Current phase: Discovery and planning only.
+Current phase: Phase 09 complete (Editor Integration & Compatibility Foundation, v0.8.0). Next planned phase: Phase 10.
 
-This document is the initial product and engineering plan for mcLogiora, a professional multilingual platform for WordPress. It intentionally contains planning guidance only. No plugin code, bootstrap file, PHP classes, dependencies, activation logic, settings changes, database tables, or WordPress configuration changes are included in this phase.
+This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 
-Verified local WordPress location: `/Users/mcorucu/Downloads/vacuum-wp-local/wordpress`
+Product model: mcLogiora is permanently free and fully open source under a GPL-compatible licence. There is no premium edition, no paid tier, no licence-key system, and no feature paywall. See `docs/adr/0009-fully-open-source-product-model.md`.
 
-Verified design file: `/Users/mcorucu/Downloads/skylearn-DESIGN.md`
+Canonical repository: <https://github.com/mcorucu/mclogiora>. Local development paths and the WordPress environment symlink convention are documented in `docs/development/git-workflow.md` rather than hard-coded here.
 
-Official admin UI design system: Skylearn. All future admin UI must strictly follow that document.
+Official admin UI design system: Skylearn. The original `skylearn-DESIGN.md` authority file is currently unavailable; see `docs/design/README.md` for the current status and the freeze policy that applies until it is restored.
 
 ## 1. Project Vision
 
 mcLogiora should become a modern multilingual platform for WordPress, not a narrow translation utility and not a clone of WPML. The long-term goal is a cleaner, faster, more maintainable multilingual layer that feels native to WordPress while giving site owners, editors, translators, and developers clear tools for managing language relationships, translated content, translated strings, translated URLs, SEO metadata, and language switchers.
 
-The free version should support the essential multilingual needs of content-driven WordPress sites: posts, pages, custom post types, taxonomies, menus, widgets, media, strings, URLs, slugs, SEO metadata, hreflang, canonical URLs, OpenGraph compatibility, JSON-LD compatibility, REST API access, AJAX workflows, import/export, setup guidance, system status, translation suggestions, translation manager screens, language manager screens, translation status, and multiple switcher surfaces.
+mcLogiora should support the essential multilingual needs of content-driven WordPress sites: posts, pages, custom post types, taxonomies, menus, widgets, media, strings, URLs, slugs, SEO metadata, hreflang, canonical URLs, OpenGraph compatibility, JSON-LD compatibility, REST API access, AJAX workflows, import/export, setup guidance, system status, translation suggestions, translation manager screens, language manager screens, translation status, and multiple switcher surfaces.
 
-The platform should remain modular enough to add premium integrations later without turning the free core into a dependency web. Premium and third-party integrations must be adapters around stable internal contracts.
+The platform should remain modular enough to add further integrations later without turning the core into a dependency web. Modularity here is an architectural concern only, never a commercial one: every module mcLogiora ships is free and open source. Optional and third-party integrations must be adapters around stable internal contracts.
 
 ## 2. Plugin Philosophy
 
@@ -174,7 +174,7 @@ The source object should not be assumed to be the default language forever. Site
 
 ## 7. Module List
 
-Free version modules:
+Core modules (all free and open source):
 
 - Core Loader
 - Language Manager
@@ -223,7 +223,7 @@ Prepared adapter modules:
 - SeedProd
 - Avada
 
-Premium-only future modules must stay outside free core and should be registered through the same module contracts.
+Later integration modules (WooCommerce, LMS platforms, and similar) are deferred for scope and stability reasons only. When they are implemented they will be free and open source, and they must be registered through the same module contracts as everything else.
 
 ## 8. Admin Screen Map
 
@@ -574,11 +574,11 @@ Planning checklist:
 - No activation side effects beyond required setup.
 - Clear privacy documentation.
 
-## 19. Future Premium Modules
+## 19. Future Free Integration Modules
 
-Premium modules should be optional extensions and must not be required by free core.
+mcLogiora has no premium edition and no paid modules. The candidates below are postponed for scope, stability, and maintenance reasons only. When any of them is implemented it will be free and open source, GPL-compatible, and subject to the same review standards as the rest of the plugin.
 
-Premium candidates:
+Postponed integration candidates:
 
 - WooCommerce products.
 - WooCommerce orders.
@@ -592,77 +592,106 @@ Premium candidates:
 - Sensei LMS.
 - Membership integrations.
 - Course system integrations.
-- Bulk automatic publishing of machine translations.
 - Cloud synchronization.
 - Translation Memory.
-- AI workflows.
+- AI-assisted translation workflows.
 - Team workflow automation.
 - Advanced analytics.
 
-Free core should expose adapter contracts that make these possible later without shipping premium logic in the WordPress.org version.
+These may ship inside mcLogiora or as separate companion plugins, depending on which is better for performance and maintenance. That packaging choice is a technical decision, never a commercial one.
+
+Two items from the earlier plan are deliberately dropped rather than postponed:
+
+- Bulk automatic publishing of machine translations remains out of scope in every edition. Machine output must always be reviewed by a human before publication.
+- Any feature whose purpose would be to justify a paid tier is out of scope by definition.
+
+The core should expose adapter contracts that make these integrations possible later without carrying their logic in the shipped WordPress.org package.
 
 ## 20. Development Phases
 
-Phase 01: Discovery and Planning
+The original twelve-phase sequence in this document drifted from what was actually built: two persistence phases were inserted during execution, which shifted every later number. The list below is the reconciled roadmap. Phases 01-09 are historical fact, verified against `CHANGELOG.md`, the plugin version header, the ADR set, and the source tree. Phases 10-18 are planned and not yet started.
 
-- Verify local WordPress installation.
-- Verify design system.
-- Create this planning document.
-- Identify architectural scope, risks, and first implementation boundaries.
+### Completed phases (verified against repository evidence)
 
-Phase 02: Plugin Skeleton and Standards
+Phase 01: Discovery & Architecture Lock
 
-- Create plugin bootstrap, readme, license references, uninstall placeholder, PHPCS, PHPStan, and test scaffolding.
-- Add module loader and coding standards baseline.
-- No feature implementation beyond health checks.
+- Architectural scope, risks, data model proposal, and implementation boundaries established.
 
-Phase 03: Core Kernel and Language Manager
+Phase 02: Foundation & Plugin Infrastructure — v0.1.0
 
-- Implement core service registration, language model, language settings, capabilities, and setup wizard foundation.
-- Add Skylearn-based admin shell.
+- Plugin bootstrap, PSR-4 autoloading, core application, service container, module loader, lifecycle classes, environment validation, foundation contracts, conditional admin assets, localization, and WordPress.org compliance scaffolding.
 
-Phase 04: Translation Relation Foundation
+Phase 03: Core Kernel & Language Manager Foundation — v0.2.0
 
-- Add relation schema, repositories, migration/versioning, relation APIs, and tests.
-- Support posts and pages first.
+- Admin screen registration, capability resolution, feature flags, language entity and status model, repository and service contracts, in-memory repository, locale validation, RTL detection, Languages screen, and Setup Wizard placeholder.
 
-Phase 05: Content and Taxonomy Translation
+Phase 04: Translation Relation Foundation — v0.3.0
 
-- Add custom post type support, taxonomy support, status model, editor panels, and manager screens.
+- Translation group and item value objects, relation content type and status constants, source-change metadata concepts, needs-update detector interface, in-memory relation repository, relation service contracts, and the Translation Manager placeholder.
 
-Phase 06: URL, Slug, and SEO Foundation
+Phase 05: Content & Taxonomy Translation Foundation — v0.4.0
 
-- Add URL resolution, slug translation, hreflang, canonical, OpenGraph, and JSON-LD compatibility.
+- Content type model, registries and contracts, support detectors, exclusion rules, taxonomy model and registry, placeholder services, and dashboard support cards.
 
-Phase 07: Switchers
+Phase 06: Database Architecture & Persistence Layer — v0.5.0
 
-- Add shortcode, widget, block, PHP function, template tag, menu item, floating switcher, and accessible renderers.
+- Installer, migration runner and interface, schema builder, version checker, database version manager, initial migration for languages/groups/items, UUID group identifiers, database-backed repositories, object-cache decorators, and database health foundation.
 
-Phase 08: String and Media Translation
+Phase 07: Language Persistence & Management — v0.6.0
 
-- Add string registry, scanning workflows, string manager, media metadata translation, and import/export coverage.
+- Language create, update, enable, disable, delete guard, default-language, reorder, and lookup operations; persistence-backed Languages admin actions with nonces, capability checks, and validation; setup wizard welcome and default-language steps; cache invalidation; language health data.
 
-Phase 09: Suggestions
+Phase 08: Translation Relation Persistence — v0.7.0
 
-- Add suggestion provider interfaces, BYO API key settings, REST/AJAX workflow, review-only UI, and external service documentation.
+- Database-backed group and item operations, relation integrity rules, safe detach and soft archive, relation cache invalidation, Translation Manager database-backed reads, and relation health data. Write actions intentionally remain placeholders.
 
-Phase 10: Editor and Builder Adapters
+Phase 09: Editor Integration & Compatibility Foundation — v0.8.0
 
-- Harden Gutenberg, Classic Editor, Elementor, and ACF support.
-- Add adapter registry for future builders.
+- Editor contracts, context, registry, factory, detector, and manager; dormant Classic Editor, Block Editor, and Elementor adapters with no hooks, scripts, panels, or content writes; read-only compatibility detection for editors, builders, known plugins, and the active theme; Compatibility dashboard.
 
-Phase 11: Import/Export and System Status
+### Planned phases
 
-- Add portable export format, dry-run import, diagnostics, repair tools, and compatibility status.
+Phase 10: Content & Taxonomy Translation Workflows
 
-Phase 12: Compliance, Testing, and Release Prep
+- Turn the relation write placeholders into real workflows: create, link, unlink, and maintain translated posts, pages, custom post types, and terms with explicit user action and full capability and nonce coverage.
 
-- Run Plugin Check, PHPCS, PHPStan, unit/integration tests, accessibility checks, performance checks, readme review, and WordPress.org compliance review.
+Phase 11: String, Media, Menu & Widget Translation
+
+- String registry and scanning, string manager screen, media metadata translation, menu translation, and widget translation.
+
+Phase 12: URL Routing, Slug Translation & Language Switching
+
+- URL resolution strategy, slug translation, permalink integration, and the switcher surfaces: shortcode, widget, block, template tag, menu item, and accessible renderers.
+
+Phase 13: SEO, hreflang, Canonical & Sitemap Integration
+
+- hreflang output, canonical handling, OpenGraph and JSON-LD compatibility, sitemap integration, and coexistence with established SEO plugins.
+
+Phase 14: Editor Translation UX
+
+- Gutenberg, Classic Editor, Elementor, and ACF translation surfaces; translation status UI; create and edit translation actions built on the Phase 09 adapter foundation.
+
+Phase 15: Extended Builder Compatibility
+
+- Bricks, Divi, Beaver Builder, WPBakery, Oxygen, Kadence, GenerateBlocks, Spectra, SeedProd, and Avada, each only as far as it can be supported safely and maintained honestly. Breadth here is explicitly subordinate to correctness.
+
+Phase 16: Translation Suggestions
+
+- Suggestion provider interfaces, AJAX/REST suggestion workflow, optional external providers, bring-your-own API credentials, and a review-only UI. Suggestions never auto-publish, and manual translation must remain fully functional with no provider configured.
+
+Phase 17: Developer & Operations Layer
+
+- REST API, import/export with dry-run, WP-CLI commands, System Status, Site Health integration, and the public developer API.
+
+Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
+
+- Plugin Check, PHPCS, PHPStan, unit and integration tests, accessibility audit, performance profiling, readme and privacy review, external-service disclosure review, and release preparation.
 
 ## Discovery Notes
 
-- Local project root exists at `/Users/mcorucu/Downloads/vacuum-wp-local`.
-- WordPress installation exists at `/Users/mcorucu/Downloads/vacuum-wp-local/wordpress`.
+These notes record the Phase 01 discovery environment. They are historical context; the current canonical paths and repository layout are documented in `docs/development/git-workflow.md`.
+
+- Development uses a local WordPress installation kept outside this repository; the plugin directory is a symlink to the standalone repository checkout.
 - Local stack uses Docker Compose with `wordpress:latest`, MySQL 8.0, WordPress exposed on port 8080, and phpMyAdmin exposed on port 8081.
 - WordPress core reports `$wp_version = '7.0'` in `wp-includes/version.php` at discovery time.
 - Existing plugins include WooCommerce, Akismet, Plugin Check, mcorucu SEO Tools, Hello Dolly, and Vacuum Image Optimizer.
@@ -677,7 +706,7 @@ Phase 12: Compliance, Testing, and Release Prep
 - String translation can become slow if scanning and lookup are not indexed and cached.
 - Translation suggestions require careful WordPress.org External Services documentation and strict opt-in behavior.
 - Admin UI must adapt Skylearn thoughtfully to professional plugin workflows without abandoning the specified visual language.
-- WooCommerce is installed locally, but it is explicitly premium-only for mcLogiora and should not influence the free core implementation.
+- WooCommerce is installed in the local development environment, but WooCommerce support is out of scope until a dedicated later phase and should not influence current implementation work.
 
 ## Recommendations Before Implementation
 
@@ -689,6 +718,6 @@ Phase 12: Compliance, Testing, and Release Prep
 - Use Plugin Check, PHPCS, PHPStan, and automated tests from the first implementation phase.
 - Keep translation suggestions disabled by default until provider documentation, storage, and review-only UX are complete.
 
-## Recommended Prompt 02
+## Next Phase
 
-Start implementation Phase 02 only. Create the initial mcLogiora WordPress plugin skeleton in `/Users/mcorucu/Downloads/vacuum-wp-local/wordpress/wp-content/plugins/mclogiora` following `PLANNING.md` and the Skylearn design system. Add only the bootstrap, readme, uninstall placeholder, core constants, module loader foundation, coding standards configuration, static analysis configuration, and minimal tests. Do not implement multilingual features yet. Do not activate the plugin. Ensure WordPress.org compliance foundations are present from the first commit.
+Phases 02 through 09 are complete. The next implementation phase is **Phase 10: Content & Taxonomy Translation Workflows**, which replaces the relation write placeholders left in place by Phase 08 with real, explicitly user-triggered translation workflows.

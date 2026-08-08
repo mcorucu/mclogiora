@@ -224,7 +224,7 @@ final class AdminMenu implements ModuleInterface {
 			<article class="mclogiora-info-card">
 				<h2><?php esc_html_e( 'Excluded Integrations', 'mclogiora' ); ?></h2>
 				<p class="mclogiora-card-value"><?php echo esc_html( (string) $excluded_count ); ?></p>
-				<p><?php esc_html_e( 'WooCommerce and LMS support are planned for future add-ons and are not part of the free foundation.', 'mclogiora' ); ?></p>
+				<p><?php esc_html_e( 'WooCommerce and LMS support are planned as future free compatibility modules and are not part of this foundation yet.', 'mclogiora' ); ?></p>
 			</article>
 			<article class="mclogiora-info-card">
 				<h2><?php esc_html_e( 'Future Editor Support', 'mclogiora' ); ?></h2>
