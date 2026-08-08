@@ -50,7 +50,24 @@ final class TranslationWorkflowIntegrationTest extends WP_UnitTestCase {
 
 		$this->container = Application::instance( dirname( __DIR__, 2 ) . '/mclogiora.php' )->container();
 
+		/*
+		 * The WordPress test suite wraps each test in a transaction and rolls
+		 * it back afterwards. Table creation is DDL and survives that, but the
+		 * stored schema version does not, so the recorded version and the real
+		 * schema can disagree between tests. Clearing the option makes the
+		 * runner authoritative every time, which is what a fresh install does.
+		 */
+		delete_option( 'mclogiora_db_version' );
+
 		$this->container->get( MigrationRunner::class )->run();
+
+		global $wpdb;
+
+		$this->assertSame(
+			'',
+			(string) $wpdb->last_error,
+			'The migration reported a database error.'
+		);
 
 		$languages = $this->container->get( LanguageRepositoryInterface::class );
 
