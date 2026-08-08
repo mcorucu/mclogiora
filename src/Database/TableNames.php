@@ -57,6 +57,42 @@ final class TableNames {
 	}
 
 	/**
+	 * Registered source strings table.
+	 *
+	 * @return string
+	 */
+	public function strings() {
+		return $this->wpdb->prefix . 'mclogiora_strings';
+	}
+
+	/**
+	 * String translations table.
+	 *
+	 * @return string
+	 */
+	public function string_translations() {
+		return $this->wpdb->prefix . 'mclogiora_string_translations';
+	}
+
+	/**
+	 * Media metadata translations table.
+	 *
+	 * @return string
+	 */
+	public function media_translations() {
+		return $this->wpdb->prefix . 'mclogiora_media_translations';
+	}
+
+	/**
+	 * Widget translations table.
+	 *
+	 * @return string
+	 */
+	public function widget_translations() {
+		return $this->wpdb->prefix . 'mclogiora_widget_translations';
+	}
+
+	/**
 	 * Returns all managed tables.
 	 *
 	 * @return string[]
@@ -66,6 +102,10 @@ final class TableNames {
 			$this->languages(),
 			$this->translation_groups(),
 			$this->translation_items(),
+			$this->strings(),
+			$this->string_translations(),
+			$this->media_translations(),
+			$this->widget_translations(),
 		);
 	}
 }

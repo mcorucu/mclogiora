@@ -2,9 +2,9 @@
 
 This directory contains planning, architecture, and decision records for mcLogiora.
 
-Current phase: Phase 10 content and taxonomy translation workflows (v0.9.0). Next planned phase: Phase 11, string, media, menu, and widget translation.
+Current phase: Phase 11 string, media, menu, and widget translation (v0.10.0). Next planned phase: Phase 12, URL routing, slug translation, and language switching.
 
-Language management and relation records persist, and real translation workflows now create, link, unlink, and progress translations for posts, pages, public custom post types, and public taxonomies. Editor translation UI, URL rewriting, translated slugs, SEO output, switchers, string and media translation, REST endpoints, AJAX handlers, and external providers remain future phases.
+Language management and relation records persist. Translation workflows cover posts, pages, public custom post types, public taxonomies, interface strings, media metadata, navigation menus, and supported widgets. Which translated data is rendered for a given front-end request is deliberately not decided yet: URL routing, translated slugs, SEO output, switchers, editor translation UI, REST endpoints, AJAX handlers, and external providers remain future phases.
 
 ## Product model
 

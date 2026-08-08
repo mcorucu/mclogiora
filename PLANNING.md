@@ -1,6 +1,6 @@
 # mcLogiora Planning
 
-Current phase: Phase 10 complete (Content & Taxonomy Translation Workflows, v0.9.0). Next planned phase: Phase 11.
+Current phase: Phase 11 complete (String, Media, Menu & Widget Translation, v0.10.0). Next planned phase: Phase 12.
 
 This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 
@@ -653,11 +653,11 @@ Phase 10: Content & Taxonomy Translation Workflows - v0.9.0
 
 - Create, link, unlink, and status workflows for posts, pages, public custom post types, categories, tags, and public custom taxonomies; an explicit status state machine; conservative source change tracking; a list table language column; compensating rollback; and the first real test suite. See `docs/adr/0010-content-taxonomy-translation-workflows.md`.
 
+Phase 11: String, Media, Menu & Widget Translation - v0.10.0
+
+- String registry with context-aware identity, an explicit token-based source scanner, the String Translation screen, per-language media metadata with no file duplication, the featured image reference policy, translated menus with hierarchy remapping, a widget adapter model, a new schema migration, a real POT catalogue, and the WordPress integration test harness. See `docs/adr/0011-string-media-menu-widget-translation.md`.
+
 ### Planned phases
-
-Phase 11: String, Media, Menu & Widget Translation
-
-- String registry and scanning, string manager screen, media metadata translation, menu translation, and widget translation.
 
 Phase 12: URL Routing, Slug Translation & Language Switching
 
@@ -720,4 +720,4 @@ These notes record the Phase 01 discovery environment. They are historical conte
 
 ## Next Phase
 
-Phases 02 through 10 are complete. The next implementation phase is **Phase 11: String, Media, Menu & Widget Translation**, which extends the Phase 10 workflows beyond posts and terms.
+Phases 02 through 11 are complete. The next implementation phase is **Phase 12: URL Routing, Slug Translation & Language Switching**, which decides which translated data is rendered for a given front-end request.
