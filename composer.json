@@ -1,0 +1,24 @@
+{
+	"name": "mcorucu/mclogiora",
+	"description": "A modern multilingual platform foundation for WordPress.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"authors": [
+		{
+			"name": "Mehmet Can Orucu",
+			"homepage": "https://mcorucu.com"
+		}
+	],
+	"require": {
+		"php": ">=7.4"
+	},
+	"autoload": {
+		"psr-4": {
+			"McLogiora\\": "src/"
+		}
+	},
+	"config": {
+		"optimize-autoloader": true,
+		"sort-packages": true
+	}
+}
