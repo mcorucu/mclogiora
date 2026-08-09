@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.11.0
+
+- Added Phase 12 URL routing, translated slugs, and language switching.
+- Added a single authoritative language context. Everything that needs the current language now receives it from one place, so content, navigation, and interface strings can never disagree about what language a page is in.
+- Added directory-based language URLs. The default language keeps its existing unprefixed URLs; secondary languages are served under a language directory such as `/tr/`.
+- Added strict language validation. Only active configured languages become routing prefixes, and unknown, inactive, or hostile prefixes fall back to the default rather than becoming a language.
+- Added rewrite rules registered through WordPress APIs, flushed only when the routable prefix set actually changes. Ordinary requests never rebuild them, and changing a switcher display setting never triggers a flush.
+- Added a genuine 404 for a translated URL whose translation does not exist, rather than silently serving source-language content under it. Menus are the deliberate exception and fall back to the source menu, because navigation that disappears strands the visitor.
+- Added translated post and page URLs built from each translation's own slug and its translated ancestors, respecting WordPress slug uniqueness rather than bypassing it.
+- Added real translated taxonomy slugs, replacing the provisional language-scoped slugs Phase 11 created.
+- Added one authoritative translated URL generator used by every switcher surface, which never fabricates a URL for a translation that does not exist and resolves a whole translation group in a single lookup.
+- Added front-end application of the Phase 11 translations for strings, media metadata, supported widgets, and menus, all through the same language context and none of them writing to stored values.
+- Added a language switcher available as a shortcode, block, classic widget, and template tag, in inline, dropdown, compact, and pill styles, with configurable behaviour when a translation is missing.
+- Added switcher accessibility: real links and form controls, keyboard operation without JavaScript, `lang`, `hreflang`, and `dir` attributes, current-language announcement, and explicit unavailable-language wording.
+- Added a Languages & URLs settings screen covering the URL structure and switcher presentation.
+- Flags are off by default and never assumed. A language is not a country, so no flag is mapped to any language unless a site supplies one, and the readable label never depends on one.
+- Plural translation is deliberately not hooked. The Phase 11 storage model holds one translated string per source string, so claiming plural support would return singular text in plural contexts.
+
 ## 0.10.0
 
 - Added Phase 11 string, media, menu, and widget translation.
