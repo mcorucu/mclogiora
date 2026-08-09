@@ -9,6 +9,7 @@ namespace McLogiora\Routing;
 
 use McLogiora\Contracts\ModuleInterface;
 use McLogiora\Core\Container;
+use McLogiora\Core\RuntimeReadiness;
 use McLogiora\Languages\Language;
 use McLogiora\Relations\ContentType;
 
@@ -34,11 +35,11 @@ final class RoutingModule implements ModuleInterface {
 	private $context = null;
 
 	/**
-	 * Request context guard.
+	 * Runtime readiness.
 	 *
-	 * @var RequestContextGuard|null
+	 * @var RuntimeReadiness|null
 	 */
-	private $guard = null;
+	private $readiness = null;
 
 	/**
 	 * Routing settings.
@@ -54,9 +55,9 @@ final class RoutingModule implements ModuleInterface {
 	 * @return void
 	 */
 	public function register( Container $container ) {
-		$this->context  = $container->get( LanguageContextInterface::class );
-		$this->guard    = $container->get( RequestContextGuard::class );
-		$this->settings = $container->get( RoutingSettings::class );
+		$this->context   = $container->get( LanguageContextInterface::class );
+		$this->readiness = $container->get( RuntimeReadiness::class );
+		$this->settings  = $container->get( RoutingSettings::class );
 
 		add_filter( 'query_vars', array( $this, 'register_query_var' ) );
 		add_action( 'init', array( $this, 'register_rewrite_rules' ), 20 );
@@ -150,14 +151,14 @@ final class RoutingModule implements ModuleInterface {
 	 * every hook invocation, so the routing layer stays completely inert until
 	 * there is a schema to read.
 	 *
+	 * Rewrite rules are registered in the admin as well as on the front end,
+	 * so this is deliberately the schema question alone and not the wider
+	 * front-end runtime gate.
+	 *
 	 * @return bool
 	 */
 	private function schema_ready() {
-		if ( function_exists( 'wp_installing' ) && wp_installing() ) {
-			return false;
-		}
-
-		return '' !== (string) get_option( 'mclogiora_db_version', '' );
+		return $this->readiness instanceof RuntimeReadiness && $this->readiness->is_schema_ready();
 	}
 
 	/**
@@ -167,7 +168,7 @@ final class RoutingModule implements ModuleInterface {
 	 * @return void
 	 */
 	public function resolve_request_language( $wp ) {
-		if ( ! $this->guard->applies() ) {
+		if ( ! $this->readiness->is_frontend_runtime() ) {
 			return;
 		}
 

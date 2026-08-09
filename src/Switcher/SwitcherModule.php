@@ -10,6 +10,7 @@ namespace McLogiora\Switcher;
 use McLogiora\Contracts\ModuleInterface;
 use McLogiora\Core\Constants;
 use McLogiora\Core\Container;
+use McLogiora\Core\RuntimeReadiness;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -38,6 +39,13 @@ final class SwitcherModule implements ModuleInterface {
 	private $constants = null;
 
 	/**
+	 * Runtime readiness.
+	 *
+	 * @var RuntimeReadiness|null
+	 */
+	private $readiness = null;
+
+	/**
 	 * Whether a switcher has been rendered on this request.
 	 *
 	 * @var bool
@@ -51,6 +59,12 @@ final class SwitcherModule implements ModuleInterface {
 	 * @return void
 	 */
 	public function register( Container $container ) {
+		$this->readiness = $container->get( RuntimeReadiness::class );
+
+		if ( $this->readiness->is_installing() ) {
+			return;
+		}
+
 		$this->renderer  = $container->get( SwitcherRenderer::class );
 		$this->constants = $container->get( Constants::class );
 
@@ -106,7 +120,7 @@ final class SwitcherModule implements ModuleInterface {
 			return;
 		}
 
-		if ( function_exists( 'wp_installing' ) && wp_installing() ) {
+		if ( $this->readiness->is_installing() ) {
 			return;
 		}
 

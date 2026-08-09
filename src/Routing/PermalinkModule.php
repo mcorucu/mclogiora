@@ -9,6 +9,7 @@ namespace McLogiora\Routing;
 
 use McLogiora\Contracts\ModuleInterface;
 use McLogiora\Core\Container;
+use McLogiora\Core\RuntimeReadiness;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -36,11 +37,11 @@ final class PermalinkModule implements ModuleInterface {
 	private $urls = null;
 
 	/**
-	 * Request context guard.
+	 * Runtime readiness.
 	 *
-	 * @var RequestContextGuard|null
+	 * @var RuntimeReadiness|null
 	 */
-	private $guard = null;
+	private $readiness = null;
 
 	/**
 	 * Registers permalink filters.
@@ -49,9 +50,20 @@ final class PermalinkModule implements ModuleInterface {
 	 * @return void
 	 */
 	public function register( Container $container ) {
+		$this->readiness = $container->get( RuntimeReadiness::class );
+
+		/*
+		 * Nothing about a URL is multilingual while WordPress is building its
+		 * own tables, and the filters would only ever answer "not yet". Not
+		 * registering them at all is the cheapest possible install-time
+		 * behaviour and removes the surface entirely.
+		 */
+		if ( $this->readiness->is_installing() ) {
+			return;
+		}
+
 		$this->context = $container->get( LanguageContextInterface::class );
 		$this->urls    = $container->get( TranslatedUrlGenerator::class );
-		$this->guard   = $container->get( RequestContextGuard::class );
 
 		add_filter( 'post_link', array( $this, 'filter_link' ), 10, 1 );
 		add_filter( 'page_link', array( $this, 'filter_link' ), 10, 1 );
@@ -107,7 +119,7 @@ final class PermalinkModule implements ModuleInterface {
 			return false;
 		}
 
-		if ( ! $this->guard->applies() ) {
+		if ( ! $this->readiness->is_frontend_runtime() ) {
 			return false;
 		}
 
