@@ -661,6 +661,7 @@ Phase 12: URL Routing, Slug Translation & Language Switching - v0.11.0
 
 - One authoritative language context, directory URLs with an unprefixed default language, strict prefix validation, conservative rewrite flushing, 404 for missing translations, translated post and term slugs, a single translated URL generator, front-end application of the Phase 11 translations, and an accessible language switcher across four surfaces and four styles. See `docs/adr/0013-routing-slugs-language-switching.md`.
 - An explicit install-safe runtime lifecycle. `RuntimeReadiness` is the single authority on installation state, schema availability, and request context; front-end modules register nothing while WordPress is installing, and a missing schema renders as ordinary monolingual WordPress. See `docs/adr/0014-install-safe-runtime-lifecycle.md`.
+- Three defects the boot hang had been hiding: the routing path query var was never registered, plugin activation installed only the Phase 10 schema, and permalinks carried their language prefix twice. All three are covered by regression tests. Widget titles, the document `lang` attribute, and the `_load_textdomain_just_in_time` notice are documented as known gaps in ADR 0014.
 
 ### Planned phases
 
