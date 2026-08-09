@@ -106,6 +106,10 @@ final class SwitcherModule implements ModuleInterface {
 			return;
 		}
 
+		if ( function_exists( 'wp_installing' ) && wp_installing() ) {
+			return;
+		}
+
 		$args = array(
 			'api_version'     => 2,
 			'title'           => __( 'Language Switcher', 'mclogiora' ),

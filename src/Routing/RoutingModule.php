@@ -90,6 +90,10 @@ final class RoutingModule implements ModuleInterface {
 	 * @return void
 	 */
 	public function register_rewrite_rules() {
+		if ( ! $this->schema_ready() ) {
+			return;
+		}
+
 		foreach ( $this->prefixes() as $prefix ) {
 			add_rewrite_rule(
 				'^' . $prefix . '/?$',
@@ -113,6 +117,10 @@ final class RoutingModule implements ModuleInterface {
 	 * @return string[]
 	 */
 	public function prefixes() {
+		if ( ! $this->schema_ready() ) {
+			return array();
+		}
+
 		$prefixes = array();
 		$default  = $this->context->default_language();
 
@@ -131,6 +139,25 @@ final class RoutingModule implements ModuleInterface {
 		}
 
 		return $prefixes;
+	}
+
+	/**
+	 * Returns whether the language schema is available to query.
+	 *
+	 * Routing runs on `init`, which also fires while WordPress is installing
+	 * itself and during activation, before mcLogiora's tables exist. Querying
+	 * for languages at that point asks the database about missing tables on
+	 * every hook invocation, so the routing layer stays completely inert until
+	 * there is a schema to read.
+	 *
+	 * @return bool
+	 */
+	private function schema_ready() {
+		if ( function_exists( 'wp_installing' ) && wp_installing() ) {
+			return false;
+		}
+
+		return '' !== (string) get_option( 'mclogiora_db_version', '' );
 	}
 
 	/**
@@ -242,6 +269,10 @@ final class RoutingModule implements ModuleInterface {
 	 * @return void
 	 */
 	public function maybe_flush_rewrite_rules() {
+		if ( ! $this->schema_ready() ) {
+			return;
+		}
+
 		$hash   = md5( wp_json_encode( $this->prefixes() ) . '|' . ( $this->settings->default_language_has_prefix() ? '1' : '0' ) );
 		$stored = (string) get_option( self::RULES_HASH, '' );
 
