@@ -28,8 +28,8 @@ use McLogiora\Compatibility\PluginDetector;
 use McLogiora\Compatibility\ThemeDetector;
 use McLogiora\Database\DatabaseVersionManager;
 use McLogiora\Database\Installer;
+use McLogiora\Database\MigrationRegistry;
 use McLogiora\Database\MigrationRunner;
-use McLogiora\Database\Migrations\Migration001InitialSchema;
 use McLogiora\Database\SchemaBuilder;
 use McLogiora\Database\TableNames;
 use McLogiora\Database\UuidGenerator;
@@ -79,7 +79,6 @@ use McLogiora\Admin\MediaTranslationFields;
 use McLogiora\Admin\StringActionController;
 use McLogiora\Admin\StringManager;
 use McLogiora\Admin\WidgetTranslationManager;
-use McLogiora\Database\Migrations\Migration002TranslationDomains;
 use McLogiora\Media\DatabaseMediaTranslationRepository;
 use McLogiora\Media\MediaTranslationRepositoryInterface;
 use McLogiora\Media\MediaTranslationService;
@@ -96,6 +95,17 @@ use McLogiora\Widgets\WidgetTranslationRepositoryInterface;
 use McLogiora\Widgets\WidgetTranslationService;
 use McLogiora\WordPress\MenuGateway;
 use McLogiora\WordPress\MenuGatewayInterface;
+use McLogiora\Routing\FrontendTranslationModule;
+use McLogiora\Routing\LanguageContext;
+use McLogiora\Routing\LanguageContextInterface;
+use McLogiora\Routing\PermalinkModule;
+use McLogiora\Routing\RoutingModule;
+use McLogiora\Routing\RoutingSettings;
+use McLogiora\Routing\TranslatedUrlGenerator;
+use McLogiora\Switcher\LanguageSwitcher;
+use McLogiora\Switcher\SwitcherModule;
+use McLogiora\Switcher\SwitcherRenderer;
+use McLogiora\Admin\RoutingSettingsScreen;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -189,6 +199,11 @@ final class Application {
 		$modules->add( new WidgetTranslationManager() );
 		$modules->add( new StringActionController() );
 		$modules->add( new MediaTranslationFields() );
+		$modules->add( new RoutingModule() );
+		$modules->add( new PermalinkModule() );
+		$modules->add( new FrontendTranslationModule() );
+		$modules->add( $this->container->get( SwitcherModule::class ) );
+		$modules->add( new RoutingSettingsScreen() );
 		$modules->add( new EditorManager() );
 		$modules->add( new CompatibilityDashboard() );
 		$modules->add( new AdminMenu() );
@@ -364,10 +379,7 @@ final class Application {
 					$container->get( SchemaBuilder::class ),
 					$container->get( DatabaseVersionManager::class ),
 					$container->get( VersionChecker::class ),
-					array(
-						new Migration001InitialSchema( $container->get( TableNames::class ) ),
-						new Migration002TranslationDomains( $container->get( TableNames::class ) ),
-					)
+					MigrationRegistry::all( $container->get( TableNames::class ) )
 				);
 			}
 		);
@@ -697,6 +709,63 @@ final class Application {
 					$container->get( ContentGatewayInterface::class ),
 					$container->get( CapabilityRegistry::class )
 				);
+			}
+		);
+
+		$this->container->set(
+			RoutingSettings::class,
+			static function () {
+				return new RoutingSettings();
+			}
+		);
+
+		$this->container->set(
+			RuntimeReadiness::class,
+			static function () {
+				return new RuntimeReadiness();
+			}
+		);
+
+		$this->container->set(
+			LanguageContextInterface::class,
+			static function ( Container $container ) {
+				return new LanguageContext( $container->get( LanguageServiceInterface::class ) );
+			}
+		);
+
+		$this->container->set(
+			TranslatedUrlGenerator::class,
+			static function ( Container $container ) {
+				return new TranslatedUrlGenerator(
+					$container->get( TranslationRelationServiceInterface::class ),
+					$container->get( RoutingSettings::class ),
+					$container->get( LanguageContextInterface::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			LanguageSwitcher::class,
+			static function ( Container $container ) {
+				return new LanguageSwitcher(
+					$container->get( LanguageContextInterface::class ),
+					$container->get( TranslatedUrlGenerator::class ),
+					$container->get( RoutingSettings::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			SwitcherRenderer::class,
+			static function ( Container $container ) {
+				return new SwitcherRenderer( $container->get( LanguageSwitcher::class ) );
+			}
+		);
+
+		$this->container->set(
+			SwitcherModule::class,
+			static function () {
+				return new SwitcherModule();
 			}
 		);
 	}

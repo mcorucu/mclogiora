@@ -4,7 +4,7 @@ Tags: multilingual, translation, localization, language
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.10.0
+Stable tag: 0.11.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -53,7 +53,18 @@ Interface strings, media, menus, and widgets:
 
 Every translation action is explicit. Nothing is translated automatically, nothing is published automatically, no source file is ever modified, and no content is ever deleted by a translation action. Scanning only ever runs when you ask for it, never during normal site traffic.
 
-It does not include URL rewriting, translated slugs, SEO output, language switchers, REST endpoints, AJAX handlers, or external service integrations yet. Which translated text appears on the front end is decided in a later release.
+Multilingual URLs and switching:
+
+* Serve translated content under language directories such as /tr/hakkimizda/, while your default language keeps the URLs it already has.
+* Give each translation its own slug, edited normally in WordPress.
+* Add a language switcher with a shortcode, a block, a widget, or a template tag, in list, dropdown, compact, or pill styles.
+* Show translated interface strings, image metadata, widget text, and menus automatically once a visitor is in that language.
+
+A translated URL with no translation behind it returns a normal 404 rather than quietly showing you the original language. Menus are the one exception: an untranslated menu still appears, so navigation never disappears.
+
+mcLogiora never guesses your visitors' language from their location and never redirects them automatically. Flags are off by default, because a language is not a country.
+
+It does not include hreflang, canonical tags, sitemap integration, SEO plugin integrations, REST endpoints, AJAX handlers, or external service integrations yet.
 
 == Privacy ==
 
@@ -85,6 +96,14 @@ No. Unlinking removes only mcLogiora's relation record. The post or term keeps i
 
 No. New translations are always created as drafts, and linking existing content does not modify it.
 
+= Will installing this change my existing URLs? =
+
+No. Your default language keeps the URLs it already has. Only additional languages get a directory prefix, unless you explicitly turn that on for the default language too.
+
+= What happens if a page is not translated yet? =
+
+The translated URL returns a normal 404, and the language switcher does not offer that language. mcLogiora will not show you one language's content under another language's address.
+
 = Does scanning modify my theme or plugins? =
 
 No. Scanning reads source files and never writes to them. It is limited to a single theme or plugin directory that you choose, cannot be pointed at arbitrary paths, and requires a high-trust capability because it reads source code.
@@ -102,6 +121,12 @@ Yes. On activation, mcLogiora creates its language, translation relation, string
 No. There are no HTTP requests or external service integrations in this release.
 
 == Changelog ==
+
+= 0.11.0 =
+* Added multilingual URL routing with language directories and translated slugs.
+* Added an accessible language switcher as a shortcode, block, widget, and template tag.
+* Added front-end display of translated strings, media metadata, widgets, and menus.
+* Added a Languages & URLs settings screen.
 
 = 0.10.0 =
 * Added string translation with an explicit, confined source scanner and a String Translation screen.
