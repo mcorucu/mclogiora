@@ -24,6 +24,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class RoutingModule implements ModuleInterface {
 	const QUERY_VAR  = 'mclogiora_lang';
+	const PATH_VAR   = 'mclogiora_path';
 	const FLUSH_FLAG = 'mclogiora_flush_rewrite';
 	const RULES_HASH = 'mclogiora_rewrite_hash';
 
@@ -66,7 +67,12 @@ final class RoutingModule implements ModuleInterface {
 	}
 
 	/**
-	 * Registers the internal language query var.
+	 * Registers the internal routing query vars.
+	 *
+	 * Both are required. WordPress discards anything a rewrite rule produces
+	 * that has not been registered here, so omitting the path var silently
+	 * throws away everything after the language prefix and every translated
+	 * URL resolves to the site home.
 	 *
 	 * @param array<int,string> $vars Query vars.
 	 * @return array<int,string>
@@ -77,6 +83,7 @@ final class RoutingModule implements ModuleInterface {
 		}
 
 		$vars[] = self::QUERY_VAR;
+		$vars[] = self::PATH_VAR;
 
 		return $vars;
 	}
@@ -104,7 +111,7 @@ final class RoutingModule implements ModuleInterface {
 
 			add_rewrite_rule(
 				'^' . $prefix . '/(.+?)/?$',
-				'index.php?' . self::QUERY_VAR . '=' . $prefix . '&mclogiora_path=$matches[1]',
+				'index.php?' . self::QUERY_VAR . '=' . $prefix . '&' . self::PATH_VAR . '=$matches[1]',
 				'top'
 			);
 		}
@@ -186,21 +193,35 @@ final class RoutingModule implements ModuleInterface {
 		 */
 		$this->context->set_requested_code( $requested );
 
-		if ( is_object( $wp ) && isset( $wp->query_vars['mclogiora_path'] ) ) {
-			$this->reparse_inner_path( $wp );
+		if ( ! is_object( $wp ) || ! isset( $wp->query_vars[ self::PATH_VAR ] ) ) {
+			return;
 		}
+
+		$path = (string) $wp->query_vars[ self::PATH_VAR ];
+
+		unset( $wp->query_vars[ self::PATH_VAR ] );
+
+		/*
+		 * The path var only means anything underneath a language prefix that
+		 * actually matched. Honouring it on an unprefixed request would let a
+		 * hand-written query string re-route any URL to any other.
+		 */
+		if ( '' === $this->context->requested_code() ) {
+			return;
+		}
+
+		$this->reparse_inner_path( $wp, $path );
 	}
 
 	/**
 	 * Re-parses the path that followed the language prefix.
 	 *
-	 * @param \WP $wp Current WordPress environment.
+	 * @param \WP    $wp Current WordPress environment.
+	 * @param string $raw_path Path captured by the language rewrite rule.
 	 * @return void
 	 */
-	private function reparse_inner_path( $wp ) {
-		$path = trim( (string) $wp->query_vars['mclogiora_path'], '/' );
-
-		unset( $wp->query_vars['mclogiora_path'] );
+	private function reparse_inner_path( $wp, $raw_path ) {
+		$path = trim( $raw_path, '/' );
 
 		if ( '' === $path ) {
 			return;
