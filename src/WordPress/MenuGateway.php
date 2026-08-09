@@ -124,19 +124,15 @@ final class MenuGateway implements MenuGatewayInterface {
 	}
 
 	/**
-	 * Updates the parent of an existing menu item.
+	 * Updates an existing menu item.
 	 *
-	 * @param int $menu_id Menu term identifier.
-	 * @param int $item_id Menu item identifier.
-	 * @param int $parent_id New parent menu item identifier.
+	 * @param int                 $menu_id Menu term identifier.
+	 * @param int                 $item_id Menu item identifier.
+	 * @param array<string,mixed> $item_data Complete menu item data.
 	 * @return bool|\WP_Error
 	 */
-	public function set_menu_item_parent( $menu_id, $item_id, $parent_id ) {
-		$result = wp_update_nav_menu_item(
-			(int) $menu_id,
-			(int) $item_id,
-			array( 'menu-item-parent-id' => (int) $parent_id )
-		);
+	public function update_menu_item( $menu_id, $item_id, array $item_data ) {
+		$result = wp_update_nav_menu_item( (int) $menu_id, (int) $item_id, $item_data );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;

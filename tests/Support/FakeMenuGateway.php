@@ -177,18 +177,38 @@ final class FakeMenuGateway implements MenuGatewayInterface {
 	/**
 	 * {@inheritDoc}
 	 *
-	 * @param int $menu_id Menu id.
-	 * @param int $item_id Item id.
-	 * @param int $parent_id Parent id.
+	 * Rebuilds the item from the supplied data, exactly as
+	 * wp_update_nav_menu_item() does, so a caller that omits fields loses them
+	 * here too.
+	 *
+	 * @param int                 $menu_id Menu id.
+	 * @param int                 $item_id Item id.
+	 * @param array<string,mixed> $item_data Item data.
 	 * @return bool|\WP_Error
 	 */
-	public function set_menu_item_parent( $menu_id, $item_id, $parent_id ) {
+	public function update_menu_item( $menu_id, $item_id, array $item_data ) {
 		foreach ( $this->items[ (int) $menu_id ] as $index => $item ) {
-			if ( (int) $item['db_id'] === (int) $item_id ) {
-				$this->items[ (int) $menu_id ][ $index ]['menu_item_parent'] = (int) $parent_id;
-
-				return true;
+			if ( (int) $item['db_id'] !== (int) $item_id ) {
+				continue;
 			}
+
+			$this->items[ (int) $menu_id ][ $index ] = array(
+				'db_id'            => (int) $item_id,
+				'menu_item_parent' => isset( $item_data['menu-item-parent-id'] ) ? (int) $item_data['menu-item-parent-id'] : 0,
+				'menu_order'       => isset( $item_data['menu-item-position'] ) ? (int) $item_data['menu-item-position'] : 0,
+				'title'            => isset( $item_data['menu-item-title'] ) ? (string) $item_data['menu-item-title'] : '',
+				'url'              => isset( $item_data['menu-item-url'] ) ? (string) $item_data['menu-item-url'] : '',
+				'type'             => isset( $item_data['menu-item-type'] ) ? (string) $item_data['menu-item-type'] : 'custom',
+				'object'           => isset( $item_data['menu-item-object'] ) ? (string) $item_data['menu-item-object'] : 'custom',
+				'object_id'        => isset( $item_data['menu-item-object-id'] ) ? (int) $item_data['menu-item-object-id'] : 0,
+				'target'           => '',
+				'attr_title'       => '',
+				'description'      => '',
+				'xfn'              => '',
+				'classes'          => '',
+			);
+
+			return true;
 		}
 
 		return new \WP_Error( 'mclogiora_item_missing', 'Menu item not found.' );
