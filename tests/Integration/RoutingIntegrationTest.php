@@ -617,6 +617,53 @@ final class RoutingIntegrationTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Asserts a permalink carries its language prefix exactly once.
+	 *
+	 * WordPress builds an object permalink by calling home_url() with a path
+	 * and then filtering the result through page_link. mcLogiora filters both,
+	 * so on a prefixed-language request the prefix was applied twice and every
+	 * link on the page pointed at /tr/tr/...
+	 *
+	 * @return void
+	 */
+	public function test_permalinks_carry_the_language_prefix_exactly_once() {
+		$source = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_title'  => 'About us',
+				'post_name'   => 'about-us',
+				'post_status' => 'publish',
+			)
+		);
+
+		$created = $this->container->get( TranslationWorkflowService::class )
+			->content()
+			->create_translation( $source, 'tr' );
+
+		$this->assertIsArray( $created, is_wp_error( $created ) ? $created->get_error_message() : '' );
+
+		wp_update_post(
+			array(
+				'ID'          => $created['post_id'],
+				'post_name'   => 'hakkimizda',
+				'post_status' => 'publish',
+			)
+		);
+
+		$this->activate_routing();
+		$this->go_to( home_url( '/tr/hakkimizda/' ) );
+
+		$permalink = get_permalink( (int) $created['post_id'] );
+
+		$this->assertIsString( $permalink );
+		$this->assertSame(
+			'/tr/hakkimizda/',
+			wp_parse_url( $permalink, PHP_URL_PATH ),
+			"The permalink must carry one prefix, not two: {$permalink}"
+		);
+	}
+
+	/**
 	 * Registers routing and persists its rewrite rules.
 	 *
 	 * Mirrors what a real site does: rules are added on `init` and persisted

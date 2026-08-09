@@ -2,6 +2,7 @@
 /node_modules/
 /coverage/
 /.phpunit.result.cache
+/.phpunit.integration.result.cache
 /.phpcs-cache
 /.phpstan/
 composer.lock
