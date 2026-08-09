@@ -116,3 +116,37 @@ so it can be removed from the return type.
 ```
 
 Not a defect. The in-memory implementation cannot fail, but its return type follows the interface, which database-backed implementations need. Narrowing it would break interface conformance. Left as-is deliberately.
+
+## Integration tests
+
+Phase 11 added a WordPress integration suite alongside the unit tests. Unit tests remain the primary suite; integration tests cover only behaviour that doubles cannot prove.
+
+```bash
+bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 latest
+composer test:integration
+```
+
+`bin/install-wp-tests.sh` downloads WordPress core and the official WordPress PHPUnit test library, and creates the test database. It needs `svn` and a reachable MySQL server. `tests/bootstrap-integration.php` then loads mcLogiora inside that environment, and `phpunit-integration.xml.dist` runs `tests/Integration`.
+
+`composer check` deliberately runs only the unit suite, so the everyday gate stays fast and needs no database. CI runs both.
+
+Integration tests never contact an external service.
+
+## Translation catalogue
+
+`languages/mclogiora.pot` is generated from source, not maintained by hand:
+
+```bash
+composer pot
+```
+
+This runs the official WP-CLI i18n command, which is a development dependency. The generated catalogue is committed; the tooling that produces it lives in `vendor/` and is not.
+
+
+## Schema checks in the integration suite
+
+The WordPress test suite rewrites `CREATE TABLE` into `CREATE TEMPORARY TABLE` so each test stays isolated. MySQL temporary tables never appear in `SHOW TABLES`, so any existence check built on `SHOW TABLES` reports freshly created tables as missing.
+
+`SchemaBuilder::table_exists()` therefore uses a suppressed `DESCRIBE`. When adding schema code, do not switch it back to `SHOW TABLES` or `information_schema`: neither can see temporary tables, and the integration suite would go quietly and misleadingly green-then-red again.
+
+A migration is complete only when its declared tables exist. Never treat an empty `$wpdb->last_error` as success: a statement that was never executed leaves no error behind, and dbDelta suppresses errors while inspecting tables. See `docs/adr/0012-verified-migration-completion.md`.

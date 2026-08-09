@@ -12,9 +12,9 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Stores database schema version independently from plugin version.
  */
-final class DatabaseVersionManager {
+class DatabaseVersionManager {
 	const OPTION_NAME     = 'mclogiora_db_version';
-	const CURRENT_VERSION = '1';
+	const CURRENT_VERSION = '2';
 
 	/**
 	 * Returns the installed database version.
