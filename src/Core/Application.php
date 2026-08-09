@@ -28,8 +28,8 @@ use McLogiora\Compatibility\PluginDetector;
 use McLogiora\Compatibility\ThemeDetector;
 use McLogiora\Database\DatabaseVersionManager;
 use McLogiora\Database\Installer;
+use McLogiora\Database\MigrationRegistry;
 use McLogiora\Database\MigrationRunner;
-use McLogiora\Database\Migrations\Migration001InitialSchema;
 use McLogiora\Database\SchemaBuilder;
 use McLogiora\Database\TableNames;
 use McLogiora\Database\UuidGenerator;
@@ -79,7 +79,6 @@ use McLogiora\Admin\MediaTranslationFields;
 use McLogiora\Admin\StringActionController;
 use McLogiora\Admin\StringManager;
 use McLogiora\Admin\WidgetTranslationManager;
-use McLogiora\Database\Migrations\Migration002TranslationDomains;
 use McLogiora\Media\DatabaseMediaTranslationRepository;
 use McLogiora\Media\MediaTranslationRepositoryInterface;
 use McLogiora\Media\MediaTranslationService;
@@ -380,10 +379,7 @@ final class Application {
 					$container->get( SchemaBuilder::class ),
 					$container->get( DatabaseVersionManager::class ),
 					$container->get( VersionChecker::class ),
-					array(
-						new Migration001InitialSchema( $container->get( TableNames::class ) ),
-						new Migration002TranslationDomains( $container->get( TableNames::class ) ),
-					)
+					MigrationRegistry::all( $container->get( TableNames::class ) )
 				);
 			}
 		);
