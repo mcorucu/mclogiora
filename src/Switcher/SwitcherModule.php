@@ -120,7 +120,7 @@ final class SwitcherModule implements ModuleInterface {
 			return;
 		}
 
-		if ( $this->readiness->is_installing() ) {
+		if ( ! $this->readiness instanceof RuntimeReadiness || $this->readiness->is_installing() ) {
 			return;
 		}
 
