@@ -67,7 +67,24 @@ final class RoutingIntegrationTest extends WP_UnitTestCase {
 			$this->set_permalink_structure( '/%postname%/' );
 		}
 
-		$this->container->get( LanguageContextInterface::class )->reset();
+		/*
+		 * WP_Taxonomy::add_rewrite_rules() registers a taxonomy permastruct
+		 * only when a permalink structure already exists at `init`. The test
+		 * suite boots with plain permalinks, so the built-in taxonomies must
+		 * be re-registered once the structure is in place. A real site has the
+		 * structure stored before `init` runs and never needs this.
+		 */
+		create_initial_taxonomies();
+
+		/*
+		 * The application is a process-wide singleton, so the language context
+		 * outlives a single test. Clearing the requested code as well as the
+		 * memoised lookups stops one test's language leaking into the next --
+		 * including into home_url(), which the permalink filters rewrite.
+		 */
+		$context = $this->container->get( LanguageContextInterface::class );
+		$context->reset();
+		$context->set_requested_code( '' );
 	}
 
 	/**
@@ -81,6 +98,13 @@ final class RoutingIntegrationTest extends WP_UnitTestCase {
 		$module->register_rewrite_rules();
 
 		$this->assertSame( array( 'tr' ), $module->prefixes(), 'The default language carries no prefix by default.' );
+
+		/*
+		 * add_rewrite_rule() only queues a rule; WordPress routes from the
+		 * stored rule set. Persisting is the admin flush's job, so the test
+		 * drives the same path a real site takes after a language changes.
+		 */
+		$module->maybe_flush_rewrite_rules();
 
 		$rules = get_option( 'rewrite_rules' );
 
@@ -431,6 +455,182 @@ final class RoutingIntegrationTest extends WP_UnitTestCase {
 
 		$this->assertArrayHasKey( 'tr', $by );
 		$this->assertStringContainsString( '/tr/', (string) $by['tr'] );
+	}
+
+	/**
+	 * Asserts a directory route resolves to the translated object.
+	 *
+	 * This is the whole point of the phase, exercised end to end: a URL with a
+	 * language prefix arrives, WordPress parses it, and the translated post is
+	 * what the visitor gets.
+	 *
+	 * @return void
+	 */
+	public function test_directory_route_resolves_the_translated_page() {
+		$source = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_title'  => 'About us',
+				'post_name'   => 'about-us',
+				'post_status' => 'publish',
+			)
+		);
+
+		$created = $this->container->get( TranslationWorkflowService::class )
+			->content()
+			->create_translation( $source, 'tr' );
+
+		$this->assertIsArray( $created, is_wp_error( $created ) ? $created->get_error_message() : '' );
+
+		wp_update_post(
+			array(
+				'ID'          => $created['post_id'],
+				'post_name'   => 'hakkimizda',
+				'post_status' => 'publish',
+			)
+		);
+
+		$this->activate_routing();
+
+		$this->go_to( home_url( '/tr/hakkimizda/' ) );
+
+		$this->assertSame( 'tr', $this->container->get( LanguageContextInterface::class )->current_code() );
+		$this->assertFalse( is_404(), 'A translated URL with a translation behind it must resolve.' );
+		$this->assertSame( (int) $created['post_id'], get_queried_object_id() );
+	}
+
+	/**
+	 * Asserts the unprefixed route stays on the default language.
+	 *
+	 * @return void
+	 */
+	public function test_unprefixed_route_stays_on_the_default_language() {
+		$source = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_name'   => 'contact',
+				'post_status' => 'publish',
+			)
+		);
+
+		$this->activate_routing();
+
+		$this->go_to( home_url( '/contact/' ) );
+
+		$this->assertSame( 'en', $this->container->get( LanguageContextInterface::class )->current_code() );
+		$this->assertSame( $source, get_queried_object_id() );
+	}
+
+	/**
+	 * Asserts a translated URL with nothing behind it is a genuine 404.
+	 *
+	 * Serving source-language content under a translated URL would misrepresent
+	 * the page to readers and duplicate it for search engines.
+	 *
+	 * @return void
+	 */
+	public function test_missing_translation_under_a_prefix_is_a_404() {
+		$this->activate_routing();
+
+		$this->go_to( home_url( '/tr/bulunamayan-sayfa/' ) );
+
+		$this->assertTrue( is_404(), 'An unresolvable translated URL must 404.' );
+	}
+
+	/**
+	 * Asserts an inactive language is never routable.
+	 *
+	 * @return void
+	 */
+	public function test_inactive_language_is_not_routable() {
+		$languages = $this->container->get( LanguageRepositoryInterface::class );
+
+		if ( ! $languages->find_by_code( 'de' ) instanceof Language ) {
+			$languages->create( new Language( 'de', 'de_DE', 'Deutsch', 'German', 'ltr', LanguageStatus::INACTIVE, 2, false ) );
+		}
+
+		$context = $this->container->get( LanguageContextInterface::class );
+		$context->reset();
+
+		$this->assertFalse( $context->is_routable( 'de' ), 'An inactive language must not be routable.' );
+
+		$context->set_requested_code( 'de' );
+
+		$this->assertSame( 'en', $context->current_code(), 'An inactive prefix falls back to the default.' );
+
+		$module = new RoutingModule();
+		$module->register( $this->container );
+
+		$this->assertNotContains( 'de', $module->prefixes(), 'An inactive language gets no rewrite rule.' );
+	}
+
+	/**
+	 * Asserts a translated posts page is reachable.
+	 *
+	 * @return void
+	 */
+	public function test_posts_page_translation_is_resolved() {
+		$blog = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_title'  => 'Journal',
+				'post_name'   => 'journal',
+				'post_status' => 'publish',
+			)
+		);
+
+		$front = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_title'  => 'Home',
+				'post_status' => 'publish',
+			)
+		);
+
+		update_option( 'show_on_front', 'page' );
+		update_option( 'page_on_front', $front );
+		update_option( 'page_for_posts', $blog );
+
+		$created = $this->container->get( TranslationWorkflowService::class )
+			->content()
+			->create_translation( $blog, 'tr' );
+
+		$this->assertIsArray( $created, is_wp_error( $created ) ? $created->get_error_message() : '' );
+
+		wp_update_post(
+			array(
+				'ID'          => $created['post_id'],
+				'post_name'   => 'gunluk',
+				'post_status' => 'publish',
+			)
+		);
+
+		$url = $this->container->get( TranslatedUrlGenerator::class )->post_url( $blog, 'tr' );
+
+		$this->assertIsString( $url, 'A translated posts page must be reachable.' );
+		$this->assertStringContainsString( '/tr/', $url );
+		$this->assertStringContainsString( 'gunluk', $url );
+
+		update_option( 'show_on_front', 'posts' );
+		delete_option( 'page_on_front' );
+		delete_option( 'page_for_posts' );
+	}
+
+	/**
+	 * Registers routing and persists its rewrite rules.
+	 *
+	 * Mirrors what a real site does: rules are added on `init` and persisted
+	 * by the admin flush once the routable prefix set changes.
+	 *
+	 * @return RoutingModule
+	 */
+	private function activate_routing() {
+		$module = new RoutingModule();
+		$module->register( $this->container );
+		$module->register_rewrite_rules();
+		$module->maybe_flush_rewrite_rules();
+
+		return $module;
 	}
 
 	/**

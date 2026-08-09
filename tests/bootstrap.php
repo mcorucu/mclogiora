@@ -432,3 +432,78 @@ if ( ! function_exists( 'get_term_link' ) ) {
 }
 
 $GLOBALS['mclogiora_test_queried_object'] = null;
+
+/*
+ * Lifecycle switches. RuntimeReadiness asks WordPress a handful of
+ * environment questions; these stubs let a test state the answer instead of
+ * simulating a whole request.
+ */
+$GLOBALS['mclogiora_test_installing'] = false;
+$GLOBALS['mclogiora_test_is_admin']   = false;
+$GLOBALS['mclogiora_test_doing_ajax'] = false;
+$GLOBALS['mclogiora_test_doing_cron'] = false;
+$GLOBALS['mclogiora_test_is_preview'] = false;
+
+if ( ! function_exists( 'wp_installing' ) ) {
+	/**
+	 * Returns whether WordPress reports itself as installing.
+	 *
+	 * @return bool
+	 */
+	function wp_installing() {
+		return (bool) $GLOBALS['mclogiora_test_installing'];
+	}
+}
+
+if ( ! function_exists( 'is_admin' ) ) {
+	/**
+	 * Returns whether the test says this is an admin request.
+	 *
+	 * @return bool
+	 */
+	function is_admin() {
+		return (bool) $GLOBALS['mclogiora_test_is_admin'];
+	}
+}
+
+if ( ! function_exists( 'wp_doing_ajax' ) ) {
+	/**
+	 * Returns whether the test says this is an ajax request.
+	 *
+	 * @return bool
+	 */
+	function wp_doing_ajax() {
+		return (bool) $GLOBALS['mclogiora_test_doing_ajax'];
+	}
+}
+
+if ( ! function_exists( 'wp_doing_cron' ) ) {
+	/**
+	 * Returns whether the test says this is a cron run.
+	 *
+	 * @return bool
+	 */
+	function wp_doing_cron() {
+		return (bool) $GLOBALS['mclogiora_test_doing_cron'];
+	}
+}
+
+if ( ! function_exists( 'is_preview' ) ) {
+	/**
+	 * Returns whether the test says this is a preview request.
+	 *
+	 * @return bool
+	 */
+	function is_preview() {
+		return (bool) $GLOBALS['mclogiora_test_is_preview'];
+	}
+}
+
+if ( ! class_exists( 'WP_Query' ) ) {
+	/**
+	 * Minimal WP_Query stub. Its presence is what tells RuntimeReadiness that
+	 * conditional query tags are safe to call.
+	 */
+	class WP_Query {
+	}
+}

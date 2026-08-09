@@ -38,6 +38,25 @@ final class FakeStringRepository implements StringRepositoryInterface {
 	private $sequence = 0;
 
 	/**
+	 * Number of read lookups performed.
+	 *
+	 * @var int
+	 */
+	private $lookups = 0;
+
+	/**
+	 * Returns how many read lookups this repository has been asked for.
+	 *
+	 * Lets a test assert that a code path never reached the storage layer at
+	 * all, which is stronger than asserting it returned the right value.
+	 *
+	 * @return int
+	 */
+	public function lookup_count() {
+		return $this->lookups;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 *
 	 * @param StringSource $source Source string.
@@ -88,6 +107,8 @@ final class FakeStringRepository implements StringRepositoryInterface {
 	 * @return StringSource|null
 	 */
 	public function find_by_hash( $hash ) {
+		++$this->lookups;
+
 		return isset( $this->strings[ (string) $hash ] ) ? $this->strings[ (string) $hash ] : null;
 	}
 
@@ -200,6 +221,8 @@ final class FakeStringRepository implements StringRepositoryInterface {
 	 * @return StringTranslation|null
 	 */
 	public function find_translation( $string_id, $language_code ) {
+		++$this->lookups;
+
 		$key = (int) $string_id . ':' . (string) $language_code;
 
 		return isset( $this->translations[ $key ] ) ? $this->translations[ $key ] : null;
