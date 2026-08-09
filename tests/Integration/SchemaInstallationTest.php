@@ -48,6 +48,29 @@ final class SchemaInstallationTest extends WP_UnitTestCase {
 		$this->container = Application::instance( dirname( __DIR__, 2 ) . '/mclogiora.php' )->container();
 
 		delete_option( 'mclogiora_db_version' );
+		$this->drop_plugin_tables();
+	}
+
+	/**
+	 * Drops only mcLogiora's own tables.
+	 *
+	 * The WordPress test suite creates tables as TEMPORARY, which live for the
+	 * whole connection rather than the single test, so tables built by an
+	 * earlier test are still present here. Dropping them gives each test a
+	 * genuinely fresh schema. WordPress core tables are never touched.
+	 *
+	 * @return void
+	 */
+	private function drop_plugin_tables() {
+		global $wpdb;
+
+		$suppress = $wpdb->suppress_errors();
+
+		foreach ( $this->container->get( TableNames::class )->all() as $table ) {
+			$wpdb->query( "DROP TABLE IF EXISTS {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- test fixture; table names come from TableNames.
+		}
+
+		$wpdb->suppress_errors( $suppress );
 	}
 
 	/**

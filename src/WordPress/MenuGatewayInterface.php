@@ -63,12 +63,16 @@ interface MenuGatewayInterface {
 	public function add_menu_item( $menu_id, array $item_data );
 
 	/**
-	 * Updates the parent of an existing menu item.
+	 * Updates an existing menu item.
 	 *
-	 * @param int $menu_id Menu term identifier.
-	 * @param int $item_id Menu item identifier.
-	 * @param int $parent_id New parent menu item identifier.
+	 * The full item data must be supplied. wp_update_nav_menu_item() rebuilds
+	 * the item from the arguments it is given, so passing only the field being
+	 * changed silently blanks every other field.
+	 *
+	 * @param int                 $menu_id Menu term identifier.
+	 * @param int                 $item_id Menu item identifier.
+	 * @param array<string,mixed> $item_data Complete menu item data.
 	 * @return bool|\WP_Error
 	 */
-	public function set_menu_item_parent( $menu_id, $item_id, $parent_id );
+	public function update_menu_item( $menu_id, $item_id, array $item_data );
 }

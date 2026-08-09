@@ -243,17 +243,19 @@ final class MenuTranslationWorkflow {
 	private function copy_items( $source_menu_id, $target_menu_id, $language_code ) {
 		$items = $this->menus->get_menu_items( $source_menu_id );
 		$map   = array();
+		$data  = array();
 
 		foreach ( $items as $item ) {
-			$data = $this->build_item_data( $item, $language_code );
+			$item_data = $this->build_item_data( $item, $language_code );
 
-			$new_id = $this->menus->add_menu_item( $target_menu_id, $data );
+			$new_id = $this->menus->add_menu_item( $target_menu_id, $item_data );
 
 			if ( is_wp_error( $new_id ) ) {
 				return $new_id;
 			}
 
-			$map[ (int) $item['db_id'] ] = (int) $new_id;
+			$map[ (int) $item['db_id'] ]  = (int) $new_id;
+			$data[ (int) $item['db_id'] ] = $item_data;
 		}
 
 		foreach ( $items as $item ) {
@@ -263,11 +265,18 @@ final class MenuTranslationWorkflow {
 				continue;
 			}
 
-			$result = $this->menus->set_menu_item_parent(
-				$target_menu_id,
-				$map[ (int) $item['db_id'] ],
-				$map[ $source_parent ]
-			);
+			$source_id = (int) $item['db_id'];
+
+			/*
+			 * The whole item is resent, not just the parent.
+			 * wp_update_nav_menu_item() rebuilds an item from the arguments it
+			 * receives, so updating with only the parent id blanks the title,
+			 * URL, and every other field.
+			 */
+			$item_data                          = $data[ $source_id ];
+			$item_data['menu-item-parent-id']   = $map[ $source_parent ];
+
+			$result = $this->menus->update_menu_item( $target_menu_id, $map[ $source_id ], $item_data );
 
 			if ( is_wp_error( $result ) ) {
 				return $result;
