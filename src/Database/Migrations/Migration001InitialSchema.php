@@ -8,6 +8,7 @@
 namespace McLogiora\Database\Migrations;
 
 use McLogiora\Database\MigrationInterface;
+use McLogiora\Database\MigrationPostconditions;
 use McLogiora\Database\SchemaBuilder;
 use McLogiora\Database\TableNames;
 
@@ -17,6 +18,8 @@ defined( 'ABSPATH' ) || exit;
  * Creates the initial language and relation tables.
  */
 final class Migration001InitialSchema implements MigrationInterface {
+	use MigrationPostconditions;
+
 	/**
 	 * Table names.
 	 *
@@ -43,10 +46,23 @@ final class Migration001InitialSchema implements MigrationInterface {
 	}
 
 	/**
-	 * Runs the migration.
+	 * Returns the tables this migration must have created to be complete.
+	 *
+	 * @return string[]
+	 */
+	public function expected_tables() {
+		return array(
+			$this->tables->languages(),
+			$this->tables->translation_groups(),
+			$this->tables->translation_items(),
+		);
+	}
+
+	/**
+	 * Runs the migration and verifies its postconditions.
 	 *
 	 * @param SchemaBuilder $schema_builder Schema builder.
-	 * @return void
+	 * @return true|\WP_Error
 	 */
 	public function up( SchemaBuilder $schema_builder ) {
 		$charset = $schema_builder->charset_collate();
@@ -58,6 +74,8 @@ final class Migration001InitialSchema implements MigrationInterface {
 				$this->translation_items_table_sql( $charset ),
 			)
 		);
+
+		return $this->verify_tables( $schema_builder, $this->expected_tables(), $this->version() );
 	}
 
 	/**

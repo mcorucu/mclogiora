@@ -4,7 +4,7 @@ Tags: multilingual, translation, localization, language
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.9.0
+Stable tag: 0.10.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -43,9 +43,17 @@ Translation workflows:
 * See translations marked as needing an update when the source title, content, or excerpt changes.
 * Review language status for each post directly in the posts, pages, and custom post type list tables.
 
-Every translation action is explicit. Nothing is translated automatically, nothing is published automatically, and no content is ever deleted by a translation action.
+Interface strings, media, menus, and widgets:
 
-It does not include URL rewriting, translated slugs, SEO output, language switchers, string translation, media translation, REST endpoints, AJAX handlers, or external service integrations yet.
+* Scan your theme or a plugin for translatable interface strings, on request only.
+* Translate those strings from a searchable String Translation screen.
+* Translate image and file metadata per language: title, alternative text, caption, and description. The file itself is shared, never duplicated.
+* Create a translated navigation menu that keeps the item order and nesting of its source.
+* Translate the text of Text, Custom HTML, and Block widgets. Widget types mcLogiora does not understand are listed as unsupported and are never modified.
+
+Every translation action is explicit. Nothing is translated automatically, nothing is published automatically, no source file is ever modified, and no content is ever deleted by a translation action. Scanning only ever runs when you ask for it, never during normal site traffic.
+
+It does not include URL rewriting, translated slugs, SEO output, language switchers, REST endpoints, AJAX handlers, or external service integrations yet. Which translated text appears on the front end is decided in a later release.
 
 == Privacy ==
 
@@ -77,15 +85,31 @@ No. Unlinking removes only mcLogiora's relation record. The post or term keeps i
 
 No. New translations are always created as drafts, and linking existing content does not modify it.
 
+= Does scanning modify my theme or plugins? =
+
+No. Scanning reads source files and never writes to them. It is limited to a single theme or plugin directory that you choose, cannot be pointed at arbitrary paths, and requires a high-trust capability because it reads source code.
+
+= Are my images duplicated when I translate them? =
+
+No. One file serves every language. Only the text around it, such as the alternative text and caption, is stored per language.
+
 = Does this version create database tables or options? =
 
-Yes. On activation, mcLogiora creates its initial language and translation relation tables through the migration runner and stores a separate database schema version. It does not create scheduled events or settings.
+Yes. On activation, mcLogiora creates its language, translation relation, string, media, and widget translation tables through the migration runner and stores a separate database schema version. It does not create scheduled events or settings.
 
 = Does this version use external services? =
 
 No. There are no HTTP requests or external service integrations in this release.
 
 == Changelog ==
+
+= 0.10.0 =
+* Added string translation with an explicit, confined source scanner and a String Translation screen.
+* Added per-language media metadata without duplicating any file.
+* Added translated navigation menus that preserve order and nesting.
+* Added widget translation for Text, Custom HTML, and Block widgets through an adapter model.
+* Added a database migration for the new string, media, and widget tables.
+* Added WordPress integration tests and a real translation catalogue.
 
 = 0.9.0 =
 * Added translation workflows for posts, pages, public custom post types, categories, tags, and public custom taxonomies.

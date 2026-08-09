@@ -32,9 +32,9 @@ final class Installer {
 	/**
 	 * Installs or upgrades the database schema.
 	 *
-	 * @return void
+	 * @return true|\WP_Error
 	 */
 	public function install() {
-		$this->migration_runner->run();
+		return $this->migration_runner->run();
 	}
 }
