@@ -146,7 +146,7 @@ final class TranslatedUrlGenerator {
 	/**
 	 * Returns the site home URL without mcLogiora's own filters applied.
 	 *
-	 * home_url() is filtered by PermalinkModule, so asking for it from inside
+	 * The home_url() function is filtered by PermalinkModule, so asking for it from inside
 	 * the generator would re-enter that filter and prefix an already prefixed
 	 * URL.
 	 *

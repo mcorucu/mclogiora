@@ -63,7 +63,10 @@ final class RoutingIntegrationTest extends WP_UnitTestCase {
 
 		delete_option( RoutingSettings::OPTION_NAME );
 
-		$this->set_permalink_structure( '/%postname%/' );
+		if ( '/%postname%/' !== get_option( 'permalink_structure' ) ) {
+			$this->set_permalink_structure( '/%postname%/' );
+		}
+
 		$this->container->get( LanguageContextInterface::class )->reset();
 	}
 
@@ -289,8 +292,6 @@ final class RoutingIntegrationTest extends WP_UnitTestCase {
 				'has_archive' => true,
 			)
 		);
-
-		$this->set_permalink_structure( '/%postname%/' );
 
 		$source_id = self::factory()->post->create(
 			array(
