@@ -66,6 +66,25 @@ final class FakeWpdb {
 	}
 
 	/**
+	 * Whether DESCRIBE should report the table as existing.
+	 *
+	 * @var bool
+	 */
+	public $tables_exist = true;
+
+	/**
+	 * Suppresses errors, mirroring wpdb's toggle.
+	 *
+	 * @param bool $suppress Whether to suppress.
+	 * @return bool
+	 */
+	public function suppress_errors( $suppress = true ) {
+		unset( $suppress );
+
+		return false;
+	}
+
+	/**
 	 * Escapes LIKE wildcards.
 	 *
 	 * @param string $text Text.
@@ -110,7 +129,9 @@ final class FakeWpdb {
 	 * @return object[]
 	 */
 	public function get_results( $query ) {
-		unset( $query );
+		if ( 0 === strpos( (string) $query, 'DESCRIBE ' ) ) {
+			return $this->tables_exist ? array( (object) array( 'Field' => 'id' ) ) : array();
+		}
 
 		return $this->inserted ? $this->rows_after_insert : $this->rows;
 	}

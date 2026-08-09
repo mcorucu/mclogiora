@@ -134,3 +134,12 @@ Field sets differ per widget type, so a column per field is impossible; the adap
 ### Menus
 
 Menus add no table. A WordPress menu is a term and its items are posts, so translated menus are recorded in the existing translation group and item tables.
+
+
+## Migration completion contract
+
+`MigrationInterface` requires each migration to declare `expected_tables()` and to return `true` or a `WP_Error` from `up()`. A migration runs its statements and then verifies that every declared table exists.
+
+`MigrationRunner::run()` advances `mclogiora_db_version` only after that verification passes, stops at the first failure, and returns the error. A failed migration leaves the stored version untouched and is retried on the next attempt.
+
+Table existence is checked with `DESCRIBE`, not `SHOW TABLES`, so the check also sees temporary tables. See `docs/adr/0012-verified-migration-completion.md`.

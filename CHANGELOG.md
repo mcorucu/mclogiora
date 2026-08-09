@@ -15,6 +15,9 @@
 - Added a WordPress integration test harness using the official WordPress PHPUnit suite, covering behaviour that test doubles cannot prove.
 - Replaced the empty `languages/mclogiora.pot` scaffold with a real catalogue generated from source, and added `composer pot` to regenerate it.
 - Added `composer test:integration` and extended CI with an integration job backed by a real database service.
+- Fixed table detection, which used `SHOW TABLES` and therefore could not see temporary tables. Every repository gates on that check, so a working schema was reported as entirely absent. Detection now uses `DESCRIBE`, which sees permanent and temporary tables alike. See `docs/adr/0012-verified-migration-completion.md`.
+- Changed the migration contract so the stored schema version only advances after a migration verifies that the tables it declared actually exist. Previously the version advanced simply because a migration had been called, which meant a plugin could believe it was upgraded when it was not and would never retry.
+- Changed `MigrationRunner::run()` and `Installer::install()` to return `true` or a `WP_Error` naming the missing tables, stopping at the first failure.
 
 ## 0.9.0
 
