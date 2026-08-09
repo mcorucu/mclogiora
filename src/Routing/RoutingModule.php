@@ -242,6 +242,10 @@ final class RoutingModule implements ModuleInterface {
 	 * @return void
 	 */
 	public function maybe_flush_rewrite_rules() {
+		if ( ! did_action( 'wp_loaded' ) && ! is_admin() ) {
+			return;
+		}
+
 		$hash   = md5( wp_json_encode( $this->prefixes() ) . '|' . ( $this->settings->default_language_has_prefix() ? '1' : '0' ) );
 		$stored = (string) get_option( self::RULES_HASH, '' );
 

@@ -119,7 +119,7 @@ final class TranslatedUrlGenerator {
 			return $url;
 		}
 
-		$home = home_url( '/' );
+		$home = $this->raw_home_url();
 
 		if ( 0 !== strpos( $url, $home ) ) {
 			return $url;
@@ -138,8 +138,28 @@ final class TranslatedUrlGenerator {
 	 */
 	public function home_url_for( $language_code ) {
 		$prefix = $this->prefix_for( $language_code );
+		$home   = $this->raw_home_url();
 
-		return '' === $prefix ? home_url( '/' ) : home_url( '/' . $prefix . '/' );
+		return '' === $prefix ? $home : $home . $prefix . '/';
+	}
+
+	/**
+	 * Returns the site home URL without mcLogiora's own filters applied.
+	 *
+	 * home_url() is filtered by PermalinkModule, so asking for it from inside
+	 * the generator would re-enter that filter and prefix an already prefixed
+	 * URL.
+	 *
+	 * @return string
+	 */
+	private function raw_home_url() {
+		$home = PermalinkFilters::without_filters(
+			static function () {
+				return home_url( '/' );
+			}
+		);
+
+		return is_string( $home ) ? $home : '/';
 	}
 
 	/**
