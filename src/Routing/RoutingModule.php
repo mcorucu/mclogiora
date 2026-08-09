@@ -61,7 +61,7 @@ final class RoutingModule implements ModuleInterface {
 		add_filter( 'query_vars', array( $this, 'register_query_var' ) );
 		add_action( 'init', array( $this, 'register_rewrite_rules' ), 20 );
 		add_action( 'parse_request', array( $this, 'resolve_request_language' ) );
-		add_action( 'wp_loaded', array( $this, 'maybe_flush_rewrite_rules' ), 99 );
+		add_action( 'admin_init', array( $this, 'maybe_flush_rewrite_rules' ), 99 );
 	}
 
 	/**
@@ -234,18 +234,14 @@ final class RoutingModule implements ModuleInterface {
 	/**
 	 * Flushes rewrite rules only when the routable prefixes have changed.
 	 *
-	 * Flushing is expensive and rebuilding the rule set on every request would
-	 * be a serious performance regression, so the current prefix set is
-	 * fingerprinted and compared. Ordinary requests do no work here beyond one
-	 * option read.
+	 * Flushing is expensive, so this runs in the admin only and compares a
+	 * fingerprint of the current prefix set before doing anything. A front-end
+	 * request never reaches this method at all, which is the strongest form of
+	 * the guarantee that ordinary traffic does not rebuild rewrite rules.
 	 *
 	 * @return void
 	 */
 	public function maybe_flush_rewrite_rules() {
-		if ( ! did_action( 'wp_loaded' ) && ! is_admin() ) {
-			return;
-		}
-
 		$hash   = md5( wp_json_encode( $this->prefixes() ) . '|' . ( $this->settings->default_language_has_prefix() ? '1' : '0' ) );
 		$stored = (string) get_option( self::RULES_HASH, '' );
 
