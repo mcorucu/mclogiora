@@ -108,6 +108,14 @@ final class TranslatedUrlGenerator {
 	 * Rebuilding the path rather than string-concatenating keeps query strings
 	 * and fragments intact, which matters for paginated and filtered URLs.
 	 *
+	 * The operation is idempotent, and that is a requirement rather than a
+	 * convenience. WordPress builds an object permalink by calling `home_url()`
+	 * with a path and then running the result through `post_link`, `page_link`,
+	 * or `term_link`. mcLogiora filters both, so on a prefixed-language request
+	 * a single permalink passes through prefixing twice and comes out as
+	 * `/tr/tr/page/`. Asking for a prefixed URL twice must mean the same as
+	 * asking once.
+	 *
 	 * @param string $url Absolute URL within the site.
 	 * @param string $language_code Language code.
 	 * @return string
@@ -125,9 +133,17 @@ final class TranslatedUrlGenerator {
 			return $url;
 		}
 
-		$remainder = substr( $url, strlen( $home ) );
+		$remainder = ltrim( (string) substr( $url, strlen( $home ) ), '/' );
 
-		return $home . $prefix . '/' . ltrim( (string) $remainder, '/' );
+		/*
+		 * Compared against the first path segment rather than searched for, so
+		 * a page legitimately slugged "tr" in Turkish still reaches /tr/tr/.
+		 */
+		if ( $remainder === $prefix || 0 === strpos( $remainder, $prefix . '/' ) ) {
+			return $url;
+		}
+
+		return $home . $prefix . '/' . $remainder;
 	}
 
 	/**
