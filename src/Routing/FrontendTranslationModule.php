@@ -9,6 +9,7 @@ namespace McLogiora\Routing;
 
 use McLogiora\Contracts\ModuleInterface;
 use McLogiora\Core\Container;
+use McLogiora\Core\RuntimeReadiness;
 use McLogiora\Media\MediaTranslationService;
 use McLogiora\Relations\ContentType;
 use McLogiora\Relations\TranslationGroup;
@@ -34,11 +35,11 @@ final class FrontendTranslationModule implements ModuleInterface {
 	private $context = null;
 
 	/**
-	 * Request guard.
+	 * Runtime readiness.
 	 *
-	 * @var RequestContextGuard|null
+	 * @var RuntimeReadiness|null
 	 */
-	private $guard = null;
+	private $readiness = null;
 
 	/**
 	 * String translation service.
@@ -82,8 +83,18 @@ final class FrontendTranslationModule implements ModuleInterface {
 	 * @return void
 	 */
 	public function register( Container $container ) {
+		$this->readiness = $container->get( RuntimeReadiness::class );
+
+		/*
+		 * A site being installed has no translations to apply and no tables to
+		 * read them from. Registering nothing is stronger than registering
+		 * filters that would decline: there is no code path left to get wrong.
+		 */
+		if ( $this->readiness->is_installing() ) {
+			return;
+		}
+
 		$this->context   = $container->get( LanguageContextInterface::class );
-		$this->guard     = $container->get( RequestContextGuard::class );
 		$this->strings   = $container->get( StringTranslationService::class );
 		$this->media     = $container->get( MediaTranslationService::class );
 		$this->widgets   = $container->get( WidgetTranslationService::class );
@@ -139,14 +150,14 @@ final class FrontendTranslationModule implements ModuleInterface {
 	 * @return string
 	 */
 	private function translate( $translation, $text, $domain, $context ) {
-		if ( ! $this->applies() ) {
-			return $translation;
-		}
-
 		/*
-		 * The lookup path itself calls translated strings, for example in
-		 * error messages, which would re-enter this filter. The flag makes the
-		 * inner call fall straight through.
+		 * The re-entry flag covers deciding whether to translate as well as
+		 * the lookup itself, and that width is the point. Both halves call
+		 * WordPress, and WordPress answers plenty of things with a translated
+		 * string: a `_doing_it_wrong()` notice, a `WP_Error` message, a
+		 * database failure page. Any of those re-enters this filter. Guarding
+		 * only the lookup leaves the decision unguarded, which is exactly the
+		 * gap that let `is_preview()` recurse into `__()` forever.
 		 */
 		if ( $this->translating ) {
 			return $translation;
@@ -155,6 +166,10 @@ final class FrontendTranslationModule implements ModuleInterface {
 		$this->translating = true;
 
 		try {
+			if ( ! $this->applies() ) {
+				return $translation;
+			}
+
 			$result = $this->strings->translate( (string) $text, $this->context->current_code(), (string) $domain, (string) $context );
 		} finally {
 			$this->translating = false;
@@ -329,7 +344,7 @@ final class FrontendTranslationModule implements ModuleInterface {
 	 * @return bool
 	 */
 	private function applies() {
-		if ( ! $this->guard->applies() ) {
+		if ( ! $this->readiness instanceof RuntimeReadiness || ! $this->readiness->is_frontend_runtime() ) {
 			return false;
 		}
 

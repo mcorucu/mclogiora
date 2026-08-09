@@ -100,7 +100,6 @@ use McLogiora\Routing\FrontendTranslationModule;
 use McLogiora\Routing\LanguageContext;
 use McLogiora\Routing\LanguageContextInterface;
 use McLogiora\Routing\PermalinkModule;
-use McLogiora\Routing\RequestContextGuard;
 use McLogiora\Routing\RoutingModule;
 use McLogiora\Routing\RoutingSettings;
 use McLogiora\Routing\TranslatedUrlGenerator;
@@ -725,9 +724,9 @@ final class Application {
 		);
 
 		$this->container->set(
-			RequestContextGuard::class,
+			RuntimeReadiness::class,
 			static function () {
-				return new RequestContextGuard();
+				return new RuntimeReadiness();
 			}
 		);
 
