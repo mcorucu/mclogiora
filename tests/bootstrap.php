@@ -263,3 +263,172 @@ if ( ! function_exists( 'apply_filters' ) ) {
 		return $value;
 	}
 }
+
+if ( ! function_exists( 'home_url' ) ) {
+	/**
+	 * Returns a site URL for tests.
+	 *
+	 * @param string $path Path.
+	 * @return string
+	 */
+	function home_url( $path = '' ) {
+		return 'https://example.test/' . ltrim( (string) $path, '/' );
+	}
+}
+
+if ( ! function_exists( 'sanitize_html_class' ) ) {
+	/**
+	 * Returns a safe HTML class.
+	 *
+	 * @param string $class_name Class name.
+	 * @return string
+	 */
+	function sanitize_html_class( $class_name ) {
+		return (string) preg_replace( '/[^A-Za-z0-9_-]/', '', (string) $class_name );
+	}
+}
+
+if ( ! function_exists( 'get_option' ) ) {
+	/**
+	 * Returns a stored option from the in-memory test store.
+	 *
+	 * @param string $name Option name.
+	 * @param mixed  $default_value Default value.
+	 * @return mixed
+	 */
+	function get_option( $name, $default_value = false ) {
+		return array_key_exists( $name, $GLOBALS['mclogiora_test_options'] )
+			? $GLOBALS['mclogiora_test_options'][ $name ]
+			: $default_value;
+	}
+}
+
+if ( ! function_exists( 'update_option' ) ) {
+	/**
+	 * Stores an option in the in-memory test store.
+	 *
+	 * @param string $name Option name.
+	 * @param mixed  $value Value.
+	 * @param bool   $autoload Autoload flag.
+	 * @return bool
+	 */
+	function update_option( $name, $value, $autoload = true ) {
+		unset( $autoload );
+		$GLOBALS['mclogiora_test_options'][ $name ] = $value;
+
+		return true;
+	}
+}
+
+if ( ! function_exists( 'delete_option' ) ) {
+	/**
+	 * Removes an option from the in-memory test store.
+	 *
+	 * @param string $name Option name.
+	 * @return bool
+	 */
+	function delete_option( $name ) {
+		unset( $GLOBALS['mclogiora_test_options'][ $name ] );
+
+		return true;
+	}
+}
+
+$GLOBALS['mclogiora_test_options'] = array();
+
+if ( ! class_exists( 'WP_Post' ) ) {
+	/**
+	 * Minimal WP_Post stub.
+	 */
+	class WP_Post {
+		/**
+		 * Post identifier.
+		 *
+		 * @var int
+		 */
+		public $ID = 0;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param int $id Post identifier.
+		 */
+		public function __construct( $id = 0 ) {
+			$this->ID = (int) $id;
+		}
+	}
+}
+
+if ( ! class_exists( 'WP_Term' ) ) {
+	/**
+	 * Minimal WP_Term stub.
+	 */
+	class WP_Term {
+		/**
+		 * Term identifier.
+		 *
+		 * @var int
+		 */
+		public $term_id = 0;
+
+		/**
+		 * Taxonomy name.
+		 *
+		 * @var string
+		 */
+		public $taxonomy = '';
+
+		/**
+		 * Constructor.
+		 *
+		 * @param int    $term_id Term identifier.
+		 * @param string $taxonomy Taxonomy name.
+		 */
+		public function __construct( $term_id = 0, $taxonomy = '' ) {
+			$this->term_id  = (int) $term_id;
+			$this->taxonomy = (string) $taxonomy;
+		}
+	}
+}
+
+if ( ! function_exists( 'get_queried_object' ) ) {
+	/**
+	 * Returns the object the test says the request resolved to.
+	 *
+	 * @return mixed
+	 */
+	function get_queried_object() {
+		return isset( $GLOBALS['mclogiora_test_queried_object'] )
+			? $GLOBALS['mclogiora_test_queried_object']
+			: null;
+	}
+}
+
+if ( ! function_exists( 'get_permalink' ) ) {
+	/**
+	 * Returns a predictable permalink for tests.
+	 *
+	 * @param int $post_id Post identifier.
+	 * @return string
+	 */
+	function get_permalink( $post_id = 0 ) {
+		return 'https://example.test/post-' . (int) $post_id . '/';
+	}
+}
+
+if ( ! function_exists( 'get_term_link' ) ) {
+	/**
+	 * Returns a predictable term link for tests.
+	 *
+	 * @param int    $term_id Term identifier.
+	 * @param string $taxonomy Taxonomy name.
+	 * @return string
+	 */
+	function get_term_link( $term_id = 0, $taxonomy = '' ) {
+		unset( $taxonomy );
+
+		return 'https://example.test/term-' . (int) $term_id . '/';
+	}
+}
+
+$GLOBALS['mclogiora_test_queried_object'] = null;

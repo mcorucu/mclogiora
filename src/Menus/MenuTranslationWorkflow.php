@@ -273,8 +273,8 @@ final class MenuTranslationWorkflow {
 			 * receives, so updating with only the parent id blanks the title,
 			 * URL, and every other field.
 			 */
-			$item_data                          = $data[ $source_id ];
-			$item_data['menu-item-parent-id']   = $map[ $source_parent ];
+			$item_data                        = $data[ $source_id ];
+			$item_data['menu-item-parent-id'] = $map[ $source_parent ];
 
 			$result = $this->menus->update_menu_item( $target_menu_id, $map[ $source_id ], $item_data );
 

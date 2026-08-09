@@ -1,6 +1,6 @@
 # mcLogiora Planning
 
-Current phase: Phase 11 complete (String, Media, Menu & Widget Translation, v0.10.0). Next planned phase: Phase 12.
+Current phase: Phase 12 complete (URL Routing, Slug Translation & Language Switching, v0.11.0). Next planned phase: Phase 13.
 
 This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 
@@ -657,11 +657,11 @@ Phase 11: String, Media, Menu & Widget Translation - v0.10.0
 
 - String registry with context-aware identity, an explicit token-based source scanner, the String Translation screen, per-language media metadata with no file duplication, the featured image reference policy, translated menus with hierarchy remapping, a widget adapter model, a new schema migration, a real POT catalogue, and the WordPress integration test harness. See `docs/adr/0011-string-media-menu-widget-translation.md`.
 
+Phase 12: URL Routing, Slug Translation & Language Switching - v0.11.0
+
+- One authoritative language context, directory URLs with an unprefixed default language, strict prefix validation, conservative rewrite flushing, 404 for missing translations, translated post and term slugs, a single translated URL generator, front-end application of the Phase 11 translations, and an accessible language switcher across four surfaces and four styles. See `docs/adr/0013-routing-slugs-language-switching.md`.
+
 ### Planned phases
-
-Phase 12: URL Routing, Slug Translation & Language Switching
-
-- URL resolution strategy, slug translation, permalink integration, and the switcher surfaces: shortcode, widget, block, template tag, menu item, and accessible renderers.
 
 Phase 13: SEO, hreflang, Canonical & Sitemap Integration
 
@@ -720,4 +720,4 @@ These notes record the Phase 01 discovery environment. They are historical conte
 
 ## Next Phase
 
-Phases 02 through 11 are complete. The next implementation phase is **Phase 12: URL Routing, Slug Translation & Language Switching**, which decides which translated data is rendered for a given front-end request.
+Phases 02 through 12 are complete. The next implementation phase is **Phase 13: SEO, hreflang, Canonical & Sitemap Integration**, which consumes the Phase 12 URL layer to emit search-engine metadata.

@@ -96,6 +96,18 @@ use McLogiora\Widgets\WidgetTranslationRepositoryInterface;
 use McLogiora\Widgets\WidgetTranslationService;
 use McLogiora\WordPress\MenuGateway;
 use McLogiora\WordPress\MenuGatewayInterface;
+use McLogiora\Routing\FrontendTranslationModule;
+use McLogiora\Routing\LanguageContext;
+use McLogiora\Routing\LanguageContextInterface;
+use McLogiora\Routing\PermalinkModule;
+use McLogiora\Routing\RequestContextGuard;
+use McLogiora\Routing\RoutingModule;
+use McLogiora\Routing\RoutingSettings;
+use McLogiora\Routing\TranslatedUrlGenerator;
+use McLogiora\Switcher\LanguageSwitcher;
+use McLogiora\Switcher\SwitcherModule;
+use McLogiora\Switcher\SwitcherRenderer;
+use McLogiora\Admin\RoutingSettingsScreen;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -189,6 +201,11 @@ final class Application {
 		$modules->add( new WidgetTranslationManager() );
 		$modules->add( new StringActionController() );
 		$modules->add( new MediaTranslationFields() );
+		$modules->add( new RoutingModule() );
+		$modules->add( new PermalinkModule() );
+		$modules->add( new FrontendTranslationModule() );
+		$modules->add( $this->container->get( SwitcherModule::class ) );
+		$modules->add( new RoutingSettingsScreen() );
 		$modules->add( new EditorManager() );
 		$modules->add( new CompatibilityDashboard() );
 		$modules->add( new AdminMenu() );
@@ -697,6 +714,63 @@ final class Application {
 					$container->get( ContentGatewayInterface::class ),
 					$container->get( CapabilityRegistry::class )
 				);
+			}
+		);
+
+		$this->container->set(
+			RoutingSettings::class,
+			static function () {
+				return new RoutingSettings();
+			}
+		);
+
+		$this->container->set(
+			RequestContextGuard::class,
+			static function () {
+				return new RequestContextGuard();
+			}
+		);
+
+		$this->container->set(
+			LanguageContextInterface::class,
+			static function ( Container $container ) {
+				return new LanguageContext( $container->get( LanguageServiceInterface::class ) );
+			}
+		);
+
+		$this->container->set(
+			TranslatedUrlGenerator::class,
+			static function ( Container $container ) {
+				return new TranslatedUrlGenerator(
+					$container->get( TranslationRelationServiceInterface::class ),
+					$container->get( RoutingSettings::class ),
+					$container->get( LanguageContextInterface::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			LanguageSwitcher::class,
+			static function ( Container $container ) {
+				return new LanguageSwitcher(
+					$container->get( LanguageContextInterface::class ),
+					$container->get( TranslatedUrlGenerator::class ),
+					$container->get( RoutingSettings::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			SwitcherRenderer::class,
+			static function ( Container $container ) {
+				return new SwitcherRenderer( $container->get( LanguageSwitcher::class ) );
+			}
+		);
+
+		$this->container->set(
+			SwitcherModule::class,
+			static function () {
+				return new SwitcherModule();
 			}
 		);
 	}
