@@ -92,9 +92,21 @@ A REST response is the block editor's own data at least as often as it is a visi
 - A site whose schema is missing renders as ordinary WordPress rather than erroring, which is quieter but correct: a visitor is not the right audience for a migration problem.
 - Multilingual REST output stays unavailable until a phase decides deliberately what it should mean.
 
-## Related fix
+## Related fixes
 
-Once the boot blocker was cleared and the Phase 12 integration tests could execute for the first time, they exposed a second defect that had been hidden behind it. `RoutingModule` emitted `mclogiora_path` from its rewrite rules but never registered it as a query var, and WordPress discards unregistered query vars during `parse_request`. Everything after a language prefix was therefore thrown away, and every translated URL resolved to the site home. Both vars are now registered, and the path is honoured only when a language prefix actually matched — otherwise a hand-written query string could re-route any URL to any other.
+Clearing the boot blocker let the Phase 12 integration tests execute for the first time, and let a real WordPress installation be smoke-tested. Three defects had been hiding behind the hang.
+
+**The path query var was never registered.** `RoutingModule` emitted `mclogiora_path` from its rewrite rules, but WordPress discards unregistered query vars during `parse_request`. Everything after a language prefix was thrown away, and every translated URL resolved to the site home. Both vars are now registered, and the path is honoured only when a language prefix actually matched — otherwise a hand-written query string could re-route any URL to any other.
+
+**Activation installed only half the schema.** There were two ways into the installer, `InstallerFactory` for activation and the service container for the running application, and each kept its own migration list. Activation's had fallen a migration behind, so a real site got the Phase 10 tables and none of the Phase 11 ones: string, media, and widget translation had nowhere to store anything, and Phase 12's front-end application of them was inert. Every test installed through the container, so nothing failed. `MigrationRegistry` is now the one list, and `MigrationRegistryTest` asserts it reaches the current database version so the two can no longer diverge.
+
+**Permalinks were prefixed twice.** WordPress builds an object permalink by calling `home_url()` with a path and then filtering the result through `post_link`, `page_link`, or `term_link`. mcLogiora filters both, so on a `/tr/` page every link came out as `/tr/tr/…`. `apply_prefix()` is now idempotent, comparing the first path segment rather than searching, so a page legitimately slugged `tr` in Turkish still reaches `/tr/tr/`.
+
+## Known gaps, deliberately not addressed here
+
+- **Widget titles are stored but never rendered.** `WidgetTranslationService` accepts a translated title, but the front end hooks `widget_text` and `widget_custom_html_content`, and WordPress's `widget_title` filter does not pass the widget instance number, so the title cannot be matched to a stored translation through it. Rendering it needs `widget_display_callback`, which receives the whole instance and the widget object. That is a change of hook, not a bug fix, and belongs in its own change.
+- **`<html lang>` is not switched.** A Turkish page is served with the site's `lang` attribute. The switcher's own links carry correct `lang`, `hreflang`, and `dir`, but the document element does not. Setting it properly means deciding whether mcLogiora switches WordPress's locale per request, which has consequences well beyond one attribute.
+- **`_load_textdomain_just_in_time`.** Seven admin modules call `__()` while registering on `plugins_loaded`, which WordPress 6.7 and later reports as loading translations too early. This predates Phase 12 — six of the seven are Phase 11 or earlier — but it is the same "registration should be inert" principle stated above, and it should be fixed by deferring screen registration to `init`.
 
 ## Regression tests
 
