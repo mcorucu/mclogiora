@@ -79,7 +79,7 @@ Resolving one language memoises the **whole** translation group, so rendering a 
 Filters attach to `post_link`, `page_link`, `post_type_link`, `term_link`, and `home_url`. Two guards keep them safe:
 
 - **Recursion.** The filters ask the generator for a URL, and the generator asks WordPress for a permalink, which would re-enter the filters. `PermalinkFilters::without_filters()` suspends them for the inner call.
-- **Context.** `RequestContextGuard` disables multilingual behaviour in wp-admin, cron, WP-CLI, AJAX, autosave, and previews. Rewriting links inside the admin would show editors URLs that do not match what they are editing; doing it during cron or CLI would silently change what those processes write.
+- **Context.** `RuntimeReadiness` disables multilingual behaviour in wp-admin, cron, WP-CLI, AJAX, REST, autosave, and previews, and while WordPress is installing or the schema is absent. Rewriting links inside the admin would show editors URLs that do not match what they are editing; doing it during cron or CLI would silently change what those processes write. This originally lived in `RequestContextGuard`, which was replaced -- see `0014-install-safe-runtime-lifecycle.md`.
 
 The bare home URL is deliberately left unprefixed, since it is also the base for assets and API endpoints that have nothing to do with content language.
 
