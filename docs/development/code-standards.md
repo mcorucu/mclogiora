@@ -132,6 +132,23 @@ composer test:integration
 
 Integration tests never contact an external service.
 
+### The suite's own installation is a regression test
+
+`composer test:integration` installs WordPress from scratch with mcLogiora active. That installation is not scaffolding, it is coverage: Phase 12 shipped a `gettext` filter whose guard recursed through `_doing_it_wrong()` and killed the runner before PHPUnit printed a banner. `tests/Integration/InstallationSafetyTest.php` makes the proof explicit, so a future boot failure names itself instead of appearing as a silent process death.
+
+When a run dies before the PHPUnit banner with no test name, suspect plugin boot rather than a slow test, and re-run with a trace on `plugins_loaded` before reaching for a timeout.
+
+## Lifecycle checks
+
+Ask `McLogiora\Core\RuntimeReadiness` whether mcLogiora may act. Do not re-implement `wp_installing()`, `is_admin()`, a schema-version read, or a conditional query tag inside a module: duplicated checks drift, and one module ends up doing work during installation that its neighbour correctly refuses.
+
+Two rules are load-bearing:
+
+- **Never call a conditional query tag before `is_query_available()` returns true.** Before WordPress creates the main query, `is_preview()` and its siblings answer with `_doing_it_wrong()`, whose message is built with `__()`. Inside anything that runs during translation, that is an unbounded recursion.
+- **A `gettext` filter's re-entry guard must wrap the decision as well as the lookup.** Deciding whether to translate calls WordPress, and WordPress returns translated strings from error paths.
+
+See `docs/adr/0014-install-safe-runtime-lifecycle.md`.
+
 ## Translation catalogue
 
 `languages/mclogiora.pot` is generated from source, not maintained by hand:

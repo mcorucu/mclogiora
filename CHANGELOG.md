@@ -3,6 +3,15 @@
 ## 0.11.0
 
 - Added Phase 12 URL routing, translated slugs, and language switching.
+- Fixed a boot failure that made WordPress unable to finish installing while mcLogiora was active. The `gettext` filter's guard called `is_preview()` before WordPress creates the main query; WordPress answers that with a `_doing_it_wrong()` notice whose message is built with `__()`, which re-entered the filter, which called the guard again. The recursion consumed all available memory. See `docs/adr/0014-install-safe-runtime-lifecycle.md`.
+- Added `RuntimeReadiness` as the single authority on installation state, schema availability, and request context. Routing, permalinks, front-end translation, and the switcher all ask one object instead of each keeping its own copy of the checks.
+- Added an installation-safe boot policy. While WordPress is installing, the front-end translation, permalink, and switcher modules register no hooks at all, read no languages, and touch no mcLogiora table.
+- Added a schema-not-ready fallback. A site whose tables are missing renders as ordinary monolingual WordPress -- original strings, menus, media, and permalinks -- rather than erroring or fabricating a translated route.
+- Fixed the `gettext` re-entry guard, which previously wrapped only the translation lookup and not the decision to translate. Any translated string produced while deciding now falls straight through.
+- Fixed `mclogiora_path` never being registered as a query var. WordPress discards unregistered query vars during `parse_request`, so everything after a language prefix was thrown away and every translated URL resolved to the site home. The path is now honoured only when a language prefix actually matched.
+- Removed `RequestContextGuard`, whose responsibilities moved into `RuntimeReadiness`.
+- Added WordPress integration coverage for directory language routes, unprefixed default routes, missing-translation 404s, inactive languages, the translated posts page, and the front-end application of Phase 11 string, media, widget, and menu translations.
+- Added installation and boot regression tests, including a recursion guard that fails by assertion instead of exhausting the machine.
 - Added a single authoritative language context. Everything that needs the current language now receives it from one place, so content, navigation, and interface strings can never disagree about what language a page is in.
 - Added directory-based language URLs. The default language keeps its existing unprefixed URLs; secondary languages are served under a language directory such as `/tr/`.
 - Added strict language validation. Only active configured languages become routing prefixes, and unknown, inactive, or hostile prefixes fall back to the default rather than becoming a language.
