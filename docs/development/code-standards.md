@@ -141,3 +141,12 @@ composer pot
 ```
 
 This runs the official WP-CLI i18n command, which is a development dependency. The generated catalogue is committed; the tooling that produces it lives in `vendor/` and is not.
+
+
+## Schema checks in the integration suite
+
+The WordPress test suite rewrites `CREATE TABLE` into `CREATE TEMPORARY TABLE` so each test stays isolated. MySQL temporary tables never appear in `SHOW TABLES`, so any existence check built on `SHOW TABLES` reports freshly created tables as missing.
+
+`SchemaBuilder::table_exists()` therefore uses a suppressed `DESCRIBE`. When adding schema code, do not switch it back to `SHOW TABLES` or `information_schema`: neither can see temporary tables, and the integration suite would go quietly and misleadingly green-then-red again.
+
+A migration is complete only when its declared tables exist. Never treat an empty `$wpdb->last_error` as success: a statement that was never executed leaves no error behind, and dbDelta suppresses errors while inspecting tables. See `docs/adr/0012-verified-migration-completion.md`.

@@ -50,37 +50,11 @@ final class TranslationWorkflowIntegrationTest extends WP_UnitTestCase {
 
 		$this->container = Application::instance( dirname( __DIR__, 2 ) . '/mclogiora.php' )->container();
 
-		/*
-		 * The WordPress test suite wraps each test in a transaction and rolls
-		 * it back afterwards. Table creation is DDL and survives that, but the
-		 * stored schema version does not, so the recorded version and the real
-		 * schema can disagree between tests. Clearing the option makes the
-		 * runner authoritative every time, which is what a fresh install does.
-		 */
 		delete_option( 'mclogiora_db_version' );
 
-		$this->container->get( MigrationRunner::class )->run();
+		$migrated = $this->container->get( MigrationRunner::class )->run();
 
-		global $wpdb;
-
-		$this->assertSame(
-			'',
-			(string) $wpdb->last_error,
-			'The migration reported a database error.'
-		);
-
-		$this->assertTrue(
-			$this->container->get( MigrationRunner::class )->is_current(),
-			sprintf(
-				'Migrations did not complete. Stored version: "%s". dbDelta result: %s',
-				(string) get_option( 'mclogiora_db_version', '(unset)' ),
-				wp_json_encode(
-					$this->container->get( SchemaBuilder::class )->apply(
-						array( 'CREATE TABLE ' . $this->container->get( TableNames::class )->languages() . ' ( id bigint(20) unsigned NOT NULL AUTO_INCREMENT, PRIMARY KEY  (id) );' )
-					)
-				)
-			)
-		);
+		$this->assertTrue( $migrated, is_wp_error( $migrated ) ? $migrated->get_error_message() : '' );
 
 		$languages = $this->container->get( LanguageRepositoryInterface::class );
 
@@ -103,20 +77,8 @@ final class TranslationWorkflowIntegrationTest extends WP_UnitTestCase {
 		$schema = $this->container->get( SchemaBuilder::class );
 		$tables = $this->container->get( TableNames::class );
 
-		global $wpdb;
-
-		$existing = $wpdb->get_col( 'SHOW TABLES' );
-
 		foreach ( $tables->all() as $table ) {
-			$this->assertTrue(
-				$schema->table_exists( $table ),
-				sprintf(
-					'Missing table: %s. Stored schema version: %s. Tables present: %s',
-					$table,
-					(string) get_option( 'mclogiora_db_version', '(unset)' ),
-					implode( ', ', is_array( $existing ) ? $existing : array() )
-				)
-			);
+			$this->assertTrue( $schema->table_exists( $table ), "Missing table: {$table}" );
 		}
 	}
 
