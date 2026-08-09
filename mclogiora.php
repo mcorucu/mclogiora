@@ -3,7 +3,7 @@
  * Plugin Name:       mcLogiora
  * Plugin URI:        https://mcorucu.com/
  * Description:       A modern multilingual platform foundation for WordPress.
- * Version:           0.10.0
+ * Version:           0.11.0
  * Requires at least: 6.5
  * Tested up to:      7.0
  * Requires PHP:      7.4
@@ -20,7 +20,7 @@
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MCLOGIORA_VERSION' ) ) {
-	define( 'MCLOGIORA_VERSION', '0.10.0' );
+	define( 'MCLOGIORA_VERSION', '0.11.0' );
 }
 
 if ( ! defined( 'MCLOGIORA_FILE' ) ) {
@@ -56,6 +56,8 @@ if ( file_exists( MCLOGIORA_PATH . 'vendor/autoload.php' ) ) {
 } else {
 	require_once MCLOGIORA_PATH . 'src/Autoload.php';
 }
+
+require_once MCLOGIORA_PATH . 'src/Switcher/template-tags.php';
 
 register_activation_hook( __FILE__, array( '\\McLogiora\\Core\\Activation', 'activate' ) );
 register_deactivation_hook( __FILE__, array( '\\McLogiora\\Core\\Deactivation', 'deactivate' ) );

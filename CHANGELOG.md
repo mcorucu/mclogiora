@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.11.0
+
+- Added Phase 12 URL routing, translated slugs, and language switching.
+- Fixed a boot failure that made WordPress unable to finish installing while mcLogiora was active. The `gettext` filter's guard called `is_preview()` before WordPress creates the main query; WordPress answers that with a `_doing_it_wrong()` notice whose message is built with `__()`, which re-entered the filter, which called the guard again. The recursion consumed all available memory. See `docs/adr/0014-install-safe-runtime-lifecycle.md`.
+- Added `RuntimeReadiness` as the single authority on installation state, schema availability, and request context. Routing, permalinks, front-end translation, and the switcher all ask one object instead of each keeping its own copy of the checks.
+- Added an installation-safe boot policy. While WordPress is installing, the front-end translation, permalink, and switcher modules register no hooks at all, read no languages, and touch no mcLogiora table.
+- Added a schema-not-ready fallback. A site whose tables are missing renders as ordinary monolingual WordPress -- original strings, menus, media, and permalinks -- rather than erroring or fabricating a translated route.
+- Fixed the `gettext` re-entry guard, which previously wrapped only the translation lookup and not the decision to translate. Any translated string produced while deciding now falls straight through.
+- Fixed plugin activation installing only the Phase 10 schema. `InstallerFactory`, which is what activation actually calls, carried its own migration list and had fallen a migration behind, so a real site never got the Phase 11 string, media, and widget tables and those translations had nowhere to store anything. Both installer paths now share one `MigrationRegistry`, and a test asserts the registry reaches the current database version.
+- Fixed permalinks carrying their language prefix twice on a prefixed-language request. WordPress builds an object permalink by calling `home_url()` with a path and then filtering the result through `post_link`, `page_link`, or `term_link`; mcLogiora filters both, so every link on a `/tr/` page pointed at `/tr/tr/`. Applying a prefix is now idempotent.
+- Fixed `mclogiora_path` never being registered as a query var. WordPress discards unregistered query vars during `parse_request`, so everything after a language prefix was thrown away and every translated URL resolved to the site home. The path is now honoured only when a language prefix actually matched.
+- Removed `RequestContextGuard`, whose responsibilities moved into `RuntimeReadiness`.
+- Added WordPress integration coverage for directory language routes, unprefixed default routes, missing-translation 404s, inactive languages, the translated posts page, and the front-end application of Phase 11 string, media, widget, and menu translations.
+- Added installation and boot regression tests, including a recursion guard that fails by assertion instead of exhausting the machine.
+- Added a single authoritative language context. Everything that needs the current language now receives it from one place, so content, navigation, and interface strings can never disagree about what language a page is in.
+- Added directory-based language URLs. The default language keeps its existing unprefixed URLs; secondary languages are served under a language directory such as `/tr/`.
+- Added strict language validation. Only active configured languages become routing prefixes, and unknown, inactive, or hostile prefixes fall back to the default rather than becoming a language.
+- Added rewrite rules registered through WordPress APIs, flushed only when the routable prefix set actually changes. Ordinary requests never rebuild them, and changing a switcher display setting never triggers a flush.
+- Added a genuine 404 for a translated URL whose translation does not exist, rather than silently serving source-language content under it. Menus are the deliberate exception and fall back to the source menu, because navigation that disappears strands the visitor.
+- Added translated post and page URLs built from each translation's own slug and its translated ancestors, respecting WordPress slug uniqueness rather than bypassing it.
+- Added real translated taxonomy slugs, replacing the provisional language-scoped slugs Phase 11 created.
+- Added one authoritative translated URL generator used by every switcher surface, which never fabricates a URL for a translation that does not exist and resolves a whole translation group in a single lookup.
+- Added front-end application of the Phase 11 translations for strings, media metadata, supported widgets, and menus, all through the same language context and none of them writing to stored values.
+- Added a language switcher available as a shortcode, block, classic widget, and template tag, in inline, dropdown, compact, and pill styles, with configurable behaviour when a translation is missing.
+- Added switcher accessibility: real links and form controls, keyboard operation without JavaScript, `lang`, `hreflang`, and `dir` attributes, current-language announcement, and explicit unavailable-language wording.
+- Added a Languages & URLs settings screen covering the URL structure and switcher presentation.
+- Flags are off by default and never assumed. A language is not a country, so no flag is mapped to any language unless a site supplies one, and the readable label never depends on one.
+- Plural translation is deliberately not hooked. The Phase 11 storage model holds one translated string per source string, so claiming plural support would return singular text in plural contexts.
+
 ## 0.10.0
 
 - Added Phase 11 string, media, menu, and widget translation.

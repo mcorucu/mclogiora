@@ -7,8 +7,6 @@
 
 namespace McLogiora\Database;
 
-use McLogiora\Database\Migrations\Migration001InitialSchema;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -30,9 +28,7 @@ final class InstallerFactory {
 			$schema_builder,
 			$version_manager,
 			new VersionChecker(),
-			array(
-				new Migration001InitialSchema( $tables ),
-			)
+			MigrationRegistry::all( $tables )
 		);
 
 		return new Installer( $runner );

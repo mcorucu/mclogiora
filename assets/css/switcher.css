@@ -1,0 +1,85 @@
+/*
+ * mcLogiora language switcher.
+ *
+ * Deliberately minimal and low specificity so themes can restyle it without
+ * fighting. No !important, no layout framework, no web fonts, no images.
+ */
+
+.mclogiora-switcher {
+	display: inline-block;
+	max-width: 100%;
+}
+
+.mclogiora-switcher__list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.mclogiora-switcher__item {
+	margin: 0;
+	padding: 0;
+}
+
+.mclogiora-switcher__link,
+.mclogiora-switcher__label {
+	display: inline-block;
+	padding: 0.15rem 0.35rem;
+	line-height: 1.4;
+	text-decoration: none;
+	border-radius: 3px;
+}
+
+.mclogiora-switcher__link:focus-visible,
+.mclogiora-switcher__select:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
+.mclogiora-switcher__item.is-current .mclogiora-switcher__link {
+	font-weight: 600;
+}
+
+.mclogiora-switcher__item.is-unavailable .mclogiora-switcher__label {
+	opacity: 0.6;
+}
+
+.mclogiora-switcher--pills .mclogiora-switcher__link,
+.mclogiora-switcher--pills .mclogiora-switcher__label {
+	border: 1px solid currentColor;
+	border-radius: 999px;
+	padding: 0.1rem 0.6rem;
+	font-size: 0.85em;
+	text-transform: uppercase;
+}
+
+.mclogiora-switcher--compact .mclogiora-switcher__list {
+	gap: 0.25rem;
+}
+
+.mclogiora-switcher__select {
+	max-width: 100%;
+}
+
+.mclogiora-switcher__submit {
+	margin-inline-start: 0.35rem;
+}
+
+/* Direction-aware spacing for RTL languages offered on an LTR page. */
+.mclogiora-switcher [dir="rtl"] {
+	unicode-bidi: isolate;
+}
+
+@media (max-width: 480px) {
+	.mclogiora-switcher__list {
+		gap: 0.35rem;
+	}
+
+	.mclogiora-switcher__link,
+	.mclogiora-switcher__label {
+		padding: 0.35rem 0.5rem;
+	}
+}

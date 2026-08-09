@@ -8,7 +8,10 @@
 namespace McLogiora\Tests\Integration;
 
 use McLogiora\Core\Application;
+use McLogiora\Database\DatabaseVersionManager;
 use McLogiora\Database\Installer;
+use McLogiora\Database\InstallerFactory;
+use McLogiora\Database\MigrationRegistry;
 use McLogiora\Database\MigrationRunner;
 use McLogiora\Database\Migrations\Migration001InitialSchema;
 use McLogiora\Database\SchemaBuilder;
@@ -283,6 +286,43 @@ final class SchemaInstallationTest extends WP_UnitTestCase {
 		);
 
 		$this->assertSame( '', (string) $wpdb->last_error );
+	}
+
+	/**
+	 * Asserts the activation path installs the complete schema.
+	 *
+	 * `InstallerFactory` is what plugin activation actually calls, and it is
+	 * not the path the rest of this suite exercises. It once carried its own
+	 * migration list, fell a migration behind, and shipped: a real activation
+	 * created the Phase 10 tables and none of the Phase 11 ones, leaving
+	 * string, media, and widget translation with nowhere to store anything.
+	 * Nothing failed loudly, because every test installed through the
+	 * container instead.
+	 *
+	 * @return void
+	 */
+	public function test_activation_path_installs_every_declared_table() {
+		global $wpdb;
+
+		delete_option( 'mclogiora_db_version' );
+
+		$result = InstallerFactory::create()->install();
+
+		$this->assertNotWPError( $result );
+		$this->assertSame(
+			DatabaseVersionManager::CURRENT_VERSION,
+			(string) get_option( 'mclogiora_db_version' ),
+			'Activation must reach the current database version in one pass.'
+		);
+
+		foreach ( MigrationRegistry::all( new TableNames( $wpdb ) ) as $migration ) {
+			foreach ( $migration->expected_tables() as $table ) {
+				$this->assertTrue(
+					$this->container->get( SchemaBuilder::class )->table_exists( $table ),
+					"Activation must create {$table}."
+				);
+			}
+		}
 	}
 }
 

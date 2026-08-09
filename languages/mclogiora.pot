@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: mcLogiora 0.10.0\n"
+"Project-Id-Version: mcLogiora 0.11.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mclogiora\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-08T20:24:39+00:00\n"
+"POT-Creation-Date: 2026-08-09T21:00:14+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mclogiora\n"
@@ -51,6 +51,7 @@ msgstr ""
 
 #: src/Admin/AdminMenu.php:144
 #: src/Admin/AdminMenu.php:161
+#: src/Admin/RoutingSettingsScreen.php:81
 #: src/Admin/StringManager.php:84
 #: src/Admin/WidgetTranslationManager.php:83
 #: src/Compatibility/CompatibilityDashboard.php:65
@@ -130,6 +131,7 @@ msgid "The file itself is shared across languages. Only this text is translated.
 msgstr ""
 
 #: src/Admin/MediaTranslationFields.php:118
+#: src/Switcher/SwitcherWidget.php:89
 #: src/Widgets/CustomHtmlWidgetAdapter.php:51
 #: src/Widgets/TextWidgetAdapter.php:51
 msgid "Title"
@@ -151,11 +153,123 @@ msgstr ""
 msgid "Save Translation"
 msgstr ""
 
+#: src/Admin/RoutingSettingsScreen.php:61
+msgid "mcLogiora Languages and URLs"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:62
+#: src/Admin/RoutingSettingsScreen.php:90
+msgid "Languages & URLs"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:89
+msgid "Multilingual URLs"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:91
+msgid "Controls how languages appear in your URLs and how the language switcher is presented."
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:100
+msgid "URL Structure"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:101
+msgid "Languages are added as a directory, for example /tr/about/. Other URL strategies are not available yet."
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:104
+msgid "Strategy"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:106
+msgid "Language directory"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:113
+msgid "Also add a directory for the default language"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:116
+msgid "Leaving this off keeps your existing default-language URLs unchanged. Turning it on changes every published permalink at once."
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:120
+#: src/Switcher/SwitcherModule.php:129
+msgid "Language Switcher"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:123
+msgid "Default style"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:134
+msgid "Show the native language name"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:140
+msgid "Show the language code"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:146
+msgid "Show an optional flag"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:149
+msgid "A language is not a country, so no flag is assumed for any language. Flags appear only where your site supplies one, and the readable label never depends on them."
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:153
+msgid "Include the current language"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:158
+msgid "When a translation is missing"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:160
+msgid "Hide the language"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:161
+msgid "Link to that language home page"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:162
+msgid "Show it as unavailable"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:166
+msgid "mcLogiora never links a language to content in a different language. A missing translation is reported honestly rather than disguised."
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:169
+msgid "Save Settings"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:173
+msgid "Using the Switcher"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:174
+msgid "Add the switcher with the shortcode, the block, the widget, or a template tag:"
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:191
+#: src/Admin/RoutingSettingsScreen.php:197
 #: src/Admin/StringActionController.php:239
 #: src/Admin/StringActionController.php:245
 #: src/Admin/TranslationActionController.php:233
 #: src/Admin/TranslationActionController.php:239
 msgid "The request could not be verified."
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:201
+msgid "You are not allowed to change these settings."
+msgstr ""
+
+#: src/Admin/RoutingSettingsScreen.php:251
+msgid "Settings saved."
 msgstr ""
 
 #: src/Admin/StringManager.php:68
@@ -596,6 +710,12 @@ msgstr ""
 msgid "mcLogiora is not running."
 msgstr ""
 
+#. translators: 1: migration version, 2: comma-separated list of missing table names.
+#: src/Database/MigrationPostconditions.php:44
+#, php-format
+msgid "Database migration %1$s did not create the expected tables: %2$s"
+msgstr ""
+
 #: src/Editors/BlockEditorAdapter.php:27
 msgid "WordPress Block Editor"
 msgstr ""
@@ -986,7 +1106,7 @@ msgstr ""
 msgid "A translation already exists for this language."
 msgstr ""
 
-#: src/Menus/MenuTranslationWorkflow.php:368
+#: src/Menus/MenuTranslationWorkflow.php:377
 #: src/Workflows/ContentTranslationWorkflow.php:319
 #: src/Workflows/TaxonomyTranslationWorkflow.php:372
 msgid "Set a default language before creating translations."
@@ -1374,6 +1494,7 @@ msgid "Use Existing Language"
 msgstr ""
 
 #: src/Setup/SetupWizard.php:245
+#: src/Switcher/SwitcherRenderer.php:68
 msgid "Language"
 msgstr ""
 
@@ -1469,6 +1590,50 @@ msgstr ""
 
 #: src/Strings/StringTranslationService.php:132
 msgid "The string could not be found."
+msgstr ""
+
+#: src/Switcher/SwitcherRenderer.php:109
+msgid "(translation not available)"
+msgstr ""
+
+#: src/Switcher/SwitcherRenderer.php:117
+msgid "Current language:"
+msgstr ""
+
+#: src/Switcher/SwitcherRenderer.php:143
+msgid "Choose a language"
+msgstr ""
+
+#: src/Switcher/SwitcherRenderer.php:161
+msgid "Go"
+msgstr ""
+
+#: src/Switcher/SwitcherStyle.php:47
+msgid "Inline list"
+msgstr ""
+
+#: src/Switcher/SwitcherStyle.php:48
+msgid "Dropdown"
+msgstr ""
+
+#: src/Switcher/SwitcherStyle.php:49
+msgid "Compact current language"
+msgstr ""
+
+#: src/Switcher/SwitcherStyle.php:50
+msgid "Language code pills"
+msgstr ""
+
+#: src/Switcher/SwitcherWidget.php:33
+msgid "mcLogiora Language Switcher"
+msgstr ""
+
+#: src/Switcher/SwitcherWidget.php:34
+msgid "Lets visitors change the site language."
+msgstr ""
+
+#: src/Switcher/SwitcherWidget.php:96
+msgid "Style"
 msgstr ""
 
 #: src/Taxonomies/TaxonomyExclusionRules.php:55
