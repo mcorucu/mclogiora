@@ -39,6 +39,25 @@ final class StringTranslationService {
 	private $cache;
 
 	/**
+	 * Request-level lookup memo, keyed by hash and language.
+	 *
+	 * Sits in front of the object cache rather than replacing it. Phase 12
+	 * connected this service to `gettext`, so a single page view now asks it
+	 * about every string a theme renders -- often the same string several
+	 * times, and mostly strings with no translation at all. Answering those
+	 * from a local array keeps a persistent object cache from being asked the
+	 * same question repeatedly over a network socket, and keeps the database
+	 * from being asked at all after the first miss.
+	 *
+	 * Misses are remembered as well as hits. A missing translation is the
+	 * common case on a partially translated site and is exactly the lookup
+	 * worth not repeating.
+	 *
+	 * @var array<string,string>
+	 */
+	private $memo = array();
+
+	/**
 	 * Constructor.
 	 *
 	 * @param StringRepositoryInterface $repository String repository.
@@ -68,31 +87,32 @@ final class StringTranslationService {
 
 		$hash      = StringSource::hash_for( $text, $text_domain, $context );
 		$cache_key = $this->cache_key( $hash, $language_code );
-		$cached    = $this->cache->get( $cache_key );
+
+		if ( isset( $this->memo[ $cache_key ] ) ) {
+			return '' === $this->memo[ $cache_key ] ? $text : $this->memo[ $cache_key ];
+		}
+
+		$cached = $this->cache->get( $cache_key );
 
 		if ( is_string( $cached ) ) {
+			$this->memo[ $cache_key ] = $cached;
+
 			return '' === $cached ? $text : $cached;
 		}
 
 		$source = $this->repository->find_by_hash( $hash );
 
 		if ( ! $source instanceof StringSource ) {
-			$this->cache->set( $cache_key, '' );
-
-			return $text;
+			return $this->remember( $cache_key, '', $text );
 		}
 
 		$translation = $this->repository->find_translation( $source->id(), $language_code );
 
 		if ( ! $translation instanceof StringTranslation || '' === $translation->text() ) {
-			$this->cache->set( $cache_key, '' );
-
-			return $text;
+			return $this->remember( $cache_key, '', $text );
 		}
 
-		$this->cache->set( $cache_key, $translation->text() );
-
-		return $translation->text();
+		return $this->remember( $cache_key, $translation->text(), $text );
 	}
 
 	/**
@@ -140,9 +160,37 @@ final class StringTranslationService {
 			return $saved;
 		}
 
-		$this->cache->delete( $this->cache_key( $source->hash(), (string) $language_code ) );
+		$key = $this->cache_key( $source->hash(), (string) $language_code );
+
+		$this->cache->delete( $key );
+		unset( $this->memo[ $key ] );
 
 		return $saved;
+	}
+
+	/**
+	 * Stores a lookup result in both caches and returns what to display.
+	 *
+	 * @param string $cache_key Cache key.
+	 * @param string $result Translated text, or an empty string for no translation.
+	 * @param string $fallback Original text.
+	 * @return string
+	 */
+	private function remember( $cache_key, $result, $fallback ) {
+		$this->memo[ $cache_key ] = $result;
+
+		$this->cache->set( $cache_key, $result );
+
+		return '' === $result ? $fallback : $result;
+	}
+
+	/**
+	 * Clears the request-level memo.
+	 *
+	 * @return void
+	 */
+	public function reset() {
+		$this->memo = array();
 	}
 
 	/**
