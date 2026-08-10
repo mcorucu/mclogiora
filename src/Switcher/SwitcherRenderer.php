@@ -104,7 +104,7 @@ final class SwitcherRenderer {
 			 * rendered as a dead link, so a screen reader user is told why it
 			 * cannot be chosen.
 			 */
-			$html .= '<span class="mclogiora-switcher__label" lang="' . esc_attr( $item['code'] ) . '" dir="' . esc_attr( $item['direction'] ) . '">';
+			$html .= '<span class="mclogiora-switcher__label" lang="' . esc_attr( $this->language_tag( $item ) ) . '" dir="' . esc_attr( $item['direction'] ) . '">';
 			$html .= esc_html( $label );
 			$html .= '<span class="screen-reader-text"> ' . esc_html__( '(translation not available)', 'mclogiora' ) . '</span>';
 			$html .= '</span>';
@@ -117,9 +117,11 @@ final class SwitcherRenderer {
 			? ' aria-current="true"><span class="screen-reader-text">' . esc_html__( 'Current language:', 'mclogiora' ) . ' </span>'
 			: '>';
 
+		$tag = $this->language_tag( $item );
+
 		$html .= '<a class="mclogiora-switcher__link" href="' . esc_url( $item['url'] ) . '"';
-		$html .= ' lang="' . esc_attr( $item['code'] ) . '"';
-		$html .= ' hreflang="' . esc_attr( $item['code'] ) . '"';
+		$html .= ' lang="' . esc_attr( $tag ) . '"';
+		$html .= ' hreflang="' . esc_attr( $tag ) . '"';
 		$html .= ' dir="' . esc_attr( $item['direction'] ) . '"';
 		$html .= $current_markup;
 		$html .= esc_html( $label );
@@ -145,14 +147,14 @@ final class SwitcherRenderer {
 
 		foreach ( $items as $item ) {
 			if ( ! $item['available'] || null === $item['url'] ) {
-				$html .= '<option value="" disabled lang="' . esc_attr( $item['code'] ) . '">';
+				$html .= '<option value="" disabled lang="' . esc_attr( $this->language_tag( $item ) ) . '">';
 				$html .= esc_html( $this->label( $item, $options ) );
 				$html .= '</option>';
 
 				continue;
 			}
 
-			$html .= '<option value="' . esc_url( $item['url'] ) . '" lang="' . esc_attr( $item['code'] ) . '"';
+			$html .= '<option value="' . esc_url( $item['url'] ) . '" lang="' . esc_attr( $this->language_tag( $item ) ) . '"';
 			$html .= selected( $item['is_current'], true, false );
 			$html .= '>' . esc_html( $this->label( $item, $options ) ) . '</option>';
 		}
@@ -227,5 +229,24 @@ final class SwitcherRenderer {
 		}
 
 		return $classes;
+	}
+
+	/**
+	 * Returns the BCP 47 tag for a switcher item.
+	 *
+	 * The internal language code is the fallback, never the first choice.
+	 * `lang` and `hreflang` mean the same thing here as they do in the document
+	 * head, and the two describing the same page differently is a contradiction
+	 * a reader -- human or machine -- has to resolve for itself.
+	 *
+	 * @param array<string,mixed> $item Switcher item.
+	 * @return string
+	 */
+	private function language_tag( array $item ) {
+		if ( isset( $item['tag'] ) && '' !== (string) $item['tag'] ) {
+			return (string) $item['tag'];
+		}
+
+		return isset( $item['code'] ) ? (string) $item['code'] : '';
 	}
 }

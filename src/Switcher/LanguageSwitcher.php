@@ -8,6 +8,7 @@
 namespace McLogiora\Switcher;
 
 use McLogiora\Languages\Language;
+use McLogiora\Languages\LanguageTag;
 use McLogiora\Relations\ContentType;
 use McLogiora\Routing\LanguageContextInterface;
 use McLogiora\Routing\MissingTranslationPolicy;
@@ -153,6 +154,7 @@ final class LanguageSwitcher {
 
 			$items[] = array(
 				'code'       => $language->code(),
+				'tag'        => LanguageTag::for_language( $language ),
 				'locale'     => $language->locale(),
 				'name'       => $language->native_name(),
 				'english'    => $language->english_name(),
