@@ -33,8 +33,22 @@ final class Activation {
 			);
 		}
 
-		InstallerFactory::create()->install();
+		$installed = InstallerFactory::create()->install();
 
-		do_action( 'mclogiora_activated' );
+		/*
+		 * A failed migration must not read as a successful activation. It also
+		 * must not kill the site: the database can be briefly unavailable for
+		 * reasons that have nothing to do with this plugin, and refusing to
+		 * activate would turn a transient fault into a support ticket. The
+		 * failure is recorded instead, surfaced as an admin notice, and cleared
+		 * automatically as soon as an install succeeds.
+		 */
+		if ( is_wp_error( $installed ) ) {
+			InstallationFailure::record( $installed );
+		} else {
+			InstallationFailure::clear();
+		}
+
+		do_action( 'mclogiora_activated', $installed );
 	}
 }
