@@ -46,8 +46,12 @@ final class CompatibilityDashboard implements ModuleInterface {
 
 		$container->get( AdminScreenRegistry::class )->add(
 			new AdminScreen(
-				__( 'mcLogiora Compatibility', 'mclogiora' ),
-				__( 'Compatibility', 'mclogiora' ),
+				static function () {
+					return __( 'mcLogiora Compatibility', 'mclogiora' );
+				},
+				static function () {
+					return __( 'Compatibility', 'mclogiora' );
+				},
 				$this->capability,
 				'mclogiora-compatibility',
 				array( $this, 'render' )
@@ -111,6 +115,7 @@ final class CompatibilityDashboard implements ModuleInterface {
 					<?php $this->render_placeholder_card( __( 'Elementor panel', 'mclogiora' ) ); ?>
 				</div>
 			</section>
+
 		</div>
 		<?php
 	}

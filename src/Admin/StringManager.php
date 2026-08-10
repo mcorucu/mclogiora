@@ -65,8 +65,12 @@ final class StringManager implements ModuleInterface {
 		$registry = $container->get( AdminScreenRegistry::class );
 		$registry->add(
 			new AdminScreen(
-				__( 'mcLogiora String Translation', 'mclogiora' ),
-				__( 'String Translation', 'mclogiora' ),
+				static function () {
+					return __( 'mcLogiora String Translation', 'mclogiora' );
+				},
+				static function () {
+					return __( 'String Translation', 'mclogiora' );
+				},
 				$this->capability,
 				self::PAGE_SLUG,
 				array( $this, 'render' )
