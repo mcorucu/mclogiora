@@ -4,7 +4,7 @@ Tags: multilingual, translation, localization, language
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.11.0
+Stable tag: 0.12.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -118,9 +118,28 @@ Yes. On activation, mcLogiora creates its language, translation relation, string
 
 = Does this version use external services? =
 
-No. There are no HTTP requests or external service integrations in this release.
+No. There are no HTTP requests or external service integrations in this release. The SEO features work entirely through WordPress hooks; nothing is sent to Google, Bing, or anywhere else.
+
+= Will this conflict with my SEO plugin? =
+
+No. If Yoast SEO, Rank Math, All in One SEO, The SEO Framework, or Slim SEO is active, mcLogiora leaves that plugin's canonical, social, and sitemap output alone and only adds the language annotations it does not provide. The Compatibility screen shows exactly which parts are handled by which plugin.
+
+= Does it change my canonical URLs? =
+
+Each translation points at itself. Sending every language back to the default one would tell search engines your translations are duplicates to ignore, which is the opposite of what translating a site is for.
 
 == Changelog ==
+
+= 0.12.0 =
+* Added hreflang alternates, a self-referential entry, and an x-default annotation for translated pages, terms, and the home page.
+* Added self-referential canonical URLs for translated term archives, the front page, and a static posts page. A translation is never pointed back at its source language.
+* Added correct translated URLs in the WordPress core sitemap, so every entry resolves in the language it belongs to.
+* Added the correct `lang` and `dir` attributes on translated pages, and pointed WordPress at the current language's translation files.
+* Added og:locale and og:locale:alternate where no SEO plugin already provides them.
+* Added compatibility with Yoast SEO, Rank Math, All in One SEO, The SEO Framework, and Slim SEO. mcLogiora keeps hreflang, which none of them provides, and leaves their own output alone.
+* Added a multilingual SEO status panel showing exactly what is being emitted and what would stop it working.
+* Fixed activation silently succeeding when the database tables could not be created.
+* Fixed the WordPress 6.7 notice about translations being loaded too early.
 
 = 0.11.0 =
 * Added multilingual URL routing with language directories and translated slugs.

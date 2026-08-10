@@ -132,11 +132,36 @@ composer test:integration
 
 Integration tests never contact an external service.
 
+### Query budgets
+
+`tests/Integration/SeoQueryBudgetTest.php` asserts ceilings, not exact counts. An exact count would fail the first time WordPress changed how it caches terms, which would say nothing about this plugin. Current measurements on a translated page with three languages: the full alternate set costs 11 queries once, and canonical, x-default, the switcher, and a second `wp_head` render cost nothing after that.
+
 ### The suite's own installation is a regression test
 
 `composer test:integration` installs WordPress from scratch with mcLogiora active. That installation is not scaffolding, it is coverage: Phase 12 shipped a `gettext` filter whose guard recursed through `_doing_it_wrong()` and killed the runner before PHPUnit printed a banner. `tests/Integration/InstallationSafetyTest.php` makes the proof explicit, so a future boot failure names itself instead of appearing as a silent process death.
 
 When a run dies before the PHPUnit banner with no test name, suspect plugin boot rather than a slow test, and re-run with a trace on `plugins_loaded` before reaching for a timeout.
+
+## Multilingual SEO output
+
+Three authorities are single by design, and Phase 13 does not add a fourth of anything:
+
+| Question | Authority |
+|---|---|
+| What does a translated URL look like? | `TranslatedUrlGenerator` |
+| What language is this request? | `LanguageContext` |
+| May multilingual behaviour run? | `RuntimeReadiness` |
+
+Nothing in `src/Seo/` parses `REQUEST_URI`, rebuilds a path, or forms its own opinion about the current language. Canonical, `hreflang`, the switcher, and the sitemap all describe the same URLs, and one source is the only thing that stops them disagreeing.
+
+Two rules are easy to break by accident:
+
+- **Never emit a URL for a translation that does not exist.** An `hreflang` annotation pointing at a 404 is worse than no annotation, because it asserts a translation exists and then fails to produce it.
+- **Never canonicalize a translation to its source.** That tells search engines the translations are duplicates to ignore, which deletes the value of translating the site.
+
+Language values reaching markup go through `LanguageTag`. A WordPress locale is not a BCP 47 tag, and `hreflang="tr_TR"` is silently ignored by search engines while looking perfectly correct in the code.
+
+See `docs/adr/0015-multilingual-seo-integration.md`.
 
 ## Lifecycle checks
 
