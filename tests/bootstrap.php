@@ -336,6 +336,19 @@ if ( ! function_exists( 'delete_option' ) ) {
 
 $GLOBALS['mclogiora_test_options'] = array();
 
+if ( ! function_exists( 'get_site_option' ) ) {
+	/**
+	 * Returns a network option from the in-memory test store.
+	 *
+	 * @param string $name Option name.
+	 * @param mixed  $default_value Default value.
+	 * @return mixed
+	 */
+	function get_site_option( $name, $default_value = false ) {
+		return get_option( $name, $default_value );
+	}
+}
+
 if ( ! class_exists( 'WP_Post' ) ) {
 	/**
 	 * Minimal WP_Post stub.
