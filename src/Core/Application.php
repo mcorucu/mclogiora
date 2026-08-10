@@ -39,6 +39,7 @@ use McLogiora\Editors\EditorFactory;
 use McLogiora\Editors\EditorManager;
 use McLogiora\Editors\EditorRegistry;
 use McLogiora\Health\DatabaseHealthCheck;
+use McLogiora\Health\SeoHealthCheck;
 use McLogiora\Languages\CachedLanguageRepository;
 use McLogiora\Languages\DatabaseLanguageRepository;
 use McLogiora\Languages\LanguageRepositoryInterface;
@@ -47,6 +48,7 @@ use McLogiora\Languages\LanguageServiceInterface;
 use McLogiora\Languages\LocaleValidator;
 use McLogiora\Languages\RtlDetector;
 use McLogiora\Languages\LanguageManager;
+use McLogiora\Localization\DocumentLanguageModule;
 use McLogiora\Localization\Localization;
 use McLogiora\Logging\NullLogger;
 use McLogiora\Relations\CachedTranslationRelationRepository;
@@ -105,7 +107,15 @@ use McLogiora\Routing\TranslatedUrlGenerator;
 use McLogiora\Switcher\LanguageSwitcher;
 use McLogiora\Switcher\SwitcherModule;
 use McLogiora\Switcher\SwitcherRenderer;
+use McLogiora\Admin\InstallationFailureNotice;
 use McLogiora\Admin\RoutingSettingsScreen;
+use McLogiora\Seo\AlternateUrlService;
+use McLogiora\Seo\CanonicalService;
+use McLogiora\Seo\OpenGraphLocaleService;
+use McLogiora\Seo\SeoCompatibilityManager;
+use McLogiora\Seo\SeoContext;
+use McLogiora\Seo\SeoModule;
+use McLogiora\Seo\SitemapIntegration;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -202,8 +212,12 @@ final class Application {
 		$modules->add( new RoutingModule() );
 		$modules->add( new PermalinkModule() );
 		$modules->add( new FrontendTranslationModule() );
+		$modules->add( new DocumentLanguageModule() );
 		$modules->add( $this->container->get( SwitcherModule::class ) );
 		$modules->add( new RoutingSettingsScreen() );
+		$modules->add( new SeoModule() );
+		$modules->add( new SitemapIntegration() );
+		$modules->add( new InstallationFailureNotice() );
 		$modules->add( new EditorManager() );
 		$modules->add( new CompatibilityDashboard() );
 		$modules->add( new AdminMenu() );
@@ -766,6 +780,65 @@ final class Application {
 			SwitcherModule::class,
 			static function () {
 				return new SwitcherModule();
+			}
+		);
+
+		$this->container->set(
+			SeoContext::class,
+			static function ( Container $container ) {
+				return new SeoContext(
+					$container->get( RuntimeReadiness::class ),
+					$container->get( ContentTypeRegistryInterface::class ),
+					$container->get( TaxonomyRegistryInterface::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			AlternateUrlService::class,
+			static function ( Container $container ) {
+				return new AlternateUrlService(
+					$container->get( LanguageContextInterface::class ),
+					$container->get( TranslatedUrlGenerator::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			CanonicalService::class,
+			static function ( Container $container ) {
+				return new CanonicalService(
+					$container->get( SeoContext::class ),
+					$container->get( AlternateUrlService::class ),
+					$container->get( LanguageContextInterface::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			OpenGraphLocaleService::class,
+			static function ( Container $container ) {
+				return new OpenGraphLocaleService(
+					$container->get( LanguageContextInterface::class ),
+					$container->get( AlternateUrlService::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			SeoCompatibilityManager::class,
+			static function ( Container $container ) {
+				return new SeoCompatibilityManager( $container->get( PluginDetector::class ) );
+			}
+		);
+
+		$this->container->set(
+			SeoHealthCheck::class,
+			static function ( Container $container ) {
+				return new SeoHealthCheck(
+					$container->get( LanguageRepositoryInterface::class ),
+					$container->get( SeoCompatibilityManager::class )
+				);
 			}
 		);
 	}

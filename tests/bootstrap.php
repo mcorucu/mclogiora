@@ -276,6 +276,105 @@ if ( ! function_exists( 'home_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'esc_attr' ) ) {
+	/**
+	 * Returns an escaped attribute value.
+	 *
+	 * @param string $text Value.
+	 * @return string
+	 */
+	function esc_attr( $text ) {
+		return htmlspecialchars( (string) $text, ENT_QUOTES );
+	}
+}
+
+if ( ! function_exists( 'esc_html' ) ) {
+	/**
+	 * Returns escaped HTML text.
+	 *
+	 * @param string $text Value.
+	 * @return string
+	 */
+	function esc_html( $text ) {
+		return htmlspecialchars( (string) $text, ENT_QUOTES );
+	}
+}
+
+if ( ! function_exists( 'esc_url' ) ) {
+	/**
+	 * Returns a minimally sanitised URL.
+	 *
+	 * @param string $url URL.
+	 * @return string
+	 */
+	function esc_url( $url ) {
+		return htmlspecialchars( (string) $url, ENT_QUOTES );
+	}
+}
+
+if ( ! function_exists( 'esc_attr_e' ) ) {
+	/**
+	 * Echoes an escaped attribute value.
+	 *
+	 * @param string $text Text.
+	 * @param string $domain Text domain.
+	 * @return void
+	 */
+	function esc_attr_e( $text, $domain = 'default' ) {
+		unset( $domain );
+
+		echo esc_attr( $text ); // phpcs:ignore WordPress.Security.EscapeOutput -- test stub.
+	}
+}
+
+if ( ! function_exists( 'esc_attr__' ) ) {
+	/**
+	 * Returns an escaped, translated attribute value.
+	 *
+	 * @param string $text Text.
+	 * @param string $domain Text domain.
+	 * @return string
+	 */
+	function esc_attr__( $text, $domain = 'default' ) {
+		unset( $domain );
+
+		return esc_attr( $text );
+	}
+}
+
+if ( ! function_exists( 'wp_rand' ) ) {
+	/**
+	 * Returns a pseudo-random integer.
+	 *
+	 * @param int $min Minimum.
+	 * @param int $max Maximum.
+	 * @return int
+	 */
+	function wp_rand( $min = 0, $max = 0 ) {
+		return random_int( (int) $min, 0 === (int) $max ? PHP_INT_MAX : (int) $max );
+	}
+}
+
+if ( ! function_exists( 'selected' ) ) {
+	/**
+	 * Returns the selected attribute when two values match.
+	 *
+	 * @param mixed $selected Current value.
+	 * @param mixed $current Value to compare against.
+	 * @param bool  $display Whether to echo the result.
+	 * @return string
+	 */
+	function selected( $selected, $current = true, $display = true ) {
+		$result = (string) $selected === (string) $current ? " selected='selected'" : '';
+
+		if ( $display ) {
+			echo $result; // phpcs:ignore WordPress.Security.EscapeOutput -- test stub.
+		}
+
+		return $result;
+	}
+}
+
 if ( ! function_exists( 'sanitize_html_class' ) ) {
 	/**
 	 * Returns a safe HTML class.
@@ -335,6 +434,19 @@ if ( ! function_exists( 'delete_option' ) ) {
 }
 
 $GLOBALS['mclogiora_test_options'] = array();
+
+if ( ! function_exists( 'get_site_option' ) ) {
+	/**
+	 * Returns a network option from the in-memory test store.
+	 *
+	 * @param string $name Option name.
+	 * @param mixed  $default_value Default value.
+	 * @return mixed
+	 */
+	function get_site_option( $name, $default_value = false ) {
+		return get_option( $name, $default_value );
+	}
+}
 
 if ( ! class_exists( 'WP_Post' ) ) {
 	/**

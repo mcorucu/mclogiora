@@ -1,6 +1,6 @@
 # mcLogiora Planning
 
-Current phase: Phase 12 complete (URL Routing, Slug Translation & Language Switching, v0.11.0). Next planned phase: Phase 13.
+Current phase: Phase 13 complete (SEO, hreflang, Canonical & Sitemap Integration, v0.12.0). Next planned phase: Phase 14.
 
 This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 
@@ -663,9 +663,11 @@ Phase 12: URL Routing, Slug Translation & Language Switching - v0.11.0
 - An explicit install-safe runtime lifecycle. `RuntimeReadiness` is the single authority on installation state, schema availability, and request context; front-end modules register nothing while WordPress is installing, and a missing schema renders as ordinary monolingual WordPress. See `docs/adr/0014-install-safe-runtime-lifecycle.md`.
 - Three defects the boot hang had been hiding: the routing path query var was never registered, plugin activation installed only the Phase 10 schema, and permalinks carried their language prefix twice. All three are covered by regression tests. Widget titles, the document `lang` attribute, and the `_load_textdomain_just_in_time` notice are documented as known gaps in ADR 0014.
 
-### Planned phases
+Phase 13: SEO, hreflang, Canonical & Sitemap Integration - v0.12.0
 
-Phase 13: SEO, hreflang, Canonical & Sitemap Integration
+- Document language and request locale, BCP 47 language tags, hreflang alternates with a self-referential entry and an x-default policy, self-referential canonical URLs, WordPress core sitemap URL correction, OpenGraph locale, and per-concern ownership adapters for the five common SEO plugins. Carries the two boot problems Phase 12.1 left open: activation now surfaces installer failures, and admin screens no longer translate while registering. See `docs/adr/0015-multilingual-seo-integration.md`.
+
+### Planned phases
 
 - hreflang output, canonical handling, OpenGraph and JSON-LD compatibility, sitemap integration, and coexistence with established SEO plugins.
 
@@ -722,4 +724,4 @@ These notes record the Phase 01 discovery environment. They are historical conte
 
 ## Next Phase
 
-Phases 02 through 12 are complete. The next implementation phase is **Phase 13: SEO, hreflang, Canonical & Sitemap Integration**, which consumes the Phase 12 URL layer to emit search-engine metadata.
+Phases 02 through 13 are complete. The next implementation phase is **Phase 14: Editor Translation UX**, which brings the translation workflow into the editing experience.

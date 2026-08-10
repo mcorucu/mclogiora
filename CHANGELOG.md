@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.12.0
+
+- Added Phase 13 multilingual SEO integration.
+- Added `hreflang` alternates for translated singular content, supported taxonomy archives, and the home page. A language is annotated only when a translation genuinely exists and a URL can be produced for it, because an alternate pointing at a URL that 404s is worse than no alternate at all.
+- Added a self-referential `hreflang` entry built from the same source as every other alternate, so a page cannot declare one URL to be itself and a different one to be its own language's version.
+- Added an x-default annotation pointing at the default language's equivalent, omitted entirely when no equivalent exists rather than aimed at a guess. Filterable through `mclogiora_seo_x_default_url`.
+- Added self-referential canonical URLs for translated term archives, a blog-index front page, and a static posts page. Singular requests are left to WordPress core, which has been emitting the correct translated permalink since Phase 12, so no page can end up with two canonical tags.
+- Added correct translated URLs in the WordPress core sitemap. Core builds entries from `get_permalink()`, which is prefixed with the language of the current request, so without this every translated entry would have been listed at an address that resolves to the wrong language.
+- Added the correct `lang` and `dir` attributes on translated pages, replacing only those two attributes so anything a theme contributed survives.
+- Added a request `locale` filter so themes and plugins loading translations just in time reach the current language's files.
+- Added `og:locale` and `og:locale:alternate`, omitted for a language configured without a territory rather than given an invented one.
+- Added SEO plugin compatibility for Yoast SEO, Rank Math, All in One SEO, The SEO Framework, and Slim SEO, with ownership decided per concern. `hreflang` never transfers, because none of those plugins produces it for a multilingual site.
+- Changed the language switcher to use the same standards-compatible language tags as the document head. A link saying `hreflang="tr"` while the head said `hreflang="tr-TR"` was two different claims about one page.
+- Added a multilingual SEO status panel reporting what is emitted, what is delegated, and which languages cannot produce a valid language tag. Read-only; nothing is repaired automatically.
+- Added `LanguageTag`, which converts a WordPress locale to a BCP 47 tag. `hreflang="tr_TR"` looks correct in WordPress code and is silently ignored by search engines, which is the worst kind of bug.
+- Fixed activation discarding the installer's result, so a failed migration read as a successful activation. Failures are now recorded, shown as an admin notice with a retry action, and reported in the health panel.
+- Fixed the `_load_textdomain_just_in_time` notice WordPress 6.7 emits on every page load. Seven admin modules translated their screen titles while registering on `plugins_loaded`; titles are now resolved when the menu is actually built.
+- Changed string translation lookups to be memoised for the request, including misses. Phase 12 wired this path to `gettext`, so a page view now asks about every string a theme renders and most have no translation.
+- No external services, no telemetry, and no analytics were added. Multilingual SEO works entirely through WordPress hooks.
+
 ## 0.11.0
 
 - Added Phase 12 URL routing, translated slugs, and language switching.

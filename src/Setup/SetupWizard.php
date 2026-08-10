@@ -68,8 +68,12 @@ final class SetupWizard implements ModuleInterface {
 		$registry = $container->get( AdminScreenRegistry::class );
 		$registry->add(
 			new AdminScreen(
-				__( 'mcLogiora Setup Wizard', 'mclogiora' ),
-				__( 'Setup Wizard', 'mclogiora' ),
+				static function () {
+					return __( 'mcLogiora Setup Wizard', 'mclogiora' );
+				},
+				static function () {
+					return __( 'Setup Wizard', 'mclogiora' );
+				},
 				$this->capability,
 				'mclogiora-setup',
 				array( $this, 'render' )

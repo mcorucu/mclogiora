@@ -58,8 +58,12 @@ final class RoutingSettingsScreen implements ModuleInterface {
 		$registry = $container->get( AdminScreenRegistry::class );
 		$registry->add(
 			new AdminScreen(
-				__( 'mcLogiora Languages and URLs', 'mclogiora' ),
-				__( 'Languages & URLs', 'mclogiora' ),
+				static function () {
+					return __( 'mcLogiora Languages and URLs', 'mclogiora' );
+				},
+				static function () {
+					return __( 'Languages & URLs', 'mclogiora' );
+				},
 				$this->capability,
 				self::PAGE_SLUG,
 				array( $this, 'render' )
