@@ -173,10 +173,10 @@ final class SeoHealthCheck {
 			$findings[] = array(
 				'id'       => 'unrecognised_seo_plugin',
 				'severity' => self::SEVERITY_NOTICE,
-				'label'    => __( 'Another SEO plugin may also output canonical metadata', 'mclogiora' ),
+				'label'    => __( 'Another SEO plugin may also output canonical or social metadata', 'mclogiora' ),
 				'detail'   => sprintf(
 					/* translators: %s: comma-separated list of plugin files. */
-					__( 'mcLogiora has no adapter for these, so it has not changed what it outputs. Check the page source for duplicate canonical tags: %s', 'mclogiora' ),
+					__( 'mcLogiora has no adapter for these, so it has changed nothing on its own. View a page source and look for two canonical tags or two og:locale tags. If og:locale is duplicated, the mclogiora_seo_output_open_graph_locale filter switches mcLogiora\'s copy off. Detected: %s', 'mclogiora' ),
 					implode( ', ', $unknown )
 				),
 			);
