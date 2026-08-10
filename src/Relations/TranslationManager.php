@@ -87,8 +87,12 @@ final class TranslationManager implements ModuleInterface {
 		$registry = $container->get( AdminScreenRegistry::class );
 		$registry->add(
 			new AdminScreen(
-				__( 'mcLogiora Translation Manager', 'mclogiora' ),
-				__( 'Translation Manager', 'mclogiora' ),
+				static function () {
+					return __( 'mcLogiora Translation Manager', 'mclogiora' );
+				},
+				static function () {
+					return __( 'Translation Manager', 'mclogiora' );
+				},
 				$this->capability,
 				'mclogiora-translation-manager',
 				array( $this, 'render' )

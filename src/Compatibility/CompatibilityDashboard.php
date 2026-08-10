@@ -13,6 +13,7 @@ use McLogiora\Capabilities\CapabilityRegistry;
 use McLogiora\Contracts\ModuleInterface;
 use McLogiora\Core\Container;
 use McLogiora\Editors\EditorInterface;
+use McLogiora\Health\SeoHealthCheck;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -35,6 +36,13 @@ final class CompatibilityDashboard implements ModuleInterface {
 	private $capability = 'manage_options';
 
 	/**
+	 * Multilingual SEO diagnostics.
+	 *
+	 * @var SeoHealthCheck|null
+	 */
+	private $seo_health = null;
+
+	/**
 	 * Registers the dashboard screen.
 	 *
 	 * @param Container $container Service container.
@@ -42,12 +50,17 @@ final class CompatibilityDashboard implements ModuleInterface {
 	 */
 	public function register( Container $container ) {
 		$this->service    = $container->get( CompatibilityService::class );
+		$this->seo_health = $container->get( SeoHealthCheck::class );
 		$this->capability = $container->get( CapabilityRegistry::class )->resolve( CapabilityRegistry::MANAGE );
 
 		$container->get( AdminScreenRegistry::class )->add(
 			new AdminScreen(
-				__( 'mcLogiora Compatibility', 'mclogiora' ),
-				__( 'Compatibility', 'mclogiora' ),
+				static function () {
+					return __( 'mcLogiora Compatibility', 'mclogiora' );
+				},
+				static function () {
+					return __( 'Compatibility', 'mclogiora' );
+				},
 				$this->capability,
 				'mclogiora-compatibility',
 				array( $this, 'render' )
@@ -111,7 +124,49 @@ final class CompatibilityDashboard implements ModuleInterface {
 					<?php $this->render_placeholder_card( __( 'Elementor panel', 'mclogiora' ) ); ?>
 				</div>
 			</section>
+
+			<?php $this->render_seo_status(); ?>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Renders the multilingual SEO status panel.
+	 *
+	 * Read-only. Every finding here describes something the site owner has to
+	 * decide about -- a locale to correct, a plugin to configure -- and none of
+	 * those are decisions a plugin should make on someone's behalf.
+	 *
+	 * @return void
+	 */
+	private function render_seo_status() {
+		if ( ! $this->seo_health instanceof SeoHealthCheck ) {
+			return;
+		}
+
+		$findings = $this->seo_health->report();
+
+		if ( empty( $findings ) ) {
+			return;
+		}
+		?>
+		<section class="mclogiora-panel" aria-labelledby="mclogiora-seo-status-title">
+			<p class="mclogiora-eyebrow"><?php esc_html_e( 'Multilingual SEO', 'mclogiora' ); ?></p>
+			<h2 id="mclogiora-seo-status-title"><?php esc_html_e( 'Language metadata status', 'mclogiora' ); ?></h2>
+			<p class="mclogiora-lede"><?php esc_html_e( 'What mcLogiora currently adds to the front end, and anything that would stop it working. Nothing here changes automatically.', 'mclogiora' ); ?></p>
+
+			<?php foreach ( $findings as $finding ) : ?>
+				<div class="mclogiora-status-card<?php echo SeoHealthCheck::SEVERITY_OK === $finding['severity'] ? '' : ' mclogiora-status-card--notice'; ?>">
+					<span class="mclogiora-status-card__icon" aria-hidden="true"><?php echo esc_html( SeoHealthCheck::SEVERITY_OK === $finding['severity'] ? 'OK' : 'i' ); ?></span>
+					<div>
+						<h3><?php echo esc_html( $finding['label'] ); ?></h3>
+						<?php if ( '' !== $finding['detail'] ) : ?>
+							<p><?php echo esc_html( $finding['detail'] ); ?></p>
+						<?php endif; ?>
+					</div>
+				</div>
+			<?php endforeach; ?>
+		</section>
 		<?php
 	}
 

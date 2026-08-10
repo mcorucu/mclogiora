@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: mcLogiora 0.11.0\n"
+"Project-Id-Version: mcLogiora 0.12.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mclogiora\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-09T21:00:14+00:00\n"
+"POT-Creation-Date: 2026-08-10T21:56:41+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mclogiora\n"
@@ -51,13 +51,13 @@ msgstr ""
 
 #: src/Admin/AdminMenu.php:144
 #: src/Admin/AdminMenu.php:161
-#: src/Admin/RoutingSettingsScreen.php:81
-#: src/Admin/StringManager.php:84
-#: src/Admin/WidgetTranslationManager.php:83
-#: src/Compatibility/CompatibilityDashboard.php:65
-#: src/Languages/LanguageManager.php:70
-#: src/Relations/TranslationManager.php:106
-#: src/Setup/SetupWizard.php:87
+#: src/Admin/RoutingSettingsScreen.php:85
+#: src/Admin/StringManager.php:88
+#: src/Admin/WidgetTranslationManager.php:87
+#: src/Compatibility/CompatibilityDashboard.php:78
+#: src/Languages/LanguageManager.php:74
+#: src/Relations/TranslationManager.php:110
+#: src/Setup/SetupWizard.php:91
 msgid "You do not have permission to access this page."
 msgstr ""
 
@@ -106,7 +106,7 @@ msgid "Categories, tags, and eligible public custom taxonomies are prepared for 
 msgstr ""
 
 #: src/Admin/AdminMenu.php:225
-#: src/Relations/TranslationManager.php:167
+#: src/Relations/TranslationManager.php:171
 msgid "Excluded Integrations"
 msgstr ""
 
@@ -120,6 +120,22 @@ msgstr ""
 
 #: src/Admin/AdminMenu.php:232
 msgid "Gutenberg, Classic Editor, Elementor, and ACF remain planned adapter foundations."
+msgstr ""
+
+#: src/Admin/InstallationFailureNotice.php:74
+msgid "mcLogiora could not finish setting up its database."
+msgstr ""
+
+#: src/Admin/InstallationFailureNotice.php:75
+msgid "Translation features stay switched off until this is resolved, and your content is untouched. This is usually a database permissions problem."
+msgstr ""
+
+#: src/Admin/InstallationFailureNotice.php:76
+msgid "Try setting up the database again"
+msgstr ""
+
+#: src/Admin/InstallationFailureNotice.php:94
+msgid "You do not have permission to do that."
 msgstr ""
 
 #: src/Admin/MediaTranslationFields.php:100
@@ -153,110 +169,110 @@ msgstr ""
 msgid "Save Translation"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:61
+#: src/Admin/RoutingSettingsScreen.php:62
 msgid "mcLogiora Languages and URLs"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:62
-#: src/Admin/RoutingSettingsScreen.php:90
+#: src/Admin/RoutingSettingsScreen.php:65
+#: src/Admin/RoutingSettingsScreen.php:94
 msgid "Languages & URLs"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:89
+#: src/Admin/RoutingSettingsScreen.php:93
 msgid "Multilingual URLs"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:91
+#: src/Admin/RoutingSettingsScreen.php:95
 msgid "Controls how languages appear in your URLs and how the language switcher is presented."
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:100
+#: src/Admin/RoutingSettingsScreen.php:104
 msgid "URL Structure"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:101
+#: src/Admin/RoutingSettingsScreen.php:105
 msgid "Languages are added as a directory, for example /tr/about/. Other URL strategies are not available yet."
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:104
+#: src/Admin/RoutingSettingsScreen.php:108
 msgid "Strategy"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:106
+#: src/Admin/RoutingSettingsScreen.php:110
 msgid "Language directory"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:113
+#: src/Admin/RoutingSettingsScreen.php:117
 msgid "Also add a directory for the default language"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:116
+#: src/Admin/RoutingSettingsScreen.php:120
 msgid "Leaving this off keeps your existing default-language URLs unchanged. Turning it on changes every published permalink at once."
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:120
+#: src/Admin/RoutingSettingsScreen.php:124
 #: src/Switcher/SwitcherModule.php:129
 msgid "Language Switcher"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:123
+#: src/Admin/RoutingSettingsScreen.php:127
 msgid "Default style"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:134
+#: src/Admin/RoutingSettingsScreen.php:138
 msgid "Show the native language name"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:140
+#: src/Admin/RoutingSettingsScreen.php:144
 msgid "Show the language code"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:146
+#: src/Admin/RoutingSettingsScreen.php:150
 msgid "Show an optional flag"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:149
+#: src/Admin/RoutingSettingsScreen.php:153
 msgid "A language is not a country, so no flag is assumed for any language. Flags appear only where your site supplies one, and the readable label never depends on them."
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:153
+#: src/Admin/RoutingSettingsScreen.php:157
 msgid "Include the current language"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:158
+#: src/Admin/RoutingSettingsScreen.php:162
 msgid "When a translation is missing"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:160
+#: src/Admin/RoutingSettingsScreen.php:164
 msgid "Hide the language"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:161
+#: src/Admin/RoutingSettingsScreen.php:165
 msgid "Link to that language home page"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:162
+#: src/Admin/RoutingSettingsScreen.php:166
 msgid "Show it as unavailable"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:166
+#: src/Admin/RoutingSettingsScreen.php:170
 msgid "mcLogiora never links a language to content in a different language. A missing translation is reported honestly rather than disguised."
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:169
+#: src/Admin/RoutingSettingsScreen.php:173
 msgid "Save Settings"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:173
+#: src/Admin/RoutingSettingsScreen.php:177
 msgid "Using the Switcher"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:174
+#: src/Admin/RoutingSettingsScreen.php:178
 msgid "Add the switcher with the shortcode, the block, the widget, or a template tag:"
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:191
-#: src/Admin/RoutingSettingsScreen.php:197
+#: src/Admin/RoutingSettingsScreen.php:195
+#: src/Admin/RoutingSettingsScreen.php:201
 #: src/Admin/StringActionController.php:239
 #: src/Admin/StringActionController.php:245
 #: src/Admin/TranslationActionController.php:233
@@ -264,152 +280,152 @@ msgstr ""
 msgid "The request could not be verified."
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:201
+#: src/Admin/RoutingSettingsScreen.php:205
 msgid "You are not allowed to change these settings."
 msgstr ""
 
-#: src/Admin/RoutingSettingsScreen.php:251
+#: src/Admin/RoutingSettingsScreen.php:255
 msgid "Settings saved."
 msgstr ""
 
-#: src/Admin/StringManager.php:68
+#: src/Admin/StringManager.php:69
 msgid "mcLogiora String Translation"
 msgstr ""
 
-#: src/Admin/StringManager.php:69
-#: src/Admin/StringManager.php:96
+#: src/Admin/StringManager.php:72
+#: src/Admin/StringManager.php:100
 msgid "String Translation"
 msgstr ""
 
-#: src/Admin/StringManager.php:95
-#: src/Admin/WidgetTranslationManager.php:91
+#: src/Admin/StringManager.php:99
+#: src/Admin/WidgetTranslationManager.php:95
 msgid "Translation Data"
 msgstr ""
 
-#: src/Admin/StringManager.php:97
+#: src/Admin/StringManager.php:101
 msgid "Manage translations for interface strings found in your theme and plugins. Scanning only runs when you ask for it, and never during normal site traffic."
 msgstr ""
 
-#: src/Admin/StringManager.php:102
+#: src/Admin/StringManager.php:106
 msgid "String filters"
 msgstr ""
 
-#: src/Admin/StringManager.php:106
-#: src/Relations/TranslationManager.php:159
+#: src/Admin/StringManager.php:110
+#: src/Relations/TranslationManager.php:163
 msgid "Search"
 msgstr ""
 
-#: src/Admin/StringManager.php:110
-#: src/Admin/StringManager.php:231
+#: src/Admin/StringManager.php:114
+#: src/Admin/StringManager.php:235
 msgid "Text domain"
 msgstr ""
 
-#: src/Admin/StringManager.php:114
-#: src/Admin/StringManager.php:233
+#: src/Admin/StringManager.php:118
+#: src/Admin/StringManager.php:237
 msgid "Origin"
 msgstr ""
 
-#: src/Admin/StringManager.php:116
+#: src/Admin/StringManager.php:120
 msgid "Any origin"
 msgstr ""
 
-#: src/Admin/StringManager.php:124
+#: src/Admin/StringManager.php:128
 msgid "Filter"
 msgstr ""
 
-#: src/Admin/StringManager.php:130
+#: src/Admin/StringManager.php:134
 msgid "Registered Strings"
 msgstr ""
 
-#: src/Admin/StringManager.php:132
+#: src/Admin/StringManager.php:136
 msgid "Source strings discovered by scanning or registered manually."
 msgstr ""
 
-#: src/Admin/StringManager.php:135
-#: src/Languages/LanguageManager.php:273
-#: src/Relations/TranslationManager.php:184
+#: src/Admin/StringManager.php:139
+#: src/Languages/LanguageManager.php:277
+#: src/Relations/TranslationManager.php:188
 msgid "Active Languages"
 msgstr ""
 
-#: src/Admin/StringManager.php:137
+#: src/Admin/StringManager.php:141
 msgid "Languages available as translation targets."
 msgstr ""
 
-#: src/Admin/StringManager.php:155
+#: src/Admin/StringManager.php:159
 msgid "Scan for Strings"
 msgstr ""
 
-#: src/Admin/StringManager.php:156
+#: src/Admin/StringManager.php:160
 msgid "Reads the source files of a theme or plugin and registers the translatable strings it finds. This runs only when you submit this form."
 msgstr ""
 
-#: src/Admin/StringManager.php:161
+#: src/Admin/StringManager.php:165
 msgid "Scope"
 msgstr ""
 
-#: src/Admin/StringManager.php:163
+#: src/Admin/StringManager.php:167
 msgid "Theme"
 msgstr ""
 
-#: src/Admin/StringManager.php:164
+#: src/Admin/StringManager.php:168
 msgid "Plugin"
 msgstr ""
 
-#: src/Admin/StringManager.php:168
+#: src/Admin/StringManager.php:172
 msgid "Directory name"
 msgstr ""
 
-#: src/Admin/StringManager.php:171
+#: src/Admin/StringManager.php:175
 msgid "Scan"
 msgstr ""
 
-#: src/Admin/StringManager.php:189
+#: src/Admin/StringManager.php:193
 msgid "Add and activate at least one language before translating strings."
 msgstr ""
 
-#: src/Admin/StringManager.php:198
+#: src/Admin/StringManager.php:202
 msgid "No strings match these filters yet. Run a scan to discover strings."
 msgstr ""
 
-#: src/Admin/StringManager.php:214
-#: src/Admin/WidgetTranslationManager.php:139
-#: src/Relations/TranslationManager.php:147
-#: src/Relations/TranslationManager.php:437
-#: src/Relations/TranslationManager.php:464
+#: src/Admin/StringManager.php:218
+#: src/Admin/WidgetTranslationManager.php:143
+#: src/Relations/TranslationManager.php:151
+#: src/Relations/TranslationManager.php:441
+#: src/Relations/TranslationManager.php:468
 msgid "Target language"
 msgstr ""
 
-#: src/Admin/StringManager.php:230
+#: src/Admin/StringManager.php:234
 msgid "Source string"
 msgstr ""
 
-#: src/Admin/StringManager.php:232
+#: src/Admin/StringManager.php:236
 msgid "Context"
 msgstr ""
 
-#: src/Admin/StringManager.php:234
+#: src/Admin/StringManager.php:238
 msgid "Translation"
 msgstr ""
 
-#: src/Admin/StringManager.php:266
+#: src/Admin/StringManager.php:270
 msgid "Not seen in the last scan. The translation is kept."
 msgstr ""
 
-#: src/Admin/StringManager.php:279
+#: src/Admin/StringManager.php:283
 msgid "Save"
 msgstr ""
 
-#: src/Admin/StringManager.php:327
-#: src/Admin/WidgetTranslationManager.php:212
+#: src/Admin/StringManager.php:331
+#: src/Admin/WidgetTranslationManager.php:216
 msgid "The action could not be completed."
 msgstr ""
 
-#: src/Admin/StringManager.php:334
+#: src/Admin/StringManager.php:338
 msgid "The scan finished. Discovered strings are listed below."
 msgstr ""
 
-#: src/Admin/StringManager.php:335
-#: src/Admin/WidgetTranslationManager.php:220
+#: src/Admin/StringManager.php:339
+#: src/Admin/WidgetTranslationManager.php:224
 msgid "The translation was saved."
 msgstr ""
 
@@ -419,8 +435,8 @@ msgid "The requested translation status is not recognised."
 msgstr ""
 
 #: src/Admin/TranslationColumns.php:96
-#: src/Languages/LanguageManager.php:55
-#: src/Languages/LanguageManager.php:83
+#: src/Languages/LanguageManager.php:58
+#: src/Languages/LanguageManager.php:87
 msgid "Languages"
 msgstr ""
 
@@ -460,62 +476,62 @@ msgstr ""
 msgid "Missing"
 msgstr ""
 
-#: src/Admin/WidgetTranslationManager.php:67
+#: src/Admin/WidgetTranslationManager.php:68
 msgid "mcLogiora Menus and Widgets"
 msgstr ""
 
-#: src/Admin/WidgetTranslationManager.php:68
-#: src/Admin/WidgetTranslationManager.php:92
+#: src/Admin/WidgetTranslationManager.php:71
+#: src/Admin/WidgetTranslationManager.php:96
 msgid "Menus & Widgets"
 msgstr ""
 
-#: src/Admin/WidgetTranslationManager.php:93
+#: src/Admin/WidgetTranslationManager.php:97
 msgid "Create translated navigation menus and review which widget types mcLogiora can translate. Which menu or widget text appears on the front end is decided in a later phase."
 msgstr ""
 
-#: src/Admin/WidgetTranslationManager.php:113
-#: src/Relations/TranslationManager.php:418
+#: src/Admin/WidgetTranslationManager.php:117
+#: src/Relations/TranslationManager.php:422
 msgid "Add and activate at least one language before creating translations."
 msgstr ""
 
-#: src/Admin/WidgetTranslationManager.php:123
-#: src/Admin/WidgetTranslationManager.php:152
+#: src/Admin/WidgetTranslationManager.php:127
+#: src/Admin/WidgetTranslationManager.php:156
 msgid "Create Menu Translation"
 msgstr ""
 
-#: src/Admin/WidgetTranslationManager.php:124
+#: src/Admin/WidgetTranslationManager.php:128
 msgid "Creates a separate menu in the target language, copying item labels, order, and hierarchy as a starting point. Theme locations are not changed."
 msgstr ""
 
-#: src/Admin/WidgetTranslationManager.php:129
+#: src/Admin/WidgetTranslationManager.php:133
 msgid "Source menu"
 msgstr ""
 
-#: src/Admin/WidgetTranslationManager.php:149
+#: src/Admin/WidgetTranslationManager.php:153
 msgid "Translated menu name (optional)"
 msgstr ""
 
-#: src/Admin/WidgetTranslationManager.php:168
+#: src/Admin/WidgetTranslationManager.php:172
 msgid "Supported Widget Types"
 msgstr ""
 
-#: src/Admin/WidgetTranslationManager.php:169
+#: src/Admin/WidgetTranslationManager.php:173
 msgid "mcLogiora only translates widget fields it understands. Widgets without an adapter are listed as unsupported and are never modified."
 msgstr ""
 
-#: src/Admin/WidgetTranslationManager.php:173
+#: src/Admin/WidgetTranslationManager.php:177
 msgid "Widget type"
 msgstr ""
 
-#: src/Admin/WidgetTranslationManager.php:174
+#: src/Admin/WidgetTranslationManager.php:178
 msgid "Translatable fields"
 msgstr ""
 
-#: src/Admin/WidgetTranslationManager.php:188
+#: src/Admin/WidgetTranslationManager.php:192
 msgid "Other widget types can be supported by registering an adapter through the mclogiora_widget_adapters filter."
 msgstr ""
 
-#: src/Admin/WidgetTranslationManager.php:219
+#: src/Admin/WidgetTranslationManager.php:223
 msgid "The translated menu was created."
 msgstr ""
 
@@ -561,88 +577,100 @@ msgstr ""
 msgid "SeedProd"
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:49
+#: src/Compatibility/CompatibilityDashboard.php:59
 msgid "mcLogiora Compatibility"
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:50
+#: src/Compatibility/CompatibilityDashboard.php:62
 msgid "Compatibility"
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:76
+#: src/Compatibility/CompatibilityDashboard.php:89
 msgid "Compatibility foundation"
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:77
+#: src/Compatibility/CompatibilityDashboard.php:90
 msgid "Editors and compatibility"
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:78
+#: src/Compatibility/CompatibilityDashboard.php:91
 msgid "This read-only overview identifies the current environment. Editor integrations remain dormant until their dedicated workflow phases."
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:81
+#: src/Compatibility/CompatibilityDashboard.php:94
 msgid "Detected Editors"
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:82
+#: src/Compatibility/CompatibilityDashboard.php:95
 msgid "Detected Builders"
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:83
+#: src/Compatibility/CompatibilityDashboard.php:96
 msgid "Detected Plugins"
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:85
+#: src/Compatibility/CompatibilityDashboard.php:98
 msgid "Detected Theme"
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:86
+#: src/Compatibility/CompatibilityDashboard.php:99
 msgid "Unavailable"
 msgstr ""
 
 #. translators: %s: detected theme version number.
-#: src/Compatibility/CompatibilityDashboard.php:92
+#: src/Compatibility/CompatibilityDashboard.php:105
 #, php-format
 msgid "Version %s. Theme detection is read-only."
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:93
+#: src/Compatibility/CompatibilityDashboard.php:106
 msgid "Theme detection is read-only."
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:103
+#: src/Compatibility/CompatibilityDashboard.php:116
 msgid "Editor integrations are intentionally dormant"
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:104
+#: src/Compatibility/CompatibilityDashboard.php:117
 msgid "No editor scripts, metaboxes, sidebars, panels, content mutations, REST routes, or AJAX handlers are registered in this phase."
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:109
+#: src/Compatibility/CompatibilityDashboard.php:122
 #: src/Editors/ClassicEditorAdapter.php:53
 msgid "Classic Editor metabox"
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:110
+#: src/Compatibility/CompatibilityDashboard.php:123
 #: src/Editors/BlockEditorAdapter.php:53
 msgid "Block Editor sidebar"
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:111
+#: src/Compatibility/CompatibilityDashboard.php:124
 #: src/Editors/ElementorAdapter.php:71
 msgid "Elementor panel"
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:132
+#: src/Compatibility/CompatibilityDashboard.php:154
+msgid "Multilingual SEO"
+msgstr ""
+
+#: src/Compatibility/CompatibilityDashboard.php:155
+msgid "Language metadata status"
+msgstr ""
+
+#: src/Compatibility/CompatibilityDashboard.php:156
+msgid "What mcLogiora currently adds to the front end, and anything that would stop it working. Nothing here changes automatically."
+msgstr ""
+
+#: src/Compatibility/CompatibilityDashboard.php:187
 msgid "Nothing detected in the current environment."
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:162
+#: src/Compatibility/CompatibilityDashboard.php:217
 msgid "Architecture ready"
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:163
+#: src/Compatibility/CompatibilityDashboard.php:218
 msgid "The future surface will use the shared editor context and relation services. No editor UI is registered yet."
 msgstr ""
 
@@ -722,6 +750,52 @@ msgstr ""
 
 #: src/Editors/ClassicEditorAdapter.php:27
 msgid "WordPress Classic Editor"
+msgstr ""
+
+#: src/Health/SeoHealthCheck.php:110
+msgid "Some languages cannot produce a valid language tag"
+msgstr ""
+
+#. translators: %s: comma-separated list of language codes.
+#: src/Health/SeoHealthCheck.php:113
+#, php-format
+msgid "These languages are left out of hreflang and og:locale until their locale is corrected: %s"
+msgstr ""
+
+#: src/Health/SeoHealthCheck.php:123
+msgid "Two languages share one language tag"
+msgstr ""
+
+#. translators: %s: comma-separated list of language tags.
+#: src/Health/SeoHealthCheck.php:126
+#, php-format
+msgid "Only the first language is annotated for each repeated tag: %s"
+msgstr ""
+
+#: src/Health/SeoHealthCheck.php:136
+msgid "Every active language has a valid language tag"
+msgstr ""
+
+#: src/Health/SeoHealthCheck.php:165
+msgid "mcLogiora provides all multilingual SEO output"
+msgstr ""
+
+#: src/Health/SeoHealthCheck.php:166
+msgid "Some SEO output is left to another plugin"
+msgstr ""
+
+#: src/Health/SeoHealthCheck.php:176
+msgid "Another SEO plugin may also output canonical or social metadata"
+msgstr ""
+
+#. translators: %s: comma-separated list of plugin files.
+#: src/Health/SeoHealthCheck.php:179
+#, php-format
+msgid "mcLogiora has no adapter for these, so it has changed nothing on its own. View a page source and look for two canonical tags or two og:locale tags. If og:locale is duplicated, the mclogiora_seo_output_open_graph_locale filter switches mcLogiora's copy off. Detected: %s"
+msgstr ""
+
+#: src/Health/SeoHealthCheck.php:204
+msgid "Database setup did not finish"
 msgstr ""
 
 #: src/Languages/DatabaseLanguageRepository.php:164
@@ -809,231 +883,231 @@ msgstr ""
 msgid "The language table is not available. Reactivate the plugin to run database migrations."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:54
+#: src/Languages/LanguageManager.php:55
 msgid "mcLogiora Languages"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:82
+#: src/Languages/LanguageManager.php:86
 msgid "Language Manager"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:84
+#: src/Languages/LanguageManager.php:88
 msgid "Add and manage the site languages mcLogiora will use in later translation workflows."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:112
-#: src/Setup/SetupWizard.php:124
+#: src/Languages/LanguageManager.php:116
+#: src/Setup/SetupWizard.php:128
 msgid "You do not have permission to perform this action."
-msgstr ""
-
-#: src/Languages/LanguageManager.php:118
-#: src/Setup/SetupWizard.php:130
-msgid "Security check failed. Please try again."
 msgstr ""
 
 #: src/Languages/LanguageManager.php:122
 #: src/Setup/SetupWizard.php:134
+msgid "Security check failed. Please try again."
+msgstr ""
+
+#: src/Languages/LanguageManager.php:126
+#: src/Setup/SetupWizard.php:138
 msgid "Language services are not available."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:155
+#: src/Languages/LanguageManager.php:159
 msgid "Unknown language action."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:214
+#: src/Languages/LanguageManager.php:218
 msgid "Language added."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:215
+#: src/Languages/LanguageManager.php:219
 msgid "Language updated."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:216
+#: src/Languages/LanguageManager.php:220
 msgid "Language enabled."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:217
+#: src/Languages/LanguageManager.php:221
 msgid "Language disabled."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:218
+#: src/Languages/LanguageManager.php:222
 msgid "Default language updated."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:219
+#: src/Languages/LanguageManager.php:223
 msgid "Language order saved."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:222
+#: src/Languages/LanguageManager.php:226
 msgid "Language action completed."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:253
-#: src/Setup/SetupWizard.php:334
+#: src/Languages/LanguageManager.php:257
+#: src/Setup/SetupWizard.php:338
 msgid "Default Language"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:258
+#: src/Languages/LanguageManager.php:262
 msgid "No default language has been configured yet."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:292
-#: src/Languages/LanguageManager.php:297
+#: src/Languages/LanguageManager.php:296
+#: src/Languages/LanguageManager.php:301
 msgid "Add Language"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:316
+#: src/Languages/LanguageManager.php:320
 msgid "Display Order"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:317
+#: src/Languages/LanguageManager.php:321
 msgid "Lower numbers appear first in future language lists and setup choices."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:329
+#: src/Languages/LanguageManager.php:333
 msgid "Save Order"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:344
+#: src/Languages/LanguageManager.php:348
 msgid "Language Directory"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:345
+#: src/Languages/LanguageManager.php:349
 msgid "Language data is now persisted in the mcLogiora language table. Translation workflows remain intentionally unavailable."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:350
+#: src/Languages/LanguageManager.php:354
 msgid "Language Code"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:351
-#: src/Languages/LanguageManager.php:450
-#: src/Setup/SetupWizard.php:268
+#: src/Languages/LanguageManager.php:355
+#: src/Languages/LanguageManager.php:454
+#: src/Setup/SetupWizard.php:272
 msgid "Locale"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:352
+#: src/Languages/LanguageManager.php:356
 msgid "Native Name"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:353
+#: src/Languages/LanguageManager.php:357
 msgid "English Name"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:354
-#: src/Languages/LanguageManager.php:462
-#: src/Setup/SetupWizard.php:280
+#: src/Languages/LanguageManager.php:358
+#: src/Languages/LanguageManager.php:466
+#: src/Setup/SetupWizard.php:284
 msgid "Direction"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:355
-#: src/Languages/LanguageManager.php:469
-#: src/Relations/TranslationManager.php:153
+#: src/Languages/LanguageManager.php:359
+#: src/Languages/LanguageManager.php:473
+#: src/Relations/TranslationManager.php:157
 msgid "Status"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:356
-#: src/Languages/LanguageManager.php:476
+#: src/Languages/LanguageManager.php:360
+#: src/Languages/LanguageManager.php:480
 msgid "Order"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:357
+#: src/Languages/LanguageManager.php:361
 msgid "Actions"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:363
+#: src/Languages/LanguageManager.php:367
 msgid "No languages have been added yet."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:393
+#: src/Languages/LanguageManager.php:397
 msgid "Language actions"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:395
+#: src/Languages/LanguageManager.php:399
 msgid "Edit"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:400
+#: src/Languages/LanguageManager.php:404
 msgid "Save Changes"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:405
+#: src/Languages/LanguageManager.php:409
 msgid "Disable"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:407
+#: src/Languages/LanguageManager.php:411
 msgid "Enable"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:410
+#: src/Languages/LanguageManager.php:414
 msgid "Set Default"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:411
+#: src/Languages/LanguageManager.php:415
 msgid "Delete is intentionally disabled until integrity rules are visible in the UI."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:411
+#: src/Languages/LanguageManager.php:415
 msgid "Delete"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:446
-#: src/Setup/SetupWizard.php:264
+#: src/Languages/LanguageManager.php:450
+#: src/Setup/SetupWizard.php:268
 msgid "Language code"
-msgstr ""
-
-#: src/Languages/LanguageManager.php:447
-#: src/Setup/SetupWizard.php:265
-msgid "en"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:451
 #: src/Setup/SetupWizard.php:269
-msgid "en_US"
-msgstr ""
-
-#: src/Languages/LanguageManager.php:454
-#: src/Setup/SetupWizard.php:272
-msgid "Native name"
+msgid "en"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:455
-#: src/Languages/LanguageManager.php:459
 #: src/Setup/SetupWizard.php:273
-#: src/Setup/SetupWizard.php:277
-msgid "English"
+msgid "en_US"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:458
 #: src/Setup/SetupWizard.php:276
+msgid "Native name"
+msgstr ""
+
+#: src/Languages/LanguageManager.php:459
+#: src/Languages/LanguageManager.php:463
+#: src/Setup/SetupWizard.php:277
+#: src/Setup/SetupWizard.php:281
+msgid "English"
+msgstr ""
+
+#: src/Languages/LanguageManager.php:462
+#: src/Setup/SetupWizard.php:280
 msgid "English name"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:464
-#: src/Setup/SetupWizard.php:282
+#: src/Languages/LanguageManager.php:468
+#: src/Setup/SetupWizard.php:286
 msgid "Left to right"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:465
-#: src/Setup/SetupWizard.php:283
+#: src/Languages/LanguageManager.php:469
+#: src/Setup/SetupWizard.php:287
 msgid "Right to left"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:471
-#: src/Languages/LanguageManager.php:496
+#: src/Languages/LanguageManager.php:475
+#: src/Languages/LanguageManager.php:500
 msgid "Active"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:472
-#: src/Languages/LanguageManager.php:496
+#: src/Languages/LanguageManager.php:476
+#: src/Languages/LanguageManager.php:500
 msgid "Inactive"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:482
+#: src/Languages/LanguageManager.php:486
 msgid "Make this the default language"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:500
+#: src/Languages/LanguageManager.php:504
 msgid "Default"
 msgstr ""
 
@@ -1215,330 +1289,330 @@ msgstr ""
 msgid "The relation tables are not available. Reactivate the plugin to run database migrations."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:90
+#: src/Relations/TranslationManager.php:91
 msgid "mcLogiora Translation Manager"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:91
-#: src/Relations/TranslationManager.php:121
+#: src/Relations/TranslationManager.php:94
+#: src/Relations/TranslationManager.php:125
 msgid "Translation Manager"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:120
+#: src/Relations/TranslationManager.php:124
 msgid "Translation Relations"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:122
+#: src/Relations/TranslationManager.php:126
 msgid "Review translation relations and run translation actions. Every action is explicit: nothing is translated automatically, and unlinking never deletes content."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:127
+#: src/Relations/TranslationManager.php:131
 msgid "Translation manager filters"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:129
+#: src/Relations/TranslationManager.php:133
 msgid "Content type"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:131
+#: src/Relations/TranslationManager.php:135
 msgid "All content types"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:135
+#: src/Relations/TranslationManager.php:139
 msgid "Taxonomy"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:137
+#: src/Relations/TranslationManager.php:141
 msgid "All taxonomies"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:141
+#: src/Relations/TranslationManager.php:145
 msgid "Source language"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:143
+#: src/Relations/TranslationManager.php:147
 msgid "Any source"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:149
+#: src/Relations/TranslationManager.php:153
 msgid "Any target"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:155
+#: src/Relations/TranslationManager.php:159
 msgid "Any status"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:160
+#: src/Relations/TranslationManager.php:164
 msgid "Search relations later"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:168
+#: src/Relations/TranslationManager.php:172
 msgid "WooCommerce and LMS support are planned as future free compatibility modules. This foundation focuses on posts, pages, public custom post types, categories, tags, and public custom taxonomies."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:179
+#: src/Relations/TranslationManager.php:183
 msgid "Relation Groups"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:181
+#: src/Relations/TranslationManager.php:185
 msgid "Active plugin-owned relation groups currently available to the manager."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:186
+#: src/Relations/TranslationManager.php:190
 msgid "Used to calculate missing languages for each relation group."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:191
+#: src/Relations/TranslationManager.php:195
 msgid "Translation Status Table"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:192
+#: src/Relations/TranslationManager.php:196
 msgid "Relation records are read from the persistence layer. Actions remain placeholders until reviewed admin write flows are introduced."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:197
+#: src/Relations/TranslationManager.php:201
 msgid "Group"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:198
+#: src/Relations/TranslationManager.php:202
 msgid "Content Type"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:199
+#: src/Relations/TranslationManager.php:203
 msgid "Source"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:200
+#: src/Relations/TranslationManager.php:204
 msgid "Targets"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:201
+#: src/Relations/TranslationManager.php:205
 msgid "Missing Languages"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:202
+#: src/Relations/TranslationManager.php:206
 msgid "Outdated"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:203
+#: src/Relations/TranslationManager.php:207
 msgid "Future Actions"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:209
+#: src/Relations/TranslationManager.php:213
 msgid "No translation relation groups have been created yet."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:235
+#: src/Relations/TranslationManager.php:239
 msgid "Post/Page/CPT Support Overview"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:236
+#: src/Relations/TranslationManager.php:240
 msgid "These content types are prepared for future translation workflows."
 msgstr ""
 
 #. translators: %d: number of excluded content types.
-#: src/Relations/TranslationManager.php:250
+#: src/Relations/TranslationManager.php:254
 #, php-format
 msgid "%d excluded content type detected."
 msgid_plural "%d excluded content types detected."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Relations/TranslationManager.php:271
+#: src/Relations/TranslationManager.php:275
 msgid "Taxonomy Support Overview"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:272
+#: src/Relations/TranslationManager.php:276
 msgid "These taxonomies are prepared for future translation workflows."
 msgstr ""
 
 #. translators: %d: number of excluded taxonomies.
-#: src/Relations/TranslationManager.php:286
+#: src/Relations/TranslationManager.php:290
 #, php-format
 msgid "%d excluded taxonomy detected."
 msgid_plural "%d excluded taxonomies detected."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Relations/TranslationManager.php:309
+#: src/Relations/TranslationManager.php:313
 msgid "Unknown"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:310
+#: src/Relations/TranslationManager.php:314
 msgid "No source"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:318
-#: src/Relations/TranslationManager.php:319
+#: src/Relations/TranslationManager.php:322
+#: src/Relations/TranslationManager.php:323
 msgid "None"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:321
+#: src/Relations/TranslationManager.php:325
 msgid "Translation actions"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:326
+#: src/Relations/TranslationManager.php:330
 msgid "No translations yet."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:364
+#: src/Relations/TranslationManager.php:368
 msgid "Mark Translated"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:365
+#: src/Relations/TranslationManager.php:369
 msgid "Mark Needs Review"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:377
+#: src/Relations/TranslationManager.php:381
 msgid "Unlink"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:427
-#: src/Relations/TranslationManager.php:446
+#: src/Relations/TranslationManager.php:431
+#: src/Relations/TranslationManager.php:450
 msgid "Create Translation"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:428
+#: src/Relations/TranslationManager.php:432
 msgid "Creates a new draft in the target language and links it to the source. The draft starts from the source title, content, and excerpt."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:433
-#: src/Relations/TranslationManager.php:456
+#: src/Relations/TranslationManager.php:437
+#: src/Relations/TranslationManager.php:460
 msgid "Source content ID"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:450
+#: src/Relations/TranslationManager.php:454
 msgid "Link Existing Translation"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:451
+#: src/Relations/TranslationManager.php:455
 msgid "Connects content that is already translated. No content is copied or changed; only the relation is recorded."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:460
+#: src/Relations/TranslationManager.php:464
 msgid "Existing translation ID"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:473
+#: src/Relations/TranslationManager.php:477
 msgid "Link Existing"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:498
+#: src/Relations/TranslationManager.php:502
 msgid "The translation action could not be completed."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:510
+#: src/Relations/TranslationManager.php:514
 msgid "The translation was created as a draft."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:511
+#: src/Relations/TranslationManager.php:515
 msgid "The existing content was linked as a translation."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:512
+#: src/Relations/TranslationManager.php:516
 msgid "The translation was unlinked. The content itself was not changed."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:513
+#: src/Relations/TranslationManager.php:517
 msgid "The translation status was updated."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:71
+#: src/Setup/SetupWizard.php:72
 msgid "mcLogiora Setup Wizard"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:72
-#: src/Setup/SetupWizard.php:96
+#: src/Setup/SetupWizard.php:75
+#: src/Setup/SetupWizard.php:100
 msgid "Setup Wizard"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:97
+#: src/Setup/SetupWizard.php:101
 msgid "mcLogiora Setup"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:98
+#: src/Setup/SetupWizard.php:102
 msgid "The first setup steps now persist the default language. Later wizard steps remain placeholders until their phases arrive."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:155
+#: src/Setup/SetupWizard.php:159
 msgid "Unknown setup action."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:162
+#: src/Setup/SetupWizard.php:166
 msgid "Default language saved."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:211
-#: src/Setup/SetupWizard.php:333
+#: src/Setup/SetupWizard.php:215
+#: src/Setup/SetupWizard.php:337
 msgid "Welcome"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:212
+#: src/Setup/SetupWizard.php:216
 msgid "Start by choosing the default language for this site. This is the only setup decision saved in Phase 07."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:213
+#: src/Setup/SetupWizard.php:217
 msgid "Choose Default Language"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:230
+#: src/Setup/SetupWizard.php:234
 msgid "Current Default"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:235
+#: src/Setup/SetupWizard.php:239
 msgid "No default language has been saved yet."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:240
+#: src/Setup/SetupWizard.php:244
 msgid "Use Existing Language"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:245
+#: src/Setup/SetupWizard.php:249
 #: src/Switcher/SwitcherRenderer.php:68
 msgid "Language"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:252
+#: src/Setup/SetupWizard.php:256
 msgid "Save Default"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:258
+#: src/Setup/SetupWizard.php:262
 msgid "Create Default Language"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:259
+#: src/Setup/SetupWizard.php:263
 msgid "Create a new active language and mark it as the site default."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:286
+#: src/Setup/SetupWizard.php:290
 msgid "Create and Save Default"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:335
+#: src/Setup/SetupWizard.php:339
 msgid "Additional Languages"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:336
+#: src/Setup/SetupWizard.php:340
 msgid "URL Format"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:337
+#: src/Setup/SetupWizard.php:341
 msgid "Switcher"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:338
+#: src/Setup/SetupWizard.php:342
 msgid "Finish"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:353
+#: src/Setup/SetupWizard.php:357
 msgid "Placeholder for a future phase."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:357
+#: src/Setup/SetupWizard.php:361
 msgid "Introduce mcLogiora and confirm the setup path."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:358
+#: src/Setup/SetupWizard.php:362
 msgid "Persist the default language in the language table."
 msgstr ""
 
@@ -1588,7 +1662,7 @@ msgstr ""
 msgid "Enter the source string."
 msgstr ""
 
-#: src/Strings/StringTranslationService.php:132
+#: src/Strings/StringTranslationService.php:152
 msgid "The string could not be found."
 msgstr ""
 
@@ -1600,11 +1674,11 @@ msgstr ""
 msgid "Current language:"
 msgstr ""
 
-#: src/Switcher/SwitcherRenderer.php:143
+#: src/Switcher/SwitcherRenderer.php:145
 msgid "Choose a language"
 msgstr ""
 
-#: src/Switcher/SwitcherRenderer.php:161
+#: src/Switcher/SwitcherRenderer.php:163
 msgid "Go"
 msgstr ""
 
