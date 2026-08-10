@@ -51,8 +51,12 @@ final class LanguageManager implements ModuleInterface {
 		$registry = $container->get( AdminScreenRegistry::class );
 		$registry->add(
 			new AdminScreen(
-				__( 'mcLogiora Languages', 'mclogiora' ),
-				__( 'Languages', 'mclogiora' ),
+				static function () {
+					return __( 'mcLogiora Languages', 'mclogiora' );
+				},
+				static function () {
+					return __( 'Languages', 'mclogiora' );
+				},
 				$this->capability,
 				'mclogiora-languages',
 				array( $this, 'render' )

@@ -11,19 +11,27 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Describes a submenu screen.
+ *
+ * Titles may be given as a callable rather than a string, and for anything
+ * translated they must be. Modules register on `plugins_loaded`, and calling
+ * `__()` there asks WordPress for translations before `init`, which WordPress
+ * 6.7 and later reports through `_load_textdomain_just_in_time()` as an error
+ * on every single page load. Deferring the call until the menu is actually
+ * built keeps registration inert, which is the same principle that keeps the
+ * routing layer safe during installation.
  */
 final class AdminScreen {
 	/**
-	 * Page title.
+	 * Page title, or a callable returning one.
 	 *
-	 * @var string
+	 * @var string|callable
 	 */
 	private $page_title;
 
 	/**
-	 * Menu title.
+	 * Menu title, or a callable returning one.
 	 *
-	 * @var string
+	 * @var string|callable
 	 */
 	private $menu_title;
 
@@ -51,11 +59,11 @@ final class AdminScreen {
 	/**
 	 * Constructor.
 	 *
-	 * @param string   $page_title Page title.
-	 * @param string   $menu_title Menu title.
-	 * @param string   $capability Required capability.
-	 * @param string   $slug Menu slug.
-	 * @param callable $callback Render callback.
+	 * @param string|callable $page_title Page title, or a callable returning one.
+	 * @param string|callable $menu_title Menu title, or a callable returning one.
+	 * @param string          $capability Required capability.
+	 * @param string          $slug Menu slug.
+	 * @param callable        $callback Render callback.
 	 */
 	public function __construct( $page_title, $menu_title, $capability, $slug, $callback ) {
 		$this->page_title = $page_title;
@@ -66,21 +74,31 @@ final class AdminScreen {
 	}
 
 	/**
-	 * Returns the page title.
+	 * Returns the page title, resolving it if it was deferred.
 	 *
 	 * @return string
 	 */
 	public function page_title() {
-		return $this->page_title;
+		return $this->resolve( $this->page_title );
 	}
 
 	/**
-	 * Returns the menu title.
+	 * Returns the menu title, resolving it if it was deferred.
 	 *
 	 * @return string
 	 */
 	public function menu_title() {
-		return $this->menu_title;
+		return $this->resolve( $this->menu_title );
+	}
+
+	/**
+	 * Resolves a title that may have been deferred.
+	 *
+	 * @param string|callable $title Title or callable.
+	 * @return string
+	 */
+	private function resolve( $title ) {
+		return is_callable( $title ) ? (string) call_user_func( $title ) : (string) $title;
 	}
 
 	/**

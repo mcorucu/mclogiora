@@ -64,8 +64,12 @@ final class WidgetTranslationManager implements ModuleInterface {
 		$registry = $container->get( AdminScreenRegistry::class );
 		$registry->add(
 			new AdminScreen(
-				__( 'mcLogiora Menus and Widgets', 'mclogiora' ),
-				__( 'Menus & Widgets', 'mclogiora' ),
+				static function () {
+					return __( 'mcLogiora Menus and Widgets', 'mclogiora' );
+				},
+				static function () {
+					return __( 'Menus & Widgets', 'mclogiora' );
+				},
 				$this->capability,
 				self::PAGE_SLUG,
 				array( $this, 'render' )
