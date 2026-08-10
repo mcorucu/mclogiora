@@ -250,6 +250,75 @@ final class TranslatedUrlGenerator {
 	}
 
 	/**
+	 * Returns the language an object itself belongs to, or null.
+	 *
+	 * Most of the plugin asks "what is the URL of this thing in language X?".
+	 * A sitemap asks the opposite question -- "what language is this thing?" --
+	 * because it lists every language at once. Both answers come from the same
+	 * memoised relation group, so asking one after the other costs no extra
+	 * query.
+	 *
+	 * @param string $object_type Relation content type.
+	 * @param int    $object_id Object identifier.
+	 * @return string|null
+	 */
+	public function language_for_object( $object_type, $object_id ) {
+		$group = $this->relations->get_translation_set_for_object( (string) $object_type, (string) $object_id );
+
+		if ( ! $group instanceof TranslationGroup ) {
+			return null;
+		}
+
+		foreach ( $group->items() as $item ) {
+			$this->memo[ $object_type . ':' . (int) $object_id . ':' . $item->language_code() ] = (int) $item->object_id();
+
+			if ( (int) $item->object_id() === (int) $object_id ) {
+				$language = $item->language_code();
+			}
+		}
+
+		return isset( $language ) ? (string) $language : null;
+	}
+
+	/**
+	 * Returns a post's URL in the post's own language.
+	 *
+	 * An untranslated post belongs to the default language and keeps the URL
+	 * WordPress already gives it.
+	 *
+	 * @param int $post_id Post identifier.
+	 * @return string
+	 */
+	public function own_post_url( $post_id ) {
+		$language = $this->language_for_object( ContentType::POST, (int) $post_id );
+		$link     = $this->raw_permalink( (int) $post_id );
+
+		if ( '' === $link || null === $language ) {
+			return $link;
+		}
+
+		return $this->apply_prefix( $link, $language );
+	}
+
+	/**
+	 * Returns a term's URL in the term's own language.
+	 *
+	 * @param int    $term_id Term identifier.
+	 * @param string $taxonomy Taxonomy name.
+	 * @return string
+	 */
+	public function own_term_url( $term_id, $taxonomy ) {
+		$language = $this->language_for_object( ContentType::TERM, (int) $term_id );
+		$link     = $this->raw_term_link( (int) $term_id, (string) $taxonomy );
+
+		if ( '' === $link || null === $language ) {
+			return $link;
+		}
+
+		return $this->apply_prefix( $link, $language );
+	}
+
+	/**
 	 * Returns the URL of a term in a language, or null when untranslated.
 	 *
 	 * @param int    $term_id Term identifier.
