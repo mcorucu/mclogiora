@@ -105,6 +105,10 @@ An important consequence of Phase 12 makes this safe: every one of these plugins
 
 **Unknown SEO plugins do not silence anything.** Guessing that an unrecognised plugin owns canonical would break working sites to protect a hypothetical one. The health check reports the possibility; `mclogiora_seo_owns_concern` lets a site settle it explicitly.
 
+### The switcher speaks the same language as the head
+
+Phase 12's switcher emitted the internal language code as `hreflang` on each link. Both `hreflang="tr"` and `hreflang="tr-TR"` are well formed, so nothing complained, but the switcher and the document head were making two different claims about the same page. All switcher styles now use `LanguageTag`, so there is one representation of a language everywhere it appears in markup.
+
 ### Diagnostics
 
 `SeoHealthCheck` reports what the front end is currently emitting and what would stop it working: languages whose locale cannot form a valid tag, two languages sharing one tag, which concerns are delegated, unrecognised SEO plugins, and an incomplete schema installation. Strictly read-only — every plausible repair is a decision with consequences the plugin is not entitled to make.
@@ -121,6 +125,14 @@ Measured on a translated page with three languages: resolving the complete alter
 - A site using Yoast, Rank Math, AIOSEO, or The SEO Framework gets `hreflang` from mcLogiora and everything else from that plugin. No page carries two canonical tags.
 - Sitemap alternates are unavailable until WordPress core supports namespace declarations on `<urlset>`.
 - Text domains loaded before `init` stay in the site's configured locale.
+
+## Observed in a real installation
+
+Smoke-tested on WordPress 7.0 with a second, unrecognised SEO plugin active alongside.
+
+**Canonical held up.** That plugin filters `get_canonical_url`, which is the same integration point mcLogiora deliberately leaves to WordPress core, so the page carried exactly one canonical tag and it was the translated URL. The decision not to filter singular canonical is what made two plugins coexist without either noticing.
+
+**OpenGraph duplicated.** Both plugins emitted `og:locale`, because mcLogiora has no adapter for that plugin and therefore still owned the concern. This is the documented consequence of not standing down for unrecognised plugins, and the trade is deliberate: guessing that an unverified plugin owns a concern would break working sites to protect a hypothetical one. The health panel reports the conflict by name and points at `mclogiora_seo_output_open_graph_locale`.
 
 ## Carried-over hardening
 

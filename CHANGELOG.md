@@ -12,6 +12,7 @@
 - Added a request `locale` filter so themes and plugins loading translations just in time reach the current language's files.
 - Added `og:locale` and `og:locale:alternate`, omitted for a language configured without a territory rather than given an invented one.
 - Added SEO plugin compatibility for Yoast SEO, Rank Math, All in One SEO, The SEO Framework, and Slim SEO, with ownership decided per concern. `hreflang` never transfers, because none of those plugins produces it for a multilingual site.
+- Changed the language switcher to use the same standards-compatible language tags as the document head. A link saying `hreflang="tr"` while the head said `hreflang="tr-TR"` was two different claims about one page.
 - Added a multilingual SEO status panel reporting what is emitted, what is delegated, and which languages cannot produce a valid language tag. Read-only; nothing is repaired automatically.
 - Added `LanguageTag`, which converts a WordPress locale to a BCP 47 tag. `hreflang="tr_TR"` looks correct in WordPress code and is silently ignored by search engines, which is the worst kind of bug.
 - Fixed activation discarding the installer's result, so a failed migration read as a successful activation. Failures are now recorded, shown as an admin notice with a retry action, and reported in the health panel.
