@@ -94,6 +94,20 @@ final class SitemapIntegrationTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Registers the routing module and persists its rules.
+	 *
+	 * @return RoutingModule
+	 */
+	private function activate_routing() {
+		$module = new RoutingModule();
+		$module->register( $this->container );
+		$module->register_rewrite_rules();
+		$module->maybe_flush_rewrite_rules();
+
+		return $module;
+	}
+
+	/**
 	 * Creates a translated page pair.
 	 *
 	 * @return array{source:int,target:int}
@@ -186,6 +200,64 @@ final class SitemapIntegrationTest extends WP_UnitTestCase {
 		);
 
 		$this->assertSame( '/standalone/', wp_parse_url( $entry['loc'], PHP_URL_PATH ) );
+	}
+
+	/**
+	 * Asserts the URL the sitemap advertises actually resolves.
+	 *
+	 * Producing the right-looking URL is only half of it. Until Phase 13.1 the
+	 * sitemap listed `/tr/<slug>/` for every translated post while that exact
+	 * URL returned a 404, so the plugin was submitting broken addresses to
+	 * search engines. Listing a URL and serving it are asserted together here
+	 * so they cannot drift apart again.
+	 *
+	 * @return void
+	 */
+	public function test_listed_translated_post_url_resolves() {
+		/*
+		 * A post rather than a page on purpose. Under `/%postname%/` the page
+		 * rule is a catch-all that resolves a page correctly and a post not at
+		 * all, so a page fixture would have passed throughout the defect.
+		 */
+		$source = self::factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_title'  => 'Field notes',
+				'post_name'   => 'field-notes',
+				'post_status' => 'publish',
+			)
+		);
+
+		$created = $this->container->get( TranslationWorkflowService::class )
+			->content()
+			->create_translation( $source, 'tr' );
+
+		$this->assertIsArray( $created, is_wp_error( $created ) ? $created->get_error_message() : '' );
+
+		wp_update_post(
+			array(
+				'ID'          => $created['post_id'],
+				'post_name'   => 'saha-notlari',
+				'post_status' => 'publish',
+			)
+		);
+
+		$target = (int) $created['post_id'];
+
+		$entry = apply_filters(
+			'wp_sitemaps_posts_entry',
+			array( 'loc' => get_permalink( $target ) ),
+			get_post( $target ),
+			'post'
+		);
+
+		$this->assertSame( '/tr/saha-notlari/', wp_parse_url( $entry['loc'], PHP_URL_PATH ) );
+
+		$this->activate_routing();
+		$this->go_to( $entry['loc'] );
+
+		$this->assertFalse( is_404(), "The sitemap advertises {$entry['loc']}, which does not resolve." );
+		$this->assertSame( $target, get_queried_object_id() );
 	}
 
 	/**

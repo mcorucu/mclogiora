@@ -366,4 +366,114 @@ final class TranslationWorkflowIntegrationTest extends WP_UnitTestCase {
 		$this->assertNotNull( $group );
 		$this->assertCount( 2, $group->items(), 'The group should hold the source and its translation.' );
 	}
+
+	/**
+	 * Asserts unlinking frees the language slot for a different object.
+	 *
+	 * Unlink used to park the item in `disabled` and leave the row in place.
+	 * The slot check matches on language alone and cannot see a status, so an
+	 * unlinked language could never be filled again without editing the
+	 * database by hand. ADR-0010 says unlink removes the relation record; this
+	 * asserts it now does.
+	 *
+	 * @return void
+	 */
+	public function test_unlink_frees_the_language_slot_for_another_object() {
+		$workflow = $this->container->get( TranslationWorkflowService::class )->content();
+
+		$source_id = self::factory()->post->create( array( 'post_type' => 'post', 'post_status' => 'publish' ) );
+		$created   = $workflow->create_translation( $source_id, 'tr' );
+
+		$this->assertIsArray( $created, is_wp_error( $created ) ? $created->get_error_message() : '' );
+
+		$this->assertTrue( $workflow->unlink( (int) $created['post_id'], 'tr' ) );
+
+		$replacement = self::factory()->post->create( array( 'post_type' => 'post', 'post_status' => 'publish' ) );
+
+		$this->assertNotWPError(
+			$workflow->link_existing( $source_id, $replacement, 'tr' ),
+			'The Turkish slot must be free once its translation is unlinked.'
+		);
+	}
+
+	/**
+	 * Asserts a fresh translation can be created after an unlink.
+	 *
+	 * @return void
+	 */
+	public function test_unlink_allows_creating_a_new_translation() {
+		$workflow = $this->container->get( TranslationWorkflowService::class )->content();
+
+		$source_id = self::factory()->post->create( array( 'post_type' => 'post', 'post_status' => 'publish' ) );
+		$created   = $workflow->create_translation( $source_id, 'tr' );
+
+		$this->assertIsArray( $created, is_wp_error( $created ) ? $created->get_error_message() : '' );
+		$this->assertTrue( $workflow->unlink( (int) $created['post_id'], 'tr' ) );
+
+		$this->assertIsArray(
+			$workflow->create_translation( $source_id, 'tr' ),
+			'A new Turkish translation must be creatable once the old one is unlinked.'
+		);
+	}
+
+	/**
+	 * Asserts unlinking keeps the WordPress content untouched.
+	 *
+	 * @return void
+	 */
+	public function test_unlink_preserves_the_content_and_its_meta() {
+		$workflow = $this->container->get( TranslationWorkflowService::class )->content();
+
+		$source_id = self::factory()->post->create( array( 'post_type' => 'post', 'post_status' => 'publish' ) );
+		$created   = $workflow->create_translation( $source_id, 'tr' );
+
+		$this->assertIsArray( $created, is_wp_error( $created ) ? $created->get_error_message() : '' );
+
+		$target_id = (int) $created['post_id'];
+
+		update_post_meta( $target_id, 'mclogiora_test_keepsake', 'intact' );
+
+		$this->assertTrue( $workflow->unlink( $target_id, 'tr' ) );
+
+		$this->assertInstanceOf( \WP_Post::class, get_post( $target_id ), 'Unlink must never delete the content.' );
+		$this->assertInstanceOf( \WP_Post::class, get_post( $source_id ), 'Unlink must never delete the source.' );
+		$this->assertSame( 'intact', get_post_meta( $target_id, 'mclogiora_test_keepsake', true ) );
+	}
+
+	/**
+	 * Asserts the source item cannot be unlinked while translations remain.
+	 *
+	 * @return void
+	 */
+	public function test_source_item_cannot_be_unlinked() {
+		$workflow = $this->container->get( TranslationWorkflowService::class )->content();
+
+		$source_id = self::factory()->post->create( array( 'post_type' => 'post', 'post_status' => 'publish' ) );
+
+		$this->assertIsArray( $workflow->create_translation( $source_id, 'tr' ) );
+
+		$this->assertWPError( $workflow->unlink( $source_id, 'en' ), 'Unlinking the source would orphan its translations.' );
+		$this->assertInstanceOf( \WP_Post::class, get_post( $source_id ) );
+	}
+
+	/**
+	 * Asserts an unlinked item leaves no row behind in its group.
+	 *
+	 * @return void
+	 */
+	public function test_unlink_removes_the_relation_row() {
+		$workflow = $this->container->get( TranslationWorkflowService::class )->content();
+
+		$source_id = self::factory()->post->create( array( 'post_type' => 'post', 'post_status' => 'publish' ) );
+		$created   = $workflow->create_translation( $source_id, 'tr' );
+
+		$this->assertIsArray( $created, is_wp_error( $created ) ? $created->get_error_message() : '' );
+		$this->assertTrue( $workflow->unlink( (int) $created['post_id'], 'tr' ) );
+
+		$group = $this->container->get( \McLogiora\Relations\TranslationRelationServiceInterface::class )
+			->get_translation_set_for_object( ContentType::POST, (string) $source_id );
+
+		$this->assertNotNull( $group );
+		$this->assertCount( 1, $group->items(), 'Only the source should remain in the group.' );
+	}
 }
