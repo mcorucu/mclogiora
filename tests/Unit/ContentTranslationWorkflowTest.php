@@ -319,6 +319,51 @@ final class ContentTranslationWorkflowTest extends TestCase {
 	}
 
 	/**
+	 * Asserts unlinking frees the language slot.
+	 *
+	 * The relation disappearing from `find_item()` was never enough on its
+	 * own. What blocked relinking was the row still sitting in the group, so
+	 * the assertion that matters is that the language can be filled again.
+	 *
+	 * @return void
+	 */
+	public function test_unlink_frees_the_language_slot() {
+		$created = $this->factory->content->create_translation( 10, 'tr' );
+
+		$this->assertTrue( $this->factory->content->unlink( $created['post_id'], 'tr' ) );
+
+		$this->assertIsArray(
+			$this->factory->content->create_translation( 10, 'tr' ),
+			'A new translation must be creatable for an unlinked language.'
+		);
+	}
+
+	/**
+	 * Asserts an unlinked language can be filled by linking existing content.
+	 *
+	 * @return void
+	 */
+	public function test_unlink_allows_linking_a_different_object() {
+		$created = $this->factory->content->create_translation( 10, 'tr' );
+
+		$this->assertTrue( $this->factory->content->unlink( $created['post_id'], 'tr' ) );
+
+		$replacement = $this->factory->gateway->insert_post(
+			array(
+				'post_type'   => 'post',
+				'post_status' => 'publish',
+				'post_title'  => 'Replacement',
+			)
+		);
+
+		$this->assertNotInstanceOf(
+			\WP_Error::class,
+			$this->factory->content->link_existing( 10, $replacement, 'tr' ),
+			'A different object must be linkable once the language is free.'
+		);
+	}
+
+	/**
 	 * Asserts the source cannot be unlinked while translations remain.
 	 *
 	 * @return void

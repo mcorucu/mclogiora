@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-10T21:56:41+00:00\n"
+"POT-Creation-Date: 2026-08-14T23:29:53+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mclogiora\n"
@@ -1221,7 +1221,7 @@ msgstr ""
 
 #: src/Relations/DatabaseTranslationRelationRepository.php:321
 #: src/Relations/DatabaseTranslationRelationRepository.php:408
-#: src/Relations/DatabaseTranslationRelationRepository.php:826
+#: src/Relations/DatabaseTranslationRelationRepository.php:876
 #: src/Relations/InMemoryTranslationRelationRepository.php:196
 msgid "This translation group already has an item for that language."
 msgstr ""
@@ -1233,12 +1233,12 @@ msgstr ""
 
 #: src/Relations/DatabaseTranslationRelationRepository.php:360
 #: src/Relations/DatabaseTranslationRelationRepository.php:396
-#: src/Relations/DatabaseTranslationRelationRepository.php:577
-#: src/Relations/DatabaseTranslationRelationRepository.php:731
+#: src/Relations/DatabaseTranslationRelationRepository.php:588
+#: src/Relations/DatabaseTranslationRelationRepository.php:760
 #: src/Relations/InMemoryTranslationRelationRepository.php:231
 #: src/Relations/InMemoryTranslationRelationRepository.php:271
 #: src/Relations/InMemoryTranslationRelationRepository.php:300
-#: src/Relations/InMemoryTranslationRelationRepository.php:409
+#: src/Relations/InMemoryTranslationRelationRepository.php:413
 msgid "The translation item could not be found."
 msgstr ""
 
@@ -1256,36 +1256,40 @@ msgstr ""
 msgid "Only active configured languages can receive relation items."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:581
-#: src/Relations/InMemoryTranslationRelationRepository.php:413
+#: src/Relations/DatabaseTranslationRelationRepository.php:592
+#: src/Relations/InMemoryTranslationRelationRepository.php:417
 msgid "The original item cannot be detached in this phase."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:710
+#: src/Relations/DatabaseTranslationRelationRepository.php:608
+msgid "The translation relation could not be removed."
+msgstr ""
+
+#: src/Relations/DatabaseTranslationRelationRepository.php:739
 msgid "The translation item could not be added."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:747
+#: src/Relations/DatabaseTranslationRelationRepository.php:776
 msgid "The translation item could not be updated."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:804
+#: src/Relations/DatabaseTranslationRelationRepository.php:854
 msgid "Object type and object ID are required."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:810
+#: src/Relations/DatabaseTranslationRelationRepository.php:860
 msgid "The item language must exist before a relation item is created."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:814
+#: src/Relations/DatabaseTranslationRelationRepository.php:864
 msgid "Disabled languages cannot receive new relation items."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:822
+#: src/Relations/DatabaseTranslationRelationRepository.php:872
 msgid "Only the original item may use the original status."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:916
+#: src/Relations/DatabaseTranslationRelationRepository.php:966
 msgid "The relation tables are not available. Reactivate the plugin to run database migrations."
 msgstr ""
 

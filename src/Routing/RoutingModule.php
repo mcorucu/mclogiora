@@ -269,6 +269,10 @@ final class RoutingModule implements ModuleInterface {
 				continue;
 			}
 
+			if ( ! $this->verbose_page_rule_matches( $rewrite, $target, $matches ) ) {
+				continue;
+			}
+
 			$query = preg_replace( '!^.+\?!', '', $target );
 			$query = addslashes( \WP_MatchesMapRegex::apply( $query, $matches ) );
 
@@ -278,6 +282,68 @@ final class RoutingModule implements ModuleInterface {
 		}
 
 		return array();
+	}
+
+	/**
+	 * Decides whether a matched rule survives WordPress's verbose page check.
+	 *
+	 * This mirrors the verbose-page-rule branch of `WP::parse_request()`. When
+	 * the permalink structure starts with `%postname%`, WordPress turns on
+	 * `use_verbose_page_rules` and the page rule becomes a catch-all that
+	 * matches any single-segment path, posts included. Core does not trust that
+	 * match: it resolves the captured slug with `get_page_by_path()` and, when
+	 * no usable page comes back, it `continue`s to the next rule so the post
+	 * rule further down gets its turn.
+	 *
+	 * Without this, every translated post under a language prefix resolved to
+	 * `pagename=<slug>`, found no page, and returned a 404 -- while the sitemap
+	 * went on advertising that same URL.
+	 *
+	 * The check runs against the unexpanded rewrite target, because that is
+	 * where the literal `pagename=$matches[N]` marker still exists.
+	 *
+	 * @param \WP_Rewrite $rewrite Rewrite API.
+	 * @param string      $target Unexpanded rewrite target.
+	 * @param string[]    $matches Matches captured by the rule pattern.
+	 * @return bool
+	 */
+	private function verbose_page_rule_matches( \WP_Rewrite $rewrite, $target, array $matches ) {
+		if ( ! $rewrite->use_verbose_page_rules ) {
+			return true;
+		}
+
+		if ( ! preg_match( '/pagename=\$matches\[([0-9]+)\]/', $target, $varmatch ) ) {
+			return true;
+		}
+
+		if ( ! isset( $matches[ $varmatch[1] ] ) ) {
+			return false;
+		}
+
+		$page = get_page_by_path( $matches[ $varmatch[1] ] );
+
+		if ( ! $page ) {
+			return false;
+		}
+
+		$post_status_obj = get_post_status_object( $page->post_status );
+
+		if ( ! $post_status_obj instanceof \stdClass ) {
+			return false;
+		}
+
+		/*
+		 * Core's own wording: a status that is neither public, protected nor
+		 * private, and is excluded from search, is not something a page rule
+		 * may claim.
+		 */
+		if ( ! $post_status_obj->public && ! $post_status_obj->protected
+			&& ! $post_status_obj->private && $post_status_obj->exclude_from_search
+		) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
