@@ -395,7 +395,11 @@ final class InMemoryTranslationRelationRepository implements TranslationRelation
 	}
 
 	/**
-	 * Safely detaches a target item by disabling it.
+	 * Safely detaches a target item by removing its relation record.
+	 *
+	 * Mirrors the database repository: unlink removes the relation record, per
+	 * ADR-0010, rather than parking it in a status that keeps the language
+	 * slot occupied forever.
 	 *
 	 * @param string $object_type Object type.
 	 * @param string $object_id Object ID.
@@ -413,9 +417,42 @@ final class InMemoryTranslationRelationRepository implements TranslationRelation
 			return new \WP_Error( 'mclogiora_relation_detach_original', __( 'The original item cannot be detached in this phase.', 'mclogiora' ) );
 		}
 
-		$result = $this->update_item_status( $item->object_type(), $item->object_id(), $item->language_code(), TranslationStatus::DISABLED );
+		$this->remove_item( $item );
 
-		return is_wp_error( $result ) ? $result : true;
+		return true;
+	}
+
+	/**
+	 * Removes an item from its group.
+	 *
+	 * @param TranslationItem $target Item to remove.
+	 * @return void
+	 */
+	private function remove_item( TranslationItem $target ) {
+		foreach ( $this->groups as $group_index => $group ) {
+			$items = array();
+			$found = false;
+
+			foreach ( $group->items() as $item ) {
+				if (
+					$item->object_type() === $target->object_type()
+					&& $item->object_id() === $target->object_id()
+					&& $item->language_code() === $target->language_code()
+				) {
+					$found = true;
+
+					continue;
+				}
+
+				$items[] = $item;
+			}
+
+			if ( $found ) {
+				$this->groups[ $group_index ] = new TranslationGroup( $group->group_key(), $items );
+
+				return;
+			}
+		}
 	}
 
 	/**
