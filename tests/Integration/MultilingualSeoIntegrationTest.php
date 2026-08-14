@@ -335,6 +335,53 @@ final class MultilingualSeoIntegrationTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Asserts the canonical URL is one of the page's own hreflang alternates.
+	 *
+	 * A page that names one URL as itself and a different URL as its own
+	 * language's version has made two contradictory claims, and a search
+	 * engine has no way to tell which to believe. Phase 13 stated the
+	 * invariant; nothing asserted it, and a translated object reachable at the
+	 * unprefixed default route broke it in exactly that way.
+	 *
+	 * @param string $route Route to request.
+	 * @return void
+	 *
+	 * @dataProvider provide_multilingual_singular_routes
+	 */
+	public function test_canonical_url_belongs_to_the_hreflang_set( $route ) {
+		$this->translated_page();
+
+		$this->activate_routing();
+		$this->go_to( home_url( $route ) );
+
+		$head = $this->head();
+
+		preg_match( '/<link rel="canonical" href="([^"]+)"/', $head, $canonical );
+		preg_match_all( '/<link rel="alternate" hreflang="[^"]+" href="([^"]+)"/', $head, $alternates );
+
+		$this->assertNotEmpty( $canonical, "No canonical was printed for {$route}:\n{$head}" );
+		$this->assertNotEmpty( $alternates[1], "No alternates were printed for {$route}:\n{$head}" );
+
+		$this->assertContains(
+			$canonical[1],
+			$alternates[1],
+			"The canonical URL for {$route} is not in its own hreflang set:\n{$head}"
+		);
+	}
+
+	/**
+	 * Supplies the multilingual singular routes the invariant must hold on.
+	 *
+	 * @return array<string,array{0:string}>
+	 */
+	public function provide_multilingual_singular_routes() {
+		return array(
+			'translated route' => array( '/tr/hakkimizda/' ),
+			'source route'     => array( '/about-us/' ),
+		);
+	}
+
+	/**
 	 * Asserts exactly one canonical tag is printed on a singular request.
 	 *
 	 * @return void
