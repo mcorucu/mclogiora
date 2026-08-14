@@ -59,6 +59,10 @@ Translations stay within one post type, and terms within one taxonomy. A page is
 
 **Unlink** removes the relation record only. The WordPress post or term keeps its content, meta, status, revisions, and term assignments. Nothing is trashed and nothing is deleted. The source cannot be unlinked while translations remain, because that would orphan them; changing which item is the source is a separate reassignment workflow that does not exist yet.
 
+**Corrected in Phase 13.1.** The implementation did not do this. `detach_item()` flipped the item to `disabled` and left the row in the group, which contradicted both the sentence above and the status model below, where `disabled` means a language has been switched off administratively. Because the language-slot check matches on language alone and cannot see a status, the abandoned row occupied that language permanently: after unlinking a translation, the same language could never be linked or translated again without editing the database by hand.
+
+The row is now deleted, in both the database and the in-memory repository. No archive state was introduced. Keeping detached relations would have required a state distinct from `disabled` plus slot-uniqueness logic taught to ignore it, and nothing in the product asks to read a relation a user deliberately removed — the content itself, which is what users actually care about, survives either way.
+
 ### Status transition model
 
 `TranslationStatusTransitions` is the only place a status change is decided. Supported transitions:
