@@ -56,6 +56,31 @@ The tempting alternative — quietly serving the source-language content under t
 
 **Menus are the deliberate exception.** A menu with no translation falls back to the source menu, because navigation is a wayfinding aid: an untranslated menu still works, whereas a vanished menu strands the visitor. This distinction is intentional and worth remembering when reading the code.
 
+**Amended in Phase 13.1.** This rule was stated here from the beginning but nothing enforced it once the path resolved. It appeared to hold only because the verbose-page-rule defect below made most such paths fail to resolve at all; with that fixed, `/tr/<untranslated-slug>/` began serving source content exactly as this section forbids. The rule is now enforced explicitly: an object reached under a language prefix that has no relation in that language is turned into a 404 by `ObjectLanguageRedirect`.
+
+### Path resolution follows WordPress core, including its verbose page rules
+
+Under a language prefix, mcLogiora re-parses the remaining path against WordPress's own rewrite rules rather than inventing a second routing model.
+
+Matching the first rule that fits is not what core does, and the difference is not cosmetic. When the permalink structure starts with `%postname%`, core sets `use_verbose_page_rules` and the page rule becomes a catch-all that matches any single-segment path — posts included. `WP::parse_request()` does not trust that match: it resolves the captured slug with `get_page_by_path()`, checks the resulting post status, and `continue`s to the next rule when either check fails, so the post rule further down gets its turn.
+
+mcLogiora stopped at the first match. Every translated **post** under a language prefix therefore resolved to a page that does not exist and returned a 404, while translated pages worked, and the sitemap went on advertising the broken URLs to search engines. `RoutingModule::verbose_page_rule_matches()` now mirrors both of core's conditions.
+
+The lesson worth keeping: when re-parsing a path, the reference implementation is core's, not a reasonable-looking approximation of it.
+
+### An object's language is its own, not the request's
+
+A stored object's language comes from its translation relation. The request's language comes from the URL. They are related but never interchangeable, and conflating them was the root of a second family of defects.
+
+Two consequences follow:
+
+- **Permalinks.** Asking for a translated object's URL returns that object's own language route, whoever is browsing. Previously the prefix came from the current request, so a Turkish translation linked from an English page produced an English-route URL — and Phase 13 had to correct the sitemap specifically for this, treating a symptom rather than the cause.
+- **Routes.** WordPress resolves a slug regardless of language, so a Turkish translation also answered at its unprefixed English URL, declaring `lang="en-US"` and a canonical that appeared in neither of its own hreflang alternates. One address wins: the object's own language route is authoritative, and any other route that reaches the object is redirected there with a 301.
+
+`TranslatedUrlGenerator::retarget_prefix()` exists for this. `apply_prefix()` stays additive and idempotent, which is correct while a URL is being assembled but cannot repair a URL that already carries the wrong language; re-targeting strips a routable language prefix before applying the intended one. Only a prefix that is genuinely a routable language is stripped, so a page slugged like a language code is left alone.
+
+An object with no relation belongs to the default language and is never moved — it is ordinary monolingual WordPress content, and not mcLogiora's to redirect.
+
 ### Post slugs
 
 Translations are separate WordPress posts, so each one uses its own `post_name`. There is no parallel slug store, no machine-generated slug, and no external service. Editors change a translated slug the normal way, and WordPress's own `wp_unique_post_slug()` uniqueness rules are respected rather than bypassed.
