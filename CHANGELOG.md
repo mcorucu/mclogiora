@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+Phase 13.1 stabilization. Three defects found while qualifying the plugin against WordPress 7.1-RC3. None of them is caused by WordPress 7.1: all three predate it and were exposed rather than introduced by the qualification.
+
+- Fixed translated posts returning a 404 under `/%postname%/` permalinks, the most common permalink structure on content sites. Re-parsing the path after a language prefix stopped at the first matching rewrite rule; WordPress core does not. When the structure starts with `%postname%` core turns on verbose page rules and the page rule becomes a catch-all matching any single-segment path, posts included. Core resolves the captured slug with `get_page_by_path()` and moves to the next rule when no usable page comes back. mcLogiora now mirrors both of core's conditions, including the post-status check. Translated pages always worked, which is why this survived two phases of tests.
+- Fixed the sitemap advertising URLs that returned a 404. It listed `/tr/<slug>/` for every translated post while that address did not resolve, so the plugin was submitting broken URLs to search engines. Listing and serving are now asserted together, with a post fixture rather than a page.
+- Fixed translated content being served under another language's route. WordPress resolves a slug regardless of language, so a Turkish translation also answered at its unprefixed English URL, declaring `lang="en-US"` and a canonical that appeared in neither of its own hreflang alternates. A stored object's language belongs to the object, established by its translation relation; it is not a property of whoever happens to be browsing. Any route reaching an object in a different language now redirects permanently to the object's own URL, so one address is authoritative instead of two competing ones.
+- Fixed permalink generation using the request's language instead of the object's. A translation linked from a default-language page produced a default-language URL. Phase 13 corrected this for the sitemap specifically; the cause is now fixed for every caller.
+- Fixed source content being served beneath a translated URL. Phase 12 documented this as a 404 and nothing enforced it — it only appeared to hold because the verbose page rule defect made most such paths fail to resolve at all. An object with no translation in the requested language is now a genuine 404.
+- Fixed unlinking a translation permanently consuming that language. ADR-0010 says unlink removes the relation record; the implementation instead marked it `disabled` and kept the row, contradicting the documented contract and overloading a status that means administrative language disabling. Because the language-slot check matches on language alone, the abandoned row blocked that language forever: after unlinking, the same language could not be linked or translated again without editing the database directly. The relation record is now removed. Content, meta, revisions, and the source object remain untouched, exactly as before.
+- Added a `WordPress 7.1 compatibility` CI job, pinned to a specific build rather than following trunk or nightlies, running the full integration suite on PHP 8.3. It fails if the build under test is not the intended one, or if the tree is missing built assets. The existing integration job continues to cover current stable WordPress; nothing was removed or relaxed.
+- Fixed the test-suite installer resolving pre-release versions to trunk. A version such as `7.1-RC3` has no SVN tag, so the fallback reached trunk — which was already 7.2-alpha during 7.1's release candidate period, meaning a 7.1 run would have quietly tested against the next major's suite. Release branches are now preferred over trunk.
+- WordPress 7.1 support is **not** claimed yet. `Tested up to` deliberately remains 7.0 until a final 7.1 build is released and passes a compatibility smoke.
+
 ## 0.12.0
 
 - Added Phase 13 multilingual SEO integration.

@@ -147,6 +147,61 @@ final class TranslatedUrlGenerator {
 	}
 
 	/**
+	 * Re-points an already built URL at a specific language.
+	 *
+	 * `apply_prefix()` is deliberately additive and idempotent: asking twice
+	 * for the same language means asking once. That is the right rule while a
+	 * URL is being assembled, but it cannot correct a URL that already carries
+	 * the wrong language.
+	 *
+	 * WordPress builds an object permalink by calling `home_url()` with a path
+	 * and then filtering the result. The `home_url` call is request-scoped, so
+	 * on a `/tr/` request an English post's link arrives here already prefixed
+	 * `/tr/`. Applying the object's own language on top is a no-op when that
+	 * language is the unprefixed default, and the English post would keep a
+	 * Turkish route. Re-targeting strips whatever routable language prefix is
+	 * present before applying the intended one.
+	 *
+	 * Only a prefix that is genuinely a routable language is stripped, so a
+	 * page whose slug happens to look like a language code is left alone.
+	 *
+	 * @param string $url Absolute URL within the site.
+	 * @param string $language_code Language the URL should belong to.
+	 * @return string
+	 */
+	public function retarget_prefix( $url, $language_code ) {
+		return $this->apply_prefix( $this->strip_language_prefix( (string) $url ), $language_code );
+	}
+
+	/**
+	 * Removes a leading routable language prefix from a site URL.
+	 *
+	 * @param string $url Absolute URL within the site.
+	 * @return string
+	 */
+	private function strip_language_prefix( $url ) {
+		$home = $this->raw_home_url();
+
+		if ( 0 !== strpos( $url, $home ) ) {
+			return $url;
+		}
+
+		$remainder = ltrim( (string) substr( $url, strlen( $home ) ), '/' );
+
+		if ( '' === $remainder ) {
+			return $url;
+		}
+
+		$segment = (string) strtok( $remainder, '/?#' );
+
+		if ( '' === $segment || ! $this->context->is_routable( $segment ) ) {
+			return $url;
+		}
+
+		return $home . ltrim( (string) substr( $remainder, strlen( $segment ) ), '/' );
+	}
+
+	/**
 	 * Returns the home URL for a language.
 	 *
 	 * @param string $language_code Language code.

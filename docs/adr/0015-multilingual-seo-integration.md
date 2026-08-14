@@ -68,11 +68,21 @@ WordPress already prints a canonical tag for singular requests, and because Phas
 
 mcLogiora prints a canonical only for the surfaces core leaves uncovered — term archives, a blog-index front page, and a static posts page. Duplication is therefore impossible by construction rather than by a de-duplication pass.
 
+**Corrected in Phase 13.1.** The reasoning above holds only if `get_permalink()` is language-correct for the *object*, and Phase 12 had made it language-correct for the *request*. On its own prefixed route the two agree, which is why this looked right. On any other route they do not: a Turkish translation reached at its unprefixed English URL got a canonical pointing at that English URL — a URL absent from its own hreflang set, and a second address serving the same content.
+
+Two changes restore the claim. Permalinks are now derived from the object's language rather than the request's, so delegating singular canonical to core is sound for the reason this section always gave. And a translated object requested through any other language's route is 301'd to its own, so the wrong-route canonical has no opportunity to be printed.
+
+**The invariant, stated plainly:** for multilingual singular content, the canonical URL must be one of the page's own hreflang alternates. A page that names one URL as itself and a different URL as its own language's version has made two contradictory claims. `MultilingualSeoIntegrationTest::test_canonical_url_belongs_to_the_hreflang_set()` asserts it on both the translated and the source route.
+
 ### WordPress core sitemaps
 
-Core builds sitemap entries with `get_permalink()`, and Phase 12's permalink filter prefixes URLs with the language of *the current request*. A sitemap request carries no prefix, so without intervention every translated entry would be listed at its unprefixed URL — a list of addresses that resolve to the wrong language or to nothing.
+Core builds sitemap entries with `get_permalink()`, and Phase 12's permalink filter prefixed URLs with the language of *the current request*. A sitemap request carries no prefix, so without intervention every translated entry would be listed at its unprefixed URL — a list of addresses that resolve to the wrong language or to nothing.
 
 Each entry is therefore rewritten to the language the object itself belongs to, through `TranslatedUrlGenerator::own_post_url()` and `own_term_url()`. No parallel sitemap is generated and no second index is created; translated content is ordinary WordPress content and the core providers already list it.
+
+**Phase 13.1 note.** Since permalinks are now object-language-aware everywhere, this filter no longer *corrects* anything on its own — it agrees with what `get_permalink()` already returns. It is kept because it states the guarantee at the point it matters and costs nothing, and because the sitemap is where a regression here would be most expensive and least visible.
+
+Producing a correct-looking URL was in any case only half the job. Throughout Phase 13 the sitemap listed `/tr/<slug>/` for every translated post while that exact URL returned a 404, so the plugin was submitting broken addresses to search engines. `SitemapIntegrationTest::test_listed_translated_post_url_resolves()` now asserts listing and serving together, using a post rather than a page — under `/%postname%/` a page resolves through the catch-all rule and would have passed throughout the defect.
 
 **Alternates are deliberately not added to the sitemap.** `xhtml:link` annotations require an `xmlns:xhtml` declaration on the `<urlset>` element, and WordPress core offers no supported way to add one. Emitting the links without the namespace would produce invalid XML, and an invalid sitemap can be rejected as a whole. The document-head annotations carry the same information and are documented by search engines as sufficient. This is a real limitation of the core sitemap API, not an oversight.
 

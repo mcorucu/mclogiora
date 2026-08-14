@@ -100,6 +100,7 @@ use McLogiora\WordPress\MenuGatewayInterface;
 use McLogiora\Routing\FrontendTranslationModule;
 use McLogiora\Routing\LanguageContext;
 use McLogiora\Routing\LanguageContextInterface;
+use McLogiora\Routing\ObjectLanguageRedirect;
 use McLogiora\Routing\PermalinkModule;
 use McLogiora\Routing\RoutingModule;
 use McLogiora\Routing\RoutingSettings;
@@ -211,6 +212,7 @@ final class Application {
 		$modules->add( new MediaTranslationFields() );
 		$modules->add( new RoutingModule() );
 		$modules->add( new PermalinkModule() );
+		$modules->add( new ObjectLanguageRedirect() );
 		$modules->add( new FrontendTranslationModule() );
 		$modules->add( new DocumentLanguageModule() );
 		$modules->add( $this->container->get( SwitcherModule::class ) );

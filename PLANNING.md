@@ -1,6 +1,6 @@
 # mcLogiora Planning
 
-Current phase: Phase 13 complete (SEO, hreflang, Canonical & Sitemap Integration, v0.12.0). Next planned phase: Phase 14.
+Current phase: Phase 13.1 complete (Routing, Canonical & Relation Correctness, v0.12.0). Next planned phase: Phase 14, gated on a WordPress 7.1 final compatibility smoke.
 
 This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 
@@ -666,6 +666,10 @@ Phase 12: URL Routing, Slug Translation & Language Switching - v0.11.0
 Phase 13: SEO, hreflang, Canonical & Sitemap Integration - v0.12.0
 
 - Document language and request locale, BCP 47 language tags, hreflang alternates with a self-referential entry and an x-default policy, self-referential canonical URLs, WordPress core sitemap URL correction, OpenGraph locale, and per-concern ownership adapters for the five common SEO plugins. Carries the two boot problems Phase 12.1 left open: activation now surfaces installer failures, and admin screens no longer translate while registering. See `docs/adr/0015-multilingual-seo-integration.md`.
+
+Phase 13.1: Routing, Canonical & Relation Correctness - v0.12.0
+
+- Stabilization phase, no new features. Fixes three defects found while qualifying against WordPress 7.1-RC3, none of them caused by WordPress 7.1: translated posts 404'd under `/%postname%/` because path re-parsing did not follow core's verbose page rules; translated objects were served under other languages' routes with contradictory canonical and hreflang; and unlinking a translation permanently consumed that language slot. Adds a pinned `WordPress 7.1 compatibility` CI job alongside the existing stable integration job. `Tested up to` deliberately unchanged at 7.0. See the amendments in `docs/adr/0010`, `0013`, and `0015`.
 
 ### Planned phases
 
