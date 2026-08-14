@@ -563,7 +563,18 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 	}
 
 	/**
-	 * Safely detaches a target item by disabling it.
+	 * Safely detaches a target item by removing its relation record.
+	 *
+	 * ADR-0010 states the contract plainly: unlink removes the relation record
+	 * only, and the WordPress post or term keeps its content, meta, status,
+	 * revisions, and term assignments. Nothing here touches the object itself.
+	 *
+	 * This previously flipped the item to `disabled` and left the row in
+	 * place. That contradicted both the ADR and the meaning of `disabled`,
+	 * which the status model reserves for administrative language disabling.
+	 * It also left the row occupying the group's language slot, so an unlinked
+	 * language could never be linked or translated again -- the slot check
+	 * matches on language alone and cannot see a status.
 	 *
 	 * @param string $object_type Object type.
 	 * @param string $object_id Object ID.
@@ -581,9 +592,27 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 			return new \WP_Error( 'mclogiora_relation_detach_original', __( 'The original item cannot be detached in this phase.', 'mclogiora' ) );
 		}
 
-		$result = $this->update_item_status( $item->object_type(), $item->object_id(), $item->language_code(), TranslationStatus::DISABLED );
+		$group_uuid = $this->group_uuid_for_item( $item );
 
-		return is_wp_error( $result ) ? $result : true;
+		$result = $this->wpdb->delete(
+			$this->tables->translation_items(),
+			array(
+				'content_type'  => $item->object_type(),
+				'content_id'    => $item->object_id(),
+				'language_code' => $item->language_code(),
+			),
+			array( '%s', '%s', '%s' )
+		);
+
+		if ( false === $result ) {
+			return new \WP_Error( 'mclogiora_relation_item_detach_failed', __( 'The translation relation could not be removed.', 'mclogiora' ) );
+		}
+
+		if ( $group_uuid ) {
+			$this->touch_group( $group_uuid );
+		}
+
+		return true;
 	}
 
 	/**
@@ -765,6 +794,27 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 		}
 
 		return $this->find_item( $item->object_type(), $item->object_id(), '' !== $return_language_code ? $return_language_code : $item->language_code() );
+	}
+
+	/**
+	 * Marks a group as changed.
+	 *
+	 * Detaching an item changes the group without touching any group column,
+	 * so the timestamp is bumped explicitly. Anything reading groups by
+	 * recency, the Translation Manager included, would otherwise show a stale
+	 * ordering.
+	 *
+	 * @param string $group_uuid Group UUID.
+	 * @return void
+	 */
+	private function touch_group( $group_uuid ) {
+		$this->wpdb->update(
+			$this->tables->translation_groups(),
+			array( 'updated_at' => current_time( 'mysql', true ) ),
+			array( 'group_uuid' => (string) $group_uuid ),
+			array( '%s' ),
+			array( '%s' )
+		);
 	}
 
 	/**
