@@ -43,18 +43,43 @@ install_wp() {
 	download https://raw.githubusercontent.com/markoheijnen/wp-mysqli/master/db.php "$WP_CORE_DIR/wp-content/db.php"
 }
 
+# Echoes the develop.svn path holding the test suite for WP_VERSION.
+#
+# A released version has a tag. A pre-release such as 7.1-RC3 does not: its
+# tests live on the release branch, `branches/7.1`. Falling straight through to
+# trunk would silently test against the next major's suite -- while qualifying
+# 7.1-RC3, trunk was already 7.2-alpha.
+resolve_tests_base() {
+	local branch="${WP_VERSION%%-*}"
+
+	if svn ls --depth empty "https://develop.svn.wordpress.org/tags/${WP_VERSION}/" >/dev/null 2>&1; then
+		echo "https://develop.svn.wordpress.org/tags/${WP_VERSION}"
+		return
+	fi
+
+	if svn ls --depth empty "https://develop.svn.wordpress.org/branches/${branch}/" >/dev/null 2>&1; then
+		echo "https://develop.svn.wordpress.org/branches/${branch}"
+		return
+	fi
+
+	echo "https://develop.svn.wordpress.org/trunk"
+}
+
 install_test_suite() {
 	if [ -d "$WP_TESTS_DIR" ]; then
 		return
 	fi
 
-	mkdir -p "$WP_TESTS_DIR"
-	svn co --quiet "https://develop.svn.wordpress.org/tags/${WP_VERSION}/tests/phpunit/includes/" "$WP_TESTS_DIR/includes" \
-		|| svn co --quiet "https://develop.svn.wordpress.org/trunk/tests/phpunit/includes/" "$WP_TESTS_DIR/includes"
-	svn co --quiet "https://develop.svn.wordpress.org/tags/${WP_VERSION}/tests/phpunit/data/" "$WP_TESTS_DIR/data" \
-		|| svn co --quiet "https://develop.svn.wordpress.org/trunk/tests/phpunit/data/" "$WP_TESTS_DIR/data"
+	local base
+	base="$(resolve_tests_base)"
 
-	download https://develop.svn.wordpress.org/trunk/wp-tests-config-sample.php "$WP_TESTS_DIR/wp-tests-config.php"
+	echo "Installing the test suite from ${base}"
+
+	mkdir -p "$WP_TESTS_DIR"
+	svn co --quiet "${base}/tests/phpunit/includes/" "$WP_TESTS_DIR/includes"
+	svn co --quiet "${base}/tests/phpunit/data/" "$WP_TESTS_DIR/data"
+
+	download "${base}/wp-tests-config-sample.php" "$WP_TESTS_DIR/wp-tests-config.php"
 
 	sed -i.bak "s:dirname( __FILE__ ) . '/src/':'${WP_CORE_DIR}/':" "$WP_TESTS_DIR/wp-tests-config.php"
 	sed -i.bak "s/youremptytestdbnamehere/${DB_NAME}/" "$WP_TESTS_DIR/wp-tests-config.php"
