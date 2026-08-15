@@ -4,7 +4,7 @@ Tags: multilingual, translation, localization, language
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.12.0
+Stable tag: 0.13.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,7 +16,7 @@ mcLogiora is planned as a modular multilingual platform for WordPress.
 
 mcLogiora is fully free and fully open source. There is no premium edition, no paid tier, no licence key, and no feature paywall. Every feature it ships is available to every user.
 
-This release adds the first real translation workflows on top of the platform foundation:
+This release brings translation into the editing experience itself:
 
 * Thin plugin bootstrap.
 * PSR-4 autoloading architecture.
@@ -129,6 +129,16 @@ No. If Yoast SEO, Rank Math, All in One SEO, The SEO Framework, or Slim SEO is a
 Each translation points at itself. Sending every language back to the default one would tell search engines your translations are duplicates to ignore, which is the opposite of what translating a site is for.
 
 == Changelog ==
+
+= 0.13.0 =
+* Added a translation panel to the Block Editor document sidebar, showing the content's language, its source language, and the status of every active language without leaving the editor.
+* Added a matching Classic Editor metabox with the same languages, statuses, and actions.
+* Added Create Translation, Edit Translation, and View links directly in the editor. Creating a translation still goes through the same checks as everywhere else in the plugin.
+* Added a clear notice when the source content changed after a translation was last updated, including when each was last modified.
+* Added Elementor support for translations: a new translation starts with the source page's layout, so the design is there to be translated rather than rebuilt. Generated Elementor CSS is rebuilt for the translation rather than copied.
+* Added Advanced Custom Fields support: field groups appear on translated content and each translation keeps its own values. Copying the source's field values into a new translation is not included yet.
+* Added one set of status wording shared by the editor and the posts list, so a translation is described the same way everywhere.
+* Translated content still opens in whichever editor the site already uses. No separate translation editor is introduced.
 
 = 0.12.0 =
 * Added hreflang alternates, a self-referential entry, and an x-default annotation for translated pages, terms, and the home page.
