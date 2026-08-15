@@ -21,6 +21,7 @@ use McLogiora\Content\ContentTypeRegistry;
 use McLogiora\Content\ContentTypeRegistryInterface;
 use McLogiora\Content\CustomPostTypeSupportDetector;
 use McLogiora\Content\PostSupportDetector;
+use McLogiora\Compatibility\BuilderCompatibilityRegistry;
 use McLogiora\Compatibility\BuilderDetector;
 use McLogiora\Compatibility\CompatibilityDashboard;
 use McLogiora\Compatibility\CompatibilityService;
@@ -42,6 +43,7 @@ use McLogiora\Editors\EditorManager;
 use McLogiora\Editors\EditorRegistry;
 use McLogiora\Editors\EditorTranslationModel;
 use McLogiora\Editors\Payload\AcfPayloadAdapter;
+use McLogiora\Editors\Payload\BeaverBuilderPayloadAdapter;
 use McLogiora\Editors\Payload\ElementorPayloadAdapter;
 use McLogiora\Editors\Payload\PayloadAdapterRegistry;
 use McLogiora\Editors\Payload\TranslationPayloadAdapterInterface;
@@ -356,6 +358,7 @@ final class Application {
 				 * Phase 15 builders register here through the same filter.
 				 */
 				$registry->add( new ElementorPayloadAdapter() );
+				$registry->add( new BeaverBuilderPayloadAdapter() );
 				$registry->add( new AcfPayloadAdapter() );
 
 				$extra = apply_filters( 'mclogiora_register_payload_adapters', array(), $registry );
@@ -381,6 +384,16 @@ final class Application {
 					$container->get( TranslatedUrlGenerator::class ),
 					$container->get( TranslationStatusPresenter::class ),
 					$container->get( CapabilityRegistry::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			BuilderCompatibilityRegistry::class,
+			static function ( Container $container ) {
+				return new BuilderCompatibilityRegistry(
+					$container->get( PluginDetector::class ),
+					$container->get( ThemeDetector::class )
 				);
 			}
 		);
