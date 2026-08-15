@@ -9,6 +9,7 @@ namespace McLogiora\Suggestions\Providers;
 
 use McLogiora\Contracts\TranslationProviderInterface;
 use McLogiora\Suggestions\CredentialStore;
+use McLogiora\Suggestions\SuggestionError;
 use McLogiora\Suggestions\TransportInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -163,43 +164,40 @@ abstract class AbstractProvider implements TranslationProviderInterface {
 	 * @return \WP_Error
 	 */
 	protected function not_configured_error() {
-		return new \WP_Error(
-			'mclogiora_suggestion_not_configured',
-			sprintf(
-				/* translators: %s: provider label. */
-				__( '%s needs an API key and a selected model before it can suggest translations.', 'mclogiora' ),
-				$this->get_label()
-			)
-		);
+		return SuggestionError::not_configured( $this->get_label() );
 	}
 
 	/**
-	 * Returns the error used when a provider declines to answer.
+	 * Returns the error used when a provider refuses to answer.
 	 *
-	 * A refusal, a truncation or an empty body all arrive as a successful HTTP
-	 * response. None of them is a suggestion, and treating them as one would
-	 * put empty or partial text in front of a reviewer as though a model had
-	 * produced it deliberately.
+	 * Distinct from a truncation and from a malformed body, because the three
+	 * call for different responses from the person reading the message:
+	 * reword, retry, or report a bug.
 	 *
 	 * @param string $detail Provider-supplied reason, already safe to display.
 	 * @return \WP_Error
 	 */
 	protected function declined_error( $detail = '' ) {
-		$message = sprintf(
-			/* translators: %s: provider label. */
-			__( '%s did not return a usable translation.', 'mclogiora' ),
-			$this->get_label()
-		);
+		return SuggestionError::declined( $this->get_label(), $detail );
+	}
 
-		if ( '' !== $detail ) {
-			$message .= ' ' . sprintf(
-				/* translators: %s: provider-supplied reason. */
-				__( 'Reason: %s', 'mclogiora' ),
-				$detail
-			);
-		}
+	/**
+	 * Returns the error used when generation stopped before it finished.
+	 *
+	 * @param string $detail Provider-supplied reason, already safe to display.
+	 * @return \WP_Error
+	 */
+	protected function incomplete_error( $detail = '' ) {
+		return SuggestionError::incomplete( $this->get_label(), $detail );
+	}
 
-		return new \WP_Error( 'mclogiora_suggestion_declined', $message );
+	/**
+	 * Returns the error used when the response is not a translation at all.
+	 *
+	 * @return \WP_Error
+	 */
+	protected function invalid_response_error() {
+		return SuggestionError::invalid_response( $this->get_label() );
 	}
 
 	/**

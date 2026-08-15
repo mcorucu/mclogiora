@@ -173,7 +173,7 @@ final class AnthropicProvider extends AbstractProvider {
 
 		if ( ! isset( $response['data'] ) || ! is_array( $response['data'] ) ) {
 			return new \WP_Error(
-				'mclogiora_suggestion_bad_response',
+				'mclogiora_suggestion_invalid_response',
 				__( 'Anthropic returned a model list mcLogiora could not read.', 'mclogiora' )
 			);
 		}
@@ -270,11 +270,11 @@ final class AnthropicProvider extends AbstractProvider {
 		 * title, so it is refused with a reason they can act on.
 		 */
 		if ( 'max_tokens' === $stop ) {
-			return $this->declined_error( __( 'the translation was longer than the allowed output', 'mclogiora' ) );
+			return $this->incomplete_error( __( 'the translation was longer than the allowed output', 'mclogiora' ) );
 		}
 
 		if ( ! isset( $response['content'] ) || ! is_array( $response['content'] ) ) {
-			return $this->declined_error();
+			return $this->invalid_response_error();
 		}
 
 		$text = '';
@@ -286,7 +286,7 @@ final class AnthropicProvider extends AbstractProvider {
 		}
 
 		if ( '' === trim( $text ) ) {
-			return $this->declined_error();
+			return $this->invalid_response_error();
 		}
 
 		return $text;

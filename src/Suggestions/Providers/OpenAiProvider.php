@@ -178,7 +178,7 @@ final class OpenAiProvider extends AbstractProvider {
 
 		if ( ! isset( $response['data'] ) || ! is_array( $response['data'] ) ) {
 			return new \WP_Error(
-				'mclogiora_suggestion_bad_response',
+				'mclogiora_suggestion_invalid_response',
 				__( 'OpenAI returned a model list mcLogiora could not read.', 'mclogiora' )
 			);
 		}
@@ -286,11 +286,16 @@ final class OpenAiProvider extends AbstractProvider {
 				$reason = $response['incomplete_details']['reason'];
 			}
 
-			return $this->declined_error( $reason );
+			/*
+			 * A run that stopped short is a truncation, not a refusal. The
+			 * distinction matters to whoever reads the message: retrying a
+			 * truncation can work, retrying a refusal cannot.
+			 */
+			return $this->incomplete_error( $reason );
 		}
 
 		if ( ! isset( $response['output'] ) || ! is_array( $response['output'] ) ) {
-			return $this->declined_error();
+			return $this->invalid_response_error();
 		}
 
 		$text = '';
@@ -318,7 +323,7 @@ final class OpenAiProvider extends AbstractProvider {
 		}
 
 		if ( '' === trim( $text ) ) {
-			return $this->declined_error();
+			return $this->invalid_response_error();
 		}
 
 		return $text;

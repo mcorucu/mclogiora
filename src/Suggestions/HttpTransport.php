@@ -171,7 +171,7 @@ final class HttpTransport implements TransportInterface {
 		if ( $status >= 200 && $status < 300 ) {
 			if ( ! is_array( $decoded ) ) {
 				return new \WP_Error(
-					'mclogiora_suggestion_bad_response',
+					'mclogiora_suggestion_invalid_response',
 					__( 'The translation provider returned a response mcLogiora could not read.', 'mclogiora' )
 				);
 			}
@@ -201,7 +201,7 @@ final class HttpTransport implements TransportInterface {
 
 		switch ( true ) {
 			case 401 === $status || 403 === $status:
-				$code    = 'mclogiora_suggestion_auth';
+				$code    = 'mclogiora_suggestion_auth_failed';
 				$message = __( 'The translation provider rejected the stored credential.', 'mclogiora' );
 				break;
 
