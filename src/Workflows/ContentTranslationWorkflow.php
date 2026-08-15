@@ -7,6 +7,7 @@
 
 namespace McLogiora\Workflows;
 
+use McLogiora\Editors\Payload\PayloadAdapterRegistry;
 use McLogiora\Languages\Language;
 use McLogiora\Languages\LanguageServiceInterface;
 use McLogiora\Relations\ContentType;
@@ -54,23 +55,33 @@ final class ContentTranslationWorkflow {
 	private $validator;
 
 	/**
+	 * Editor payload adapters.
+	 *
+	 * @var PayloadAdapterRegistry|null
+	 */
+	private $payloads;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param ContentGatewayInterface             $gateway Content gateway.
 	 * @param TranslationRelationServiceInterface $relations Relation service.
 	 * @param LanguageServiceInterface            $languages Language service.
 	 * @param TranslationWorkflowValidator        $validator Validator.
+	 * @param PayloadAdapterRegistry|null         $payloads Editor payload adapters.
 	 */
 	public function __construct(
 		ContentGatewayInterface $gateway,
 		TranslationRelationServiceInterface $relations,
 		LanguageServiceInterface $languages,
-		TranslationWorkflowValidator $validator
+		TranslationWorkflowValidator $validator,
+		?PayloadAdapterRegistry $payloads = null
 	) {
 		$this->gateway   = $gateway;
 		$this->relations = $relations;
 		$this->languages = $languages;
 		$this->validator = $validator;
+		$this->payloads  = $payloads;
 	}
 
 	/**
@@ -165,11 +176,43 @@ final class ContentTranslationWorkflow {
 			return $item;
 		}
 
+		$prepared = $this->prepare_payload( (int) $source_id, (int) $created_id );
+
+		if ( is_wp_error( $prepared ) ) {
+			/*
+			 * Same compensating rollback as above, extended over the payload
+			 * step. A draft whose builder layout failed to copy is not a
+			 * usable translation, and leaving it attached would present a
+			 * half-prepared page as a real one. The relation is detached
+			 * before the draft is removed so no record outlives the object it
+			 * points at.
+			 */
+			$this->relations->detach_item_safely( ContentType::POST, (string) $created_id, $target_language->code() );
+			$this->gateway->delete_post( (int) $created_id );
+
+			return $prepared;
+		}
+
 		return array(
 			'post_id'   => (int) $created_id,
 			'group_key' => $group->group_key(),
 			'edit_link' => $this->gateway->post_edit_link( (int) $created_id ),
 		);
+	}
+
+	/**
+	 * Lets editor payload adapters prepare a freshly created translation.
+	 *
+	 * @param int $source_id Source post identifier.
+	 * @param int $created_id Newly created translation identifier.
+	 * @return true|\WP_Error
+	 */
+	private function prepare_payload( $source_id, $created_id ) {
+		if ( ! $this->payloads instanceof PayloadAdapterRegistry ) {
+			return true;
+		}
+
+		return $this->payloads->prepare( $source_id, $created_id );
 	}
 
 	/**

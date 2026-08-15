@@ -34,10 +34,18 @@ use McLogiora\Database\SchemaBuilder;
 use McLogiora\Database\TableNames;
 use McLogiora\Database\UuidGenerator;
 use McLogiora\Database\VersionChecker;
+use McLogiora\Editors\BlockEditorPanel;
+use McLogiora\Editors\ClassicEditorMetabox;
 use McLogiora\Editors\EditorDetector;
 use McLogiora\Editors\EditorFactory;
 use McLogiora\Editors\EditorManager;
 use McLogiora\Editors\EditorRegistry;
+use McLogiora\Editors\EditorTranslationModel;
+use McLogiora\Editors\Payload\AcfPayloadAdapter;
+use McLogiora\Editors\Payload\ElementorPayloadAdapter;
+use McLogiora\Editors\Payload\PayloadAdapterRegistry;
+use McLogiora\Editors\Payload\TranslationPayloadAdapterInterface;
+use McLogiora\Editors\TranslationStatusPresenter;
 use McLogiora\Health\DatabaseHealthCheck;
 use McLogiora\Health\SeoHealthCheck;
 use McLogiora\Languages\CachedLanguageRepository;
@@ -221,6 +229,8 @@ final class Application {
 		$modules->add( new SitemapIntegration() );
 		$modules->add( new InstallationFailureNotice() );
 		$modules->add( new EditorManager() );
+		$modules->add( new BlockEditorPanel() );
+		$modules->add( new ClassicEditorMetabox() );
 		$modules->add( new CompatibilityDashboard() );
 		$modules->add( new AdminMenu() );
 		$modules->register();
@@ -324,6 +334,54 @@ final class Application {
 			EditorDetector::class,
 			static function ( Container $container ) {
 				return new EditorDetector( $container->get( EditorRegistry::class ) );
+			}
+		);
+
+		$this->container->set(
+			TranslationStatusPresenter::class,
+			static function () {
+				return new TranslationStatusPresenter();
+			}
+		);
+
+		$this->container->set(
+			PayloadAdapterRegistry::class,
+			static function () {
+				$registry = new PayloadAdapterRegistry();
+
+				/*
+				 * Both adapters are registered unconditionally and each
+				 * reports its own availability, so a site without Elementor or
+				 * ACF loads them without touching either plugin's classes.
+				 * Phase 15 builders register here through the same filter.
+				 */
+				$registry->add( new ElementorPayloadAdapter() );
+				$registry->add( new AcfPayloadAdapter() );
+
+				$extra = apply_filters( 'mclogiora_register_payload_adapters', array(), $registry );
+
+				if ( is_array( $extra ) ) {
+					foreach ( $extra as $adapter ) {
+						if ( $adapter instanceof TranslationPayloadAdapterInterface ) {
+							$registry->add( $adapter );
+						}
+					}
+				}
+
+				return $registry;
+			}
+		);
+
+		$this->container->set(
+			EditorTranslationModel::class,
+			static function ( Container $container ) {
+				return new EditorTranslationModel(
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( TranslationRelationServiceInterface::class ),
+					$container->get( TranslatedUrlGenerator::class ),
+					$container->get( TranslationStatusPresenter::class ),
+					$container->get( CapabilityRegistry::class )
+				);
 			}
 		);
 
@@ -564,7 +622,8 @@ final class Application {
 					$container->get( ContentGatewayInterface::class ),
 					$container->get( TranslationRelationServiceInterface::class ),
 					$container->get( LanguageServiceInterface::class ),
-					$container->get( TranslationWorkflowValidator::class )
+					$container->get( TranslationWorkflowValidator::class ),
+					$container->get( PayloadAdapterRegistry::class )
 				);
 			}
 		);

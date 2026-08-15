@@ -18,3 +18,17 @@ parameters:
 		- node_modules (?)
 		- tests (?)
 	treatPhpDocTypesAsCertain: false
+	ignoreErrors:
+		# Elementor is an optional integration and deliberately not a
+		# dependency, so its classes are absent during analysis. The adapter
+		# guards every entry point with class_exists() and is unit-tested to be
+		# inert when Elementor is not installed. Scoped to the one file that
+		# may name Elementor symbols, so a reference anywhere else still fails.
+		-
+			identifier: class.notFound
+			path: src/Editors/Payload/ElementorPayloadAdapter.php
+		# Advanced Custom Fields, same reasoning: an optional integration,
+		# guarded by function_exists() and unit-tested to be inert when absent.
+		-
+			identifier: function.notFound
+			path: src/Editors/Payload/AcfPayloadAdapter.php
