@@ -1,6 +1,6 @@
 # mcLogiora Planning
 
-Current phase: Phase 13.1 complete (Routing, Canonical & Relation Correctness, v0.12.0). Next planned phase: Phase 14, gated on a WordPress 7.1 final compatibility smoke.
+Current phase: Phase 14 complete (Editor Translation UX, v0.13.0). Next planned phase: Phase 15 — Extended Builder Compatibility, gated on a WordPress 7.1 final compatibility smoke.
 
 This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 
@@ -671,6 +671,10 @@ Phase 13.1: Routing, Canonical & Relation Correctness - v0.12.0
 
 - Stabilization phase, no new features. Fixes three defects found while qualifying against WordPress 7.1-RC3, none of them caused by WordPress 7.1: translated posts 404'd under `/%postname%/` because path re-parsing did not follow core's verbose page rules; translated objects were served under other languages' routes with contradictory canonical and hreflang; and unlinking a translation permanently consumed that language slot. Adds a pinned `WordPress 7.1 compatibility` CI job alongside the existing stable integration job. `Tested up to` deliberately unchanged at 7.0. See the amendments in `docs/adr/0010`, `0013`, and `0015`.
 
+Phase 14: Editor Translation UX - v0.13.0
+
+- One shared editor translation model rendered by a Block Editor document-sidebar panel and a Classic Editor metabox, a single status vocabulary shared with the posts-list column, outdated-translation reporting, Elementor layout copying through Elementor's own document API, and ACF detection with native per-object editing. The editor renders; the server still owns every write through the existing `admin-post` workflow. WordPress 7.1's iframed canvas is never touched. See `docs/adr/0016-editor-translation-ux.md`.
+
 ### Planned phases
 
 - hreflang output, canonical handling, OpenGraph and JSON-LD compatibility, sitemap integration, and coexistence with established SEO plugins.
@@ -728,4 +732,4 @@ These notes record the Phase 01 discovery environment. They are historical conte
 
 ## Next Phase
 
-Phases 02 through 13 are complete. The next implementation phase is **Phase 14: Editor Translation UX**, which brings the translation workflow into the editing experience.
+Phases 02 through 14 are complete. The next implementation phase is **Phase 15: Extended Builder Compatibility**, after a WordPress 7.1 final compatibility smoke.

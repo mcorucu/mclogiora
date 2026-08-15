@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: mcLogiora 0.12.0\n"
+"Project-Id-Version: mcLogiora 0.13.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mclogiora\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-14T23:29:53+00:00\n"
+"POT-Creation-Date: 2026-08-15T00:55:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mclogiora\n"
@@ -18,6 +18,7 @@ msgstr ""
 #: mclogiora.php:3
 #: src/Admin/AdminMenu.php:96
 #: src/Admin/AdminMenu.php:97
+#: assets/js/editor-panel.js:261
 msgid "mcLogiora"
 msgstr ""
 
@@ -139,6 +140,7 @@ msgid "You do not have permission to do that."
 msgstr ""
 
 #: src/Admin/MediaTranslationFields.php:100
+#: src/Editors/ClassicEditorMetabox.php:92
 msgid "mcLogiora Translations"
 msgstr ""
 
@@ -445,34 +447,42 @@ msgid "No active languages"
 msgstr ""
 
 #: src/Admin/TranslationColumns.php:201
+#: src/Editors/TranslationStatusPresenter.php:37
 msgid "Original"
 msgstr ""
 
 #: src/Admin/TranslationColumns.php:203
+#: src/Editors/TranslationStatusPresenter.php:39
 msgid "Draft"
 msgstr ""
 
 #: src/Admin/TranslationColumns.php:205
+#: src/Editors/TranslationStatusPresenter.php:41
 msgid "Translated"
 msgstr ""
 
 #: src/Admin/TranslationColumns.php:207
+#: src/Editors/TranslationStatusPresenter.php:43
 msgid "Needs review"
 msgstr ""
 
 #: src/Admin/TranslationColumns.php:209
+#: src/Editors/TranslationStatusPresenter.php:45
 msgid "Needs update"
 msgstr ""
 
 #: src/Admin/TranslationColumns.php:211
+#: src/Editors/TranslationStatusPresenter.php:47
 msgid "Machine suggested"
 msgstr ""
 
 #: src/Admin/TranslationColumns.php:213
+#: src/Editors/TranslationStatusPresenter.php:49
 msgid "Disabled"
 msgstr ""
 
 #: src/Admin/TranslationColumns.php:215
+#: src/Editors/TranslationStatusPresenter.php:51
 msgid "Missing"
 msgstr ""
 
@@ -750,6 +760,120 @@ msgstr ""
 
 #: src/Editors/ClassicEditorAdapter.php:27
 msgid "WordPress Classic Editor"
+msgstr ""
+
+#: src/Editors/ClassicEditorMetabox.php:153
+#: assets/js/editor-panel.js:277
+msgid "You do not have permission to change translations."
+msgstr ""
+
+#: src/Editors/ClassicEditorMetabox.php:170
+#: src/Setup/SetupWizard.php:249
+#: src/Switcher/SwitcherRenderer.php:68
+#: assets/js/editor-panel.js:229
+msgid "Language"
+msgstr ""
+
+#: src/Editors/ClassicEditorMetabox.php:178
+#: src/Relations/TranslationManager.php:203
+#: assets/js/editor-panel.js:240
+msgid "Source"
+msgstr ""
+
+#: src/Editors/ClassicEditorMetabox.php:188
+#: assets/js/editor-panel.js:251
+msgid "Edit source"
+msgstr ""
+
+#. translators: %s: date and time.
+#: src/Editors/ClassicEditorMetabox.php:246
+#: assets/js/editor-panel.js:97
+#, php-format,js-format
+msgid "Source updated: %s"
+msgstr ""
+
+#. translators: %s: date and time.
+#: src/Editors/ClassicEditorMetabox.php:253
+#: assets/js/editor-panel.js:107
+#, php-format,js-format
+msgid "Translation updated: %s"
+msgstr ""
+
+#: src/Editors/ClassicEditorMetabox.php:272
+#: src/Editors/ClassicEditorMetabox.php:278
+#: assets/js/editor-panel.js:133
+#: assets/js/editor-panel.js:151
+msgid "View"
+msgstr ""
+
+#: src/Editors/ClassicEditorMetabox.php:275
+#: assets/js/editor-panel.js:142
+msgid "Edit translation"
+msgstr ""
+
+#: src/Editors/ClassicEditorMetabox.php:332
+#: assets/js/editor-panel.js:166
+msgid "Create translation"
+msgstr ""
+
+#: src/Editors/EditorTranslationModel.php:245
+msgid "Source content changed after this translation was last updated."
+msgstr ""
+
+#: src/Editors/Payload/ElementorPayloadAdapter.php:79
+msgid "The Elementor document for this content could not be loaded."
+msgstr ""
+
+#: src/Editors/Payload/ElementorPayloadAdapter.php:89
+msgid "The Elementor layout could not be read from the source content."
+msgstr ""
+
+#. translators: %s: error message.
+#: src/Editors/Payload/ElementorPayloadAdapter.php:116
+#, php-format
+msgid "The Elementor layout could not be copied: %s"
+msgstr ""
+
+#: src/Editors/Payload/ElementorPayloadAdapter.php:125
+msgid "The Elementor layout could not be saved to the translation."
+msgstr ""
+
+#: src/Editors/TranslationStatusPresenter.php:67
+msgid "This is the source content other languages are translated from."
+msgstr ""
+
+#: src/Editors/TranslationStatusPresenter.php:69
+msgid "A translation exists and is still being worked on."
+msgstr ""
+
+#: src/Editors/TranslationStatusPresenter.php:71
+msgid "This translation is complete."
+msgstr ""
+
+#: src/Editors/TranslationStatusPresenter.php:73
+msgid "This translation has not been checked against the source yet."
+msgstr ""
+
+#: src/Editors/TranslationStatusPresenter.php:75
+msgid "The source content changed after this translation was last updated."
+msgstr ""
+
+#: src/Editors/TranslationStatusPresenter.php:77
+msgid "A suggested translation is waiting for a person to review it."
+msgstr ""
+
+#: src/Editors/TranslationStatusPresenter.php:79
+msgid "This language is switched off for this content."
+msgstr ""
+
+#: src/Editors/TranslationStatusPresenter.php:81
+msgid "No translation exists for this language yet."
+msgstr ""
+
+#. translators: 1: language name, 2: translation status.
+#: src/Editors/TranslationStatusPresenter.php:123
+#, php-format
+msgid "%1$s: %2$s"
 msgstr ""
 
 #: src/Health/SeoHealthCheck.php:110
@@ -1181,7 +1305,7 @@ msgid "A translation already exists for this language."
 msgstr ""
 
 #: src/Menus/MenuTranslationWorkflow.php:377
-#: src/Workflows/ContentTranslationWorkflow.php:319
+#: src/Workflows/ContentTranslationWorkflow.php:362
 #: src/Workflows/TaxonomyTranslationWorkflow.php:372
 msgid "Set a default language before creating translations."
 msgstr ""
@@ -1382,10 +1506,6 @@ msgstr ""
 msgid "Content Type"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:203
-msgid "Source"
-msgstr ""
-
 #: src/Relations/TranslationManager.php:204
 msgid "Targets"
 msgstr ""
@@ -1569,11 +1689,6 @@ msgstr ""
 
 #: src/Setup/SetupWizard.php:244
 msgid "Use Existing Language"
-msgstr ""
-
-#: src/Setup/SetupWizard.php:249
-#: src/Switcher/SwitcherRenderer.php:68
-msgid "Language"
 msgstr ""
 
 #: src/Setup/SetupWizard.php:256
@@ -1771,15 +1886,15 @@ msgstr ""
 msgid "This widget type has no translation adapter, so mcLogiora will not modify it."
 msgstr ""
 
-#: src/Workflows/ContentTranslationWorkflow.php:144
+#: src/Workflows/ContentTranslationWorkflow.php:155
 msgid "The translation draft could not be created."
 msgstr ""
 
-#: src/Workflows/ContentTranslationWorkflow.php:277
+#: src/Workflows/ContentTranslationWorkflow.php:320
 msgid "The content identifier is not valid."
 msgstr ""
 
-#: src/Workflows/ContentTranslationWorkflow.php:281
+#: src/Workflows/ContentTranslationWorkflow.php:324
 #: src/Workflows/TranslationWorkflowValidator.php:146
 msgid "You are not allowed to edit this content."
 msgstr ""
