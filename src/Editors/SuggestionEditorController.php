@@ -10,6 +10,7 @@ namespace McLogiora\Editors;
 use McLogiora\Contracts\ModuleInterface;
 use McLogiora\Core\Container;
 use McLogiora\Relations\ContentType;
+use McLogiora\Relations\TranslationGroup;
 use McLogiora\Relations\TranslationItem;
 use McLogiora\Relations\TranslationRelationServiceInterface;
 use McLogiora\Relations\TranslationStatus;
@@ -266,9 +267,9 @@ final class SuggestionEditorController implements ModuleInterface {
 			);
 		}
 
-		$set = $this->relations->get_translation_set_for_object( ContentType::POST, (string) $target_id );
+		$group = $this->relations->get_translation_set_for_object( ContentType::POST, (string) $target_id );
 
-		if ( ! is_array( $set ) || array() === $set ) {
+		if ( ! $group instanceof TranslationGroup ) {
 			wp_send_json_error(
 				array( 'message' => __( 'This content is not part of a translation group.', 'mclogiora' ) ),
 				400
@@ -278,7 +279,7 @@ final class SuggestionEditorController implements ModuleInterface {
 		$target = null;
 		$source = null;
 
-		foreach ( $set as $item ) {
+		foreach ( $group->items() as $item ) {
 			if ( ! $item instanceof TranslationItem ) {
 				continue;
 			}
