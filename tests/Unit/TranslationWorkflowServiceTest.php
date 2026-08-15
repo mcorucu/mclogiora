@@ -71,15 +71,22 @@ final class TranslationWorkflowServiceTest extends TestCase {
 	 * @return void
 	 */
 	public function test_forbidden_status_change_is_rejected() {
+		/*
+		 * Assigning `original` is the standing example of a forbidden change:
+		 * which item is the source of a group is a structural fact, not a
+		 * workflow status, and reassigning it is a separate workflow that does
+		 * not exist. This test previously used `machine_suggested`, which
+		 * Phase 16 legitimately opened.
+		 */
 		$result = $this->factory->workflows->change_status(
 			ContentType::POST,
 			$this->translation_id,
 			'tr',
-			TranslationStatus::MACHINE_SUGGESTED
+			TranslationStatus::ORIGINAL
 		);
 
 		$this->assertInstanceOf( \WP_Error::class, $result );
-		$this->assertSame( 'mclogiora_machine_status_reserved', $result->get_error_code() );
+		$this->assertSame( 'mclogiora_original_not_assignable', $result->get_error_code() );
 		$this->assertSame(
 			TranslationStatus::DRAFT,
 			$this->factory->repository->find_item( ContentType::POST, (string) $this->translation_id, 'tr' )->status(),

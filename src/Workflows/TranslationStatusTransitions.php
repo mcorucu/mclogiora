@@ -31,9 +31,14 @@ final class TranslationStatusTransitions {
 	 * - `missing` is a computed absence rather than a stored state. It
 	 *   describes a language slot with no item, so nothing transitions out of
 	 *   it; creating or linking content produces a real item instead.
-	 * - `machine_suggested` is reserved for Phase 16. It can be left, so that
-	 *   suggestions produced later can be reviewed, but Phase 10 provides no
-	 *   action that enters it.
+	 * - `machine_suggested` is entered in Phase 16, by applying a translation
+	 *   suggestion and by nothing else. Its entry paths are the three states a
+	 *   translation can be in while still awaiting work -- draft, needs review
+	 *   and needs update -- because those are the ones where replacing the text
+	 *   with a machine's proposal loses nothing a human had settled. It is
+	 *   deliberately not reachable from `translated`: overwriting finished,
+	 *   human-approved text with a machine suggestion would silently undo
+	 *   somebody's work, so that route has to go through review first.
 	 * - `disabled` is an administrative state, reachable only when a language
 	 *   is disabled, and leavable back into review.
 	 *
@@ -43,11 +48,13 @@ final class TranslationStatusTransitions {
 		TranslationStatus::DRAFT             => array(
 			TranslationStatus::NEEDS_REVIEW,
 			TranslationStatus::TRANSLATED,
+			TranslationStatus::MACHINE_SUGGESTED,
 			TranslationStatus::DISABLED,
 		),
 		TranslationStatus::NEEDS_REVIEW      => array(
 			TranslationStatus::TRANSLATED,
 			TranslationStatus::DRAFT,
+			TranslationStatus::MACHINE_SUGGESTED,
 			TranslationStatus::DISABLED,
 		),
 		TranslationStatus::TRANSLATED        => array(
@@ -58,10 +65,12 @@ final class TranslationStatusTransitions {
 		TranslationStatus::NEEDS_UPDATE      => array(
 			TranslationStatus::NEEDS_REVIEW,
 			TranslationStatus::TRANSLATED,
+			TranslationStatus::MACHINE_SUGGESTED,
 			TranslationStatus::DISABLED,
 		),
 		TranslationStatus::MACHINE_SUGGESTED => array(
 			TranslationStatus::NEEDS_REVIEW,
+			TranslationStatus::TRANSLATED,
 			TranslationStatus::DRAFT,
 			TranslationStatus::DISABLED,
 		),
@@ -134,12 +143,19 @@ final class TranslationStatusTransitions {
 			);
 		}
 
-		if ( TranslationStatus::MACHINE_SUGGESTED === $to ) {
-			return new \WP_Error(
-				'mclogiora_machine_status_reserved',
-				__( 'The machine suggested status is reserved for translation suggestion workflows.', 'mclogiora' )
-			);
-		}
+		/*
+		 * Phase 10 blocked every route into `machine_suggested` with a blanket
+		 * guard here, on the grounds that it was "reserved for translation
+		 * suggestion workflows". Phase 16 is that workflow, so the reservation
+		 * is replaced by explicit entries in the transition matrix rather than
+		 * simply deleted.
+		 *
+		 * Removing the guard opens nothing by accident. The three states that
+		 * must never reach `machine_suggested` are each protected
+		 * independently and still are: `original` has an empty allow-list and
+		 * its own immutability check below, `missing` has an empty allow-list,
+		 * and `disabled` leads only back to review.
+		 */
 
 		if ( TranslationStatus::ORIGINAL === $from ) {
 			return new \WP_Error(
