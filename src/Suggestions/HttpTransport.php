@@ -36,7 +36,7 @@ defined( 'ABSPATH' ) || exit;
  *   a provider-supplied message, never request headers and never the submitted
  *   text, because error strings end up in admin notices and in logs.
  */
-final class HttpTransport {
+final class HttpTransport implements TransportInterface {
 	/**
 	 * Request timeout in seconds.
 	 *
