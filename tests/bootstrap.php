@@ -619,3 +619,108 @@ if ( ! class_exists( 'WP_Query' ) ) {
 	class WP_Query {
 	}
 }
+
+/*
+ * Transient stubs backing the suggestion preview store.
+ *
+ * Faithful in the two ways the tests depend on: a stored value survives until
+ * it is deleted, and an expired value is indistinguishable from one that was
+ * never set. Expiry is driven by a test-settable clock offset rather than by
+ * real time, so a fifteen-minute lifetime can be exercised in microseconds.
+ */
+$GLOBALS['mclogiora_test_transients']  = array();
+$GLOBALS['mclogiora_test_clock_offset'] = 0;
+
+if ( ! function_exists( 'set_transient' ) ) {
+	/**
+	 * Stores a value with an expiry.
+	 *
+	 * @param string $key Transient name.
+	 * @param mixed  $value Value to store.
+	 * @param int    $expiration Lifetime in seconds.
+	 * @return bool
+	 */
+	function set_transient( $key, $value, $expiration = 0 ) {
+		$GLOBALS['mclogiora_test_transients'][ $key ] = array(
+			'value'   => $value,
+			'expires' => $expiration > 0 ? time() + (int) $GLOBALS['mclogiora_test_clock_offset'] + (int) $expiration : 0,
+		);
+
+		return true;
+	}
+}
+
+if ( ! function_exists( 'get_transient' ) ) {
+	/**
+	 * Returns a stored value, or false when absent or expired.
+	 *
+	 * @param string $key Transient name.
+	 * @return mixed
+	 */
+	function get_transient( $key ) {
+		if ( ! isset( $GLOBALS['mclogiora_test_transients'][ $key ] ) ) {
+			return false;
+		}
+
+		$entry = $GLOBALS['mclogiora_test_transients'][ $key ];
+		$now   = time() + (int) $GLOBALS['mclogiora_test_clock_offset'];
+
+		if ( 0 !== $entry['expires'] && $entry['expires'] <= $now ) {
+			unset( $GLOBALS['mclogiora_test_transients'][ $key ] );
+
+			return false;
+		}
+
+		return $entry['value'];
+	}
+}
+
+if ( ! function_exists( 'delete_transient' ) ) {
+	/**
+	 * Removes a stored value.
+	 *
+	 * @param string $key Transient name.
+	 * @return bool
+	 */
+	function delete_transient( $key ) {
+		if ( ! isset( $GLOBALS['mclogiora_test_transients'][ $key ] ) ) {
+			return false;
+		}
+
+		unset( $GLOBALS['mclogiora_test_transients'][ $key ] );
+
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_generate_password' ) ) {
+	/**
+	 * Returns a random alphanumeric string.
+	 *
+	 * @param int  $length Desired length.
+	 * @param bool $special_chars Whether to include punctuation.
+	 * @param bool $extra_special_chars Whether to include extra punctuation.
+	 * @return string
+	 */
+	function wp_generate_password( $length = 12, $special_chars = true, $extra_special_chars = false ) {
+		$alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+		$password = '';
+
+		for ( $i = 0; $i < (int) $length; $i++ ) {
+			$password .= $alphabet[ random_int( 0, strlen( $alphabet ) - 1 ) ];
+		}
+
+		return $password;
+	}
+}
+
+if ( ! function_exists( 'get_current_user_id' ) ) {
+	/**
+	 * Returns the test's current user identifier.
+	 *
+	 * @return int
+	 */
+	function get_current_user_id() {
+		return isset( $GLOBALS['mclogiora_test_current_user'] ) ? (int) $GLOBALS['mclogiora_test_current_user'] : 0;
+	}
+}
