@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: mcLogiora 0.13.0\n"
+"Project-Id-Version: mcLogiora 0.14.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mclogiora\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-15T00:55:04+00:00\n"
+"POT-Creation-Date: 2026-08-15T12:41:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mclogiora\n"
@@ -545,46 +545,81 @@ msgstr ""
 msgid "The translated menu was created."
 msgstr ""
 
+#: src/Compatibility/BuilderCompatibility.php:260
+#: src/Compatibility/BuilderCompatibility.php:272
+msgid "Detected — compatibility not yet verified"
+msgstr ""
+
+#: src/Compatibility/BuilderCompatibility.php:261
+msgid "Not verified — a licensed copy is required to qualify"
+msgstr ""
+
+#: src/Compatibility/BuilderCompatibility.php:266
+msgid "Compatible — layout travels with the content"
+msgstr ""
+
+#: src/Compatibility/BuilderCompatibility.php:268
+msgid "Compatible — layout copied for translations"
+msgstr ""
+
+#: src/Compatibility/BuilderCompatibility.php:270
+msgid "Compatible — nothing extra required"
+msgstr ""
+
+#: src/Compatibility/BuilderCompatibilityRegistry.php:175
 #: src/Compatibility/BuilderDetector.php:50
 #: src/Compatibility/PluginDetector.php:54
 #: src/Editors/ElementorAdapter.php:45
 msgid "Elementor"
 msgstr ""
 
-#: src/Compatibility/BuilderDetector.php:56
-msgid "Bricks"
-msgstr ""
-
+#: src/Compatibility/BuilderCompatibilityRegistry.php:187
 #: src/Compatibility/BuilderDetector.php:62
 msgid "Beaver Builder"
 msgstr ""
 
-#: src/Compatibility/BuilderDetector.php:68
-msgid "Divi"
-msgstr ""
-
-#: src/Compatibility/BuilderDetector.php:74
-msgid "Oxygen"
-msgstr ""
-
-#: src/Compatibility/BuilderDetector.php:80
-msgid "WPBakery"
-msgstr ""
-
+#: src/Compatibility/BuilderCompatibilityRegistry.php:208
 #: src/Compatibility/BuilderDetector.php:86
 msgid "Kadence Blocks"
 msgstr ""
 
+#: src/Compatibility/BuilderCompatibilityRegistry.php:220
 #: src/Compatibility/BuilderDetector.php:92
 msgid "GenerateBlocks"
 msgstr ""
 
+#: src/Compatibility/BuilderCompatibilityRegistry.php:232
 #: src/Compatibility/BuilderDetector.php:98
 msgid "Spectra"
 msgstr ""
 
+#: src/Compatibility/BuilderCompatibilityRegistry.php:244
 #: src/Compatibility/BuilderDetector.php:104
 msgid "SeedProd"
+msgstr ""
+
+#: src/Compatibility/BuilderCompatibilityRegistry.php:260
+#: src/Compatibility/BuilderDetector.php:56
+msgid "Bricks"
+msgstr ""
+
+#: src/Compatibility/BuilderCompatibilityRegistry.php:271
+#: src/Compatibility/BuilderDetector.php:68
+msgid "Divi"
+msgstr ""
+
+#: src/Compatibility/BuilderCompatibilityRegistry.php:282
+#: src/Compatibility/BuilderDetector.php:80
+msgid "WPBakery"
+msgstr ""
+
+#: src/Compatibility/BuilderCompatibilityRegistry.php:293
+#: src/Compatibility/BuilderDetector.php:74
+msgid "Oxygen"
+msgstr ""
+
+#: src/Compatibility/BuilderCompatibilityRegistry.php:303
+msgid "Avada"
 msgstr ""
 
 #: src/Compatibility/CompatibilityDashboard.php:59
@@ -816,8 +851,18 @@ msgstr ""
 msgid "Create translation"
 msgstr ""
 
-#: src/Editors/EditorTranslationModel.php:245
+#: src/Editors/EditorTranslationModel.php:246
 msgid "Source content changed after this translation was last updated."
+msgstr ""
+
+#: src/Editors/Payload/BeaverBuilderPayloadAdapter.php:109
+msgid "The Beaver Builder layout could not be read from the source content."
+msgstr ""
+
+#. translators: %s: error message.
+#: src/Editors/Payload/BeaverBuilderPayloadAdapter.php:138
+#, php-format
+msgid "The Beaver Builder layout could not be copied: %s"
 msgstr ""
 
 #: src/Editors/Payload/ElementorPayloadAdapter.php:79

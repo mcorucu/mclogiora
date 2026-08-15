@@ -1,6 +1,6 @@
 # mcLogiora Planning
 
-Current phase: Phase 14 complete (Editor Translation UX, v0.13.0). Next planned phase: Phase 15 — Extended Builder Compatibility, gated on a WordPress 7.1 final compatibility smoke.
+Current phase: Phase 15 complete (Extended Builder Compatibility, v0.14.0). Next planned phase: Phase 16 — Translation Suggestions, gated on a WordPress 7.1 final compatibility smoke.
 
 This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 
@@ -675,6 +675,10 @@ Phase 14: Editor Translation UX - v0.13.0
 
 - One shared editor translation model rendered by a Block Editor document-sidebar panel and a Classic Editor metabox, a single status vocabulary shared with the posts-list column, outdated-translation reporting, Elementor layout copying through Elementor's own document API, and ACF detection with native per-object editing. The editor renders; the server still owns every write through the existing `admin-post` workflow. WordPress 7.1's iframed canvas is never touched. See `docs/adr/0016-editor-translation-ux.md`.
 
+Phase 15: Extended Builder Compatibility - v0.14.0
+
+- Ten builders assessed against running copies rather than remembered meta keys. Kadence Blocks, GenerateBlocks and Spectra store their layout as ordinary block content and need no code; Beaver Builder needs a payload adapter and now has one, written against its own `FLBuilderModel` API; SeedProd needs nothing. Bricks, Divi, WPBakery, Oxygen and Avada are commercial, were not legitimately available, and are recorded as unverified rather than claimed. Fixed Beaver Builder and SeedProd never being detected. Added a builder compatibility CI job. See `docs/adr/0017-extended-builder-compatibility.md` and `docs/architecture/builder-compatibility-matrix.md`.
+
 ### Planned phases
 
 - hreflang output, canonical handling, OpenGraph and JSON-LD compatibility, sitemap integration, and coexistence with established SEO plugins.
@@ -732,4 +736,4 @@ These notes record the Phase 01 discovery environment. They are historical conte
 
 ## Next Phase
 
-Phases 02 through 14 are complete. The next implementation phase is **Phase 15: Extended Builder Compatibility**, after a WordPress 7.1 final compatibility smoke.
+Phases 02 through 15 are complete. The next implementation phase is **Phase 16: Translation Suggestions**, after a WordPress 7.1 final compatibility smoke.

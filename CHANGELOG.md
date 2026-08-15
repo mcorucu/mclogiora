@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.14.0
+
+- Added Phase 15 extended builder compatibility. Ten builders were assessed; the honest result is two adapters, three builders that need no code at all, and five that nobody here could legally install and so cannot be claimed.
+- Added Beaver Builder support. Beaver keeps its layout in post meta rather than in the post, so a translation used to open as an empty page. The layout is now copied through Beaver's own `FLBuilderModel` API, following the same sequence Beaver's own multilingual duplication uses, including the draft layout and the builder-enabled flag. Page-level custom CSS is not copied, matching Beaver's own behaviour, and the translation's asset cache is cleared so it rebuilds.
+- Confirmed Kadence Blocks, GenerateBlocks and Spectra need no builder-specific code. All three store their layout as ordinary block content, which mcLogiora already copies exactly. Writing adapters for them would have added three classes that copy nothing and three more things to break; a test asserting the markup survives keeps it true instead.
+- Fixed two builders never being detected. mcLogiora looked for Beaver Builder at `beaver-builder/beaver-builder.php` and SeedProd at `seedprod/seedprod.php`; the free Beaver edition ships as `beaver-builder-lite-version/fl-builder.php` and SeedProd has always shipped as `coming-soon`. Both names were plausible and neither was real. Detection now prefers a class or function the builder itself defines, which survives an edition change and a directory rename.
+- Added nuanced compatibility reporting. A builder whose layout is ordinary block content is fully compatible and needs nothing; a builder nobody could install is unproven rather than broken. Those are different facts and are now reported differently. No builder is ever described as unsupported.
+- Confirmed SeedProd's own landing pages are correctly outside mcLogiora's scope: they use a non-public post type, translation is refused cleanly, and ordinary pages still translate normally with SeedProd active.
+- Added a `WordPress builder compatibility` CI job running the adapters against the current free editions of Elementor, ACF, Kadence Blocks and Beaver Builder, so a builder release that breaks an adapter fails a build instead of a site. Commercial packages are never downloaded.
+- Bricks, Divi, WPBakery, Oxygen and Avada are recorded as not yet verified. No adapter was written for any of them, because writing one from assumptions about its storage would be a compatibility badge with no evidence behind it.
+- Elementor's global site settings remain uncopied, now as a recorded decision rather than an open question: they belong to the site, not to a translated post.
+- No post meta is copied into a translation, by any adapter, ever. That single property is why the block builders work without code, and it is now asserted as a test.
+- WordPress 7.1 support is still not claimed. `Tested up to` remains 7.0 until a final 7.1 build ships and passes a compatibility smoke.
+
 ## 0.13.0
 
 - Added Phase 14 editor translation UX. Translation state now lives where the editing happens, in both the Block Editor and the Classic Editor.
@@ -16,7 +30,9 @@
 - No build pipeline was introduced. The panel is plain JavaScript against the packages WordPress already registers, so the file shipped is the file written and no build artefact can drift from its source.
 - WordPress 7.1 support is still not claimed. `Tested up to` remains 7.0 until a final 7.1 build is released and passes a compatibility smoke.
 
-## Unreleased
+## 0.13.0 — Phase 13.1 stabilization
+
+Merged during the 0.13.0 cycle, before the Phase 14 entries above.
 
 Phase 13.1 stabilization. Three defects found while qualifying the plugin against WordPress 7.1-RC3. None of them is caused by WordPress 7.1: all three predate it and were exposed rather than introduced by the qualification.
 
