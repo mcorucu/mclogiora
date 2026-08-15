@@ -37,6 +37,7 @@ use McLogiora\Database\UuidGenerator;
 use McLogiora\Database\VersionChecker;
 use McLogiora\Editors\BlockEditorPanel;
 use McLogiora\Editors\ClassicEditorMetabox;
+use McLogiora\Editors\SuggestionEditorController;
 use McLogiora\Editors\EditorDetector;
 use McLogiora\Editors\EditorFactory;
 use McLogiora\Editors\EditorManager;
@@ -249,6 +250,7 @@ final class Application {
 		$modules->add( new EditorManager() );
 		$modules->add( new BlockEditorPanel() );
 		$modules->add( new ClassicEditorMetabox() );
+		$modules->add( new SuggestionEditorController() );
 		$modules->add( new CompatibilityDashboard() );
 		$modules->add( new AdminMenu() );
 		$modules->register();
