@@ -1,0 +1,126 @@
+/**
+ * mcLogiora translation panel.
+ *
+ * Shared by the Block Editor document sidebar and the Classic Editor metabox,
+ * so the two surfaces read the same way without either owning the styling.
+ *
+ * Deliberately small. The panel sits inside editor chrome that already has a
+ * design, and a plugin that restyles its host is a plugin that breaks every
+ * time the host changes. Colours come from WordPress admin CSS variables where
+ * they exist, with plain fallbacks for older palettes.
+ *
+ * Status is never communicated by colour alone -- every state renders its
+ * label as text, and the tone classes only tint that text.
+ */
+
+.mclogiora-editor__summary p {
+	margin: 0 0 4px;
+}
+
+.mclogiora-editor__summary strong {
+	margin-inline-end: 4px;
+}
+
+.mclogiora-editor__source-link {
+	margin-inline-start: 8px;
+}
+
+.mclogiora-editor__list {
+	margin: 12px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.mclogiora-editor__row {
+	padding: 8px 0;
+	border-top: 1px solid rgba( 0, 0, 0, 0.1 );
+}
+
+.mclogiora-editor__row:first-child {
+	border-top: 0;
+}
+
+.mclogiora-editor__row-head {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: baseline;
+	justify-content: space-between;
+}
+
+.mclogiora-editor__language {
+	font-weight: 600;
+}
+
+.mclogiora-editor__row.is-current .mclogiora-editor__language::after {
+	/* Marks the row being edited without relying on the highlight colour. */
+	content: " •";
+}
+
+.mclogiora-editor__status {
+	font-size: 12px;
+}
+
+.mclogiora-editor__status.is-positive {
+	color: #007017;
+}
+
+.mclogiora-editor__status.is-attention {
+	color: #8a5700;
+}
+
+.mclogiora-editor__status.is-muted {
+	color: #646970;
+}
+
+.mclogiora-editor__notice {
+	margin: 6px 0 0;
+	padding: 8px;
+	border-inline-start: 3px solid #dba617;
+	background: rgba( 219, 166, 23, 0.08 );
+}
+
+.mclogiora-editor__notice p {
+	margin: 0 0 4px;
+	font-size: 12px;
+}
+
+.mclogiora-editor__notice p:last-child {
+	margin-bottom: 0;
+}
+
+.mclogiora-editor__meta {
+	color: #646970;
+	font-size: 12px;
+}
+
+.mclogiora-editor__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 6px;
+}
+
+/* Classic Editor metabox. The panel markup is shared, so only the container
+   needs its own spacing. */
+.mclogiora-metabox .mclogiora-editor__list {
+	margin-top: 8px;
+}
+
+.mclogiora-metabox .mclogiora-editor__actions .button-link {
+	padding: 0;
+}
+
+@media screen and ( max-width: 782px ) {
+	.mclogiora-editor__row-head {
+		flex-direction: column;
+		gap: 2px;
+	}
+}
+
+/* Create-translation forms are printed after the post form closes, because
+   HTML discards a nested form. Only the button is visible; the form is a
+   carrier for the POST. */
+.mclogiora-editor__hidden-form {
+	display: none;
+}
