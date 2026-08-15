@@ -52,14 +52,42 @@ final class TranslationSuggestionApplyService {
 	private $workflows;
 
 	/**
+	 * Media translation storage, when wired.
+	 *
+	 * @var \McLogiora\Media\MediaTranslationService|null
+	 */
+	private $media;
+
+	/**
+	 * String translation storage, when wired.
+	 *
+	 * @var \McLogiora\Strings\StringTranslationService|null
+	 */
+	private $strings;
+
+	/**
 	 * Builds the service.
 	 *
-	 * @param SuggestionPreviewStore     $previews Preview storage.
-	 * @param TranslationWorkflowService $workflows Workflow service.
+	 * The two storage services are optional so the post path stays
+	 * constructible on its own, which keeps its unit tests free of
+	 * dependencies they do not exercise. A surface whose service is absent
+	 * refuses rather than half-writing.
+	 *
+	 * @param SuggestionPreviewStore                           $previews Preview storage.
+	 * @param TranslationWorkflowService                       $workflows Workflow service.
+	 * @param \McLogiora\Media\MediaTranslationService|null    $media Media translation storage.
+	 * @param \McLogiora\Strings\StringTranslationService|null $strings String translation storage.
 	 */
-	public function __construct( SuggestionPreviewStore $previews, TranslationWorkflowService $workflows ) {
+	public function __construct(
+		SuggestionPreviewStore $previews,
+		TranslationWorkflowService $workflows,
+		$media = null,
+		$strings = null
+	) {
 		$this->previews  = $previews;
 		$this->workflows = $workflows;
+		$this->media     = $media;
+		$this->strings   = $strings;
 	}
 
 	/**
@@ -161,19 +189,209 @@ final class TranslationSuggestionApplyService {
 			case SuggestionSurface::POST_EXCERPT:
 				return $this->apply_to_post( $preview );
 
+			case SuggestionSurface::TERM_NAME:
+			case SuggestionSurface::TERM_DESCRIPTION:
+				return $this->apply_to_term( $preview );
+
+			case SuggestionSurface::MEDIA_TITLE:
+			case SuggestionSurface::MEDIA_ALT:
+			case SuggestionSurface::MEDIA_CAPTION:
+			case SuggestionSurface::MEDIA_DESCRIPTION:
+				return $this->apply_to_media( $preview );
+
+			case SuggestionSurface::STRING:
+				return $this->apply_to_string( $preview );
+
 			default:
-				/*
-				 * Term, media and string surfaces are generated and previewed
-				 * but not yet writable: each needs its own storage service
-				 * wired in, and guessing at those APIs is how a suggestion
-				 * ends up in the wrong column. Refusing plainly is better than
-				 * a half-written path, and the refusal is temporary.
-				 */
 				return new \WP_Error(
 					SuggestionError::INVALID_REQUEST,
 					__( 'Applying suggestions to this field is not available yet.', 'mclogiora' )
 				);
 		}
+	}
+
+	/**
+	 * Writes a suggestion to a term field and records the review state.
+	 *
+	 * Terms are relation-backed like posts, so they get the same
+	 * field-then-status ordering and the same compensating restore.
+	 *
+	 * @param SuggestionPreview $preview Validated preview.
+	 * @return SuggestionPreview|\WP_Error
+	 */
+	private function apply_to_term( SuggestionPreview $preview ) {
+		$term_id = (int) $preview->target_id();
+		$term    = get_term( $term_id );
+
+		if ( ! $term instanceof \WP_Term ) {
+			return new \WP_Error(
+				SuggestionError::INVALID_REQUEST,
+				__( 'The translated term this suggestion belongs to no longer exists.', 'mclogiora' )
+			);
+		}
+
+		if ( ! current_user_can( 'edit_term', $term_id ) ) {
+			return new \WP_Error(
+				SuggestionError::INVALID_REQUEST,
+				__( 'You are not allowed to edit this term.', 'mclogiora' )
+			);
+		}
+
+		$is_name  = SuggestionSurface::TERM_NAME === $preview->surface();
+		$previous = $is_name ? (string) $term->name : (string) $term->description;
+
+		$updated = $this->write_term_field( $term_id, $term->taxonomy, $is_name, $preview->text() );
+
+		if ( is_wp_error( $updated ) ) {
+			return $updated;
+		}
+
+		$status = $this->workflows->change_status(
+			ContentType::TERM,
+			$term_id,
+			$preview->target_language(),
+			TranslationStatus::MACHINE_SUGGESTED
+		);
+
+		if ( is_wp_error( $status ) ) {
+			$this->write_term_field( $term_id, $term->taxonomy, $is_name, $previous );
+
+			return $status;
+		}
+
+		$this->previews->consume( $preview->token() );
+
+		return $preview;
+	}
+
+	/**
+	 * Writes one of the two permitted term fields.
+	 *
+	 * The slug is never passed, so `wp_update_term()` leaves it alone. That is
+	 * the whole reason this is two literal calls rather than one dynamic
+	 * array: a machine-translated slug would change every URL the term owns,
+	 * silently, and no care at the call site makes a `[$field => $value]`
+	 * payload safe from that.
+	 *
+	 * @param int    $term_id Term identifier.
+	 * @param string $taxonomy Taxonomy name.
+	 * @param bool   $is_name Whether the name is being written.
+	 * @param string $value Value to write.
+	 * @return array<string,int>|\WP_Error
+	 */
+	private function write_term_field( $term_id, $taxonomy, $is_name, $value ) {
+		if ( $is_name ) {
+			return wp_update_term( (int) $term_id, (string) $taxonomy, array( 'name' => (string) $value ) );
+		}
+
+		return wp_update_term( (int) $term_id, (string) $taxonomy, array( 'description' => (string) $value ) );
+	}
+
+	/**
+	 * Writes a suggestion to one translated media metadata field.
+	 *
+	 * Phase 11's media service replaces the whole per-language record on save,
+	 * so the current values are read first and exactly one is replaced.
+	 * Writing only the suggested field would silently erase the translator's
+	 * title, caption and description -- a data-loss bug that a test asserting
+	 * "the alt text changed" would happily pass.
+	 *
+	 * Media translations carry no machine-review state: that service records
+	 * every save as translated, and inventing a relation row to mimic
+	 * `machine_suggested` would be a schema change made for UI symmetry rather
+	 * than for truth. The suggestion is applied; no status is claimed.
+	 *
+	 * @param SuggestionPreview $preview Validated preview.
+	 * @return SuggestionPreview|\WP_Error
+	 */
+	private function apply_to_media( SuggestionPreview $preview ) {
+		if ( null === $this->media ) {
+			return new \WP_Error(
+				SuggestionError::INVALID_REQUEST,
+				__( 'Media translations are not available on this site.', 'mclogiora' )
+			);
+		}
+
+		$attachment_id = (int) $preview->target_id();
+		$language      = $preview->target_language();
+		$current       = $this->media->metadata_for_language( $attachment_id, $language );
+
+		if ( ! is_array( $current ) ) {
+			return new \WP_Error(
+				SuggestionError::INVALID_REQUEST,
+				__( 'The translated media metadata could not be read.', 'mclogiora' )
+			);
+		}
+
+		$fields = array(
+			'title'       => isset( $current['title'] ) ? (string) $current['title'] : '',
+			'alt_text'    => isset( $current['alt_text'] ) ? (string) $current['alt_text'] : '',
+			'caption'     => isset( $current['caption'] ) ? (string) $current['caption'] : '',
+			'description' => isset( $current['description'] ) ? (string) $current['description'] : '',
+		);
+
+		switch ( $preview->surface() ) {
+			case SuggestionSurface::MEDIA_TITLE:
+				$fields['title'] = $preview->text();
+				break;
+
+			case SuggestionSurface::MEDIA_ALT:
+				$fields['alt_text'] = $preview->text();
+				break;
+
+			case SuggestionSurface::MEDIA_CAPTION:
+				$fields['caption'] = $preview->text();
+				break;
+
+			default:
+				$fields['description'] = $preview->text();
+				break;
+		}
+
+		$saved = $this->media->save( $attachment_id, $language, $fields );
+
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		$this->previews->consume( $preview->token() );
+
+		return $preview;
+	}
+
+	/**
+	 * Stores a suggested interface-string translation.
+	 *
+	 * String translations are not relation-backed, so no relation status is
+	 * touched. They carry their own status column, and it accepts the
+	 * machine-suggested value honestly, so a suggested string is recorded as
+	 * suggested rather than passed off as a finished translation.
+	 *
+	 * @param SuggestionPreview $preview Validated preview.
+	 * @return SuggestionPreview|\WP_Error
+	 */
+	private function apply_to_string( SuggestionPreview $preview ) {
+		if ( null === $this->strings ) {
+			return new \WP_Error(
+				SuggestionError::INVALID_REQUEST,
+				__( 'String translations are not available on this site.', 'mclogiora' )
+			);
+		}
+
+		$saved = $this->strings->save_translation(
+			(int) $preview->target_id(),
+			$preview->target_language(),
+			$preview->text(),
+			TranslationStatus::MACHINE_SUGGESTED
+		);
+
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		$this->previews->consume( $preview->token() );
+
+		return $preview;
 	}
 
 	/**
