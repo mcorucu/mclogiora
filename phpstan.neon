@@ -32,3 +32,16 @@ parameters:
 		-
 			identifier: function.notFound
 			path: src/Editors/Payload/AcfPayloadAdapter.php
+		# Beaver Builder, same reasoning: guarded by class_exists() plus
+		# method_exists() on the two model methods the adapter actually calls,
+		# and unit-tested to be inert when absent.
+		-
+			identifier: class.notFound
+			path: src/Editors/Payload/BeaverBuilderPayloadAdapter.php
+		# With the class absent, static analysis concludes the method_exists()
+		# guards can only be false. At runtime, on a site that has Beaver
+		# Builder, they are exactly what stops the adapter calling a method a
+		# future release may have moved.
+		-
+			identifier: function.impossibleType
+			path: src/Editors/Payload/BeaverBuilderPayloadAdapter.php
