@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.13.0
+
+- Added Phase 14 editor translation UX. Translation state now lives where the editing happens, in both the Block Editor and the Classic Editor.
+- Added one shared editor translation model. The Block Editor panel, the Classic metabox and anything a later phase adds all render the same answer about an object's language, its source, the status of every active language, and what this user may do. Three surfaces deriving that separately would have drifted into bugs that reproduce in one editor only.
+- Added a Block Editor panel in the document sidebar, registered through `@wordpress/plugins` and rendered by `@wordpress/editor`. WordPress 7.1 renders the editing canvas in an iframe; nothing here reaches into it, and mcLogiora's stylesheet is absent from the canvas entirely. `wp.editor.PluginDocumentSettingPanel` is used rather than the `wp.editPost` export of the same name, which has been deprecated since WordPress 6.6 and logs a console deprecation on every editor load.
+- Added a Classic Editor metabox with feature parity: the same languages, statuses and actions, drawn the way the Classic Editor draws things. Its create button posts a form printed outside `<form id="post">`, because HTML discards a nested form and the button would otherwise submit the post form instead.
+- Added one status vocabulary shared by the editor surfaces and the posts-list column. Every status carries a label and a sentence explaining it, and status is never communicated by colour alone.
+- Added a clear outdated-translation notice. A `needs_update` row says the source changed and shows the timestamps the relation already records. No diff is computed, because a partial comparison would mislead more than the plain sentence does.
+- Added Elementor layout copying through Elementor's own document API, so a translator translates the existing design instead of rebuilding it. Elementor's `save()` records the template type, stamps the current version, and drops the stale generated CSS so it rebuilds for the translation. No `_elementor_*` meta is copied by hand, and the generated CSS never travels.
+- Added ACF detection with native editing on translated objects. Field groups render on a translation, values stay per-object, and editing a translation never touches the source. Seeding a translation with the source's field values is deliberately not implemented: repeaters, flexible content and clone fields each store values in shapes that would have to be proven safe first, and a partial implementation would appear to work while corrupting the harder types.
+- Added a payload adapter contract kept separate from the editor UI contract. Presenting state on a screen and preparing stored content are different jobs; a failure during preparation rolls back the draft the operation created, and never touches pre-existing content.
+- The editor never creates content itself. Its one write action posts to the same `admin-post` endpoint the Translation Manager has used since Phase 10, with the same nonce, capability, validation and rollback, so JavaScript holds no authority of its own and no REST endpoint was added.
+- Language is displayed and not editable. Reassigning an object's language is a relation operation with group-integrity consequences, not a dropdown, and no such workflow exists yet.
+- No build pipeline was introduced. The panel is plain JavaScript against the packages WordPress already registers, so the file shipped is the file written and no build artefact can drift from its source.
+- WordPress 7.1 support is still not claimed. `Tested up to` remains 7.0 until a final 7.1 build is released and passes a compatibility smoke.
+
 ## Unreleased
 
 Phase 13.1 stabilization. Three defects found while qualifying the plugin against WordPress 7.1-RC3. None of them is caused by WordPress 7.1: all three predate it and were exposed rather than introduced by the qualification.
