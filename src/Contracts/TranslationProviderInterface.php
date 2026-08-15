@@ -78,6 +78,40 @@ interface TranslationProviderInterface {
 	public function available_models();
 
 	/**
+	 * Returns the model the owner explicitly chose.
+	 *
+	 * Empty when none has been chosen, and empty for providers that expose no
+	 * model menu. Never a default: choosing a model is choosing a price and a
+	 * capability, and neither is mcLogiora's to choose.
+	 *
+	 * @return string
+	 */
+	public function selected_model();
+
+	/**
+	 * Records the owner's model choice.
+	 *
+	 * @param string $model Model identifier.
+	 * @return bool
+	 */
+	public function set_selected_model( $model );
+
+	/**
+	 * Forgets the owner's model choice.
+	 *
+	 * @return bool
+	 */
+	public function clear_selected_model();
+
+	/**
+	 * Drops a stored model the provider no longer offers.
+	 *
+	 * @param array<int,array{id:string,label:string,recommended:bool}> $models Freshly fetched models.
+	 * @return bool Whether a stored selection was invalidated.
+	 */
+	public function reconcile_selected_model( array $models );
+
+	/**
 	 * Returns whether the language pair is supported.
 	 *
 	 * @param string $source_language Source language code.
