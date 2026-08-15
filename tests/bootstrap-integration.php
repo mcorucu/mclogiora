@@ -46,4 +46,44 @@ function mclogiora_manually_load_plugin() {
 
 tests_add_filter( 'muplugins_loaded', 'mclogiora_manually_load_plugin' );
 
+/**
+ * Loads any builder plugins present in the test installation.
+ *
+ * The builder compatibility job installs the free editions of Elementor, ACF,
+ * Kadence Blocks and Beaver Builder into the WordPress test install; every
+ * other run has none of them. Each is loaded only when its file is really
+ * there, and the tests that need one skip when it is not, so the ordinary
+ * suites stay fast and a download failure degrades to "nothing extra proven"
+ * rather than a false failure.
+ *
+ * Loaded after mcLogiora so a builder cannot register ahead of the plugin
+ * under test, matching the order a real site boots in.
+ *
+ * @return void
+ */
+function mclogiora_manually_load_builder_plugins() {
+	$core_dir = getenv( 'WP_CORE_DIR' );
+
+	if ( ! $core_dir ) {
+		$core_dir = '/tmp/wordpress';
+	}
+
+	$candidates = array(
+		'elementor/elementor.php',
+		'advanced-custom-fields/acf.php',
+		'kadence-blocks/kadence-blocks.php',
+		'beaver-builder-lite-version/fl-builder.php',
+	);
+
+	foreach ( $candidates as $candidate ) {
+		$path = $core_dir . '/wp-content/plugins/' . $candidate;
+
+		if ( file_exists( $path ) ) {
+			require_once $path;
+		}
+	}
+}
+
+tests_add_filter( 'muplugins_loaded', 'mclogiora_manually_load_builder_plugins' );
+
 require $mclogiora_tests_dir . '/includes/bootstrap.php';
