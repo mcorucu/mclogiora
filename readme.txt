@@ -4,7 +4,7 @@ Tags: multilingual, translation, localization, language
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.13.0
+Stable tag: 0.14.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -129,6 +129,14 @@ No. If Yoast SEO, Rank Math, All in One SEO, The SEO Framework, or Slim SEO is a
 Each translation points at itself. Sending every language back to the default one would tell search engines your translations are duplicates to ignore, which is the opposite of what translating a site is for.
 
 == Changelog ==
+
+= 0.14.0 =
+* Added Beaver Builder support: a new translation starts with the source page's layout instead of an empty page.
+* Confirmed Kadence Blocks, GenerateBlocks and Spectra work with no extra setup. Their layouts travel with the content already.
+* Fixed Beaver Builder and SeedProd not being recognised on sites that had them installed.
+* Added a clearer compatibility list that says what has actually been tested, and against which version, rather than a yes/no.
+* SeedProd's own landing pages are left alone, and ordinary pages still translate normally alongside it.
+* Bricks, Divi, WPBakery, Oxygen and Avada are not yet verified. They may work, but nothing has been tested, so nothing is claimed.
 
 = 0.13.0 =
 * Added a translation panel to the Block Editor document sidebar, showing the content's language, its source language, and the status of every active language without leaving the editor.
