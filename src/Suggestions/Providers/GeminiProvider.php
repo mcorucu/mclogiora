@@ -169,7 +169,7 @@ final class GeminiProvider extends AbstractProvider {
 
 		if ( ! isset( $response['models'] ) || ! is_array( $response['models'] ) ) {
 			return new \WP_Error(
-				'mclogiora_suggestion_bad_response',
+				'mclogiora_suggestion_invalid_response',
 				__( 'Google Gemini returned a model list mcLogiora could not read.', 'mclogiora' )
 			);
 		}
@@ -272,7 +272,7 @@ final class GeminiProvider extends AbstractProvider {
 		}
 
 		if ( ! isset( $response['candidates'][0] ) || ! is_array( $response['candidates'][0] ) ) {
-			return $this->declined_error();
+			return $this->invalid_response_error();
 		}
 
 		$candidate = $response['candidates'][0];
@@ -281,12 +281,25 @@ final class GeminiProvider extends AbstractProvider {
 			$finish = $candidate['finishReason'];
 
 			if ( '' !== $finish && 'STOP' !== $finish ) {
-				return $this->declined_error( $finish );
+				/*
+				 * A candidate stopped by a safety or policy filter is a
+				 * refusal; one stopped by the output ceiling is a truncation.
+				 * They arrive in the same field and mean different things to
+				 * whoever decides what to do next, so they are separated here
+				 * rather than flattened into one message.
+				 */
+				$declined = array( 'SAFETY', 'RECITATION', 'PROHIBITED_CONTENT', 'BLOCKLIST', 'SPII', 'IMAGE_SAFETY' );
+
+				if ( in_array( $finish, $declined, true ) ) {
+					return $this->declined_error( $finish );
+				}
+
+				return $this->incomplete_error( $finish );
 			}
 		}
 
 		if ( ! isset( $candidate['content']['parts'] ) || ! is_array( $candidate['content']['parts'] ) ) {
-			return $this->declined_error();
+			return $this->invalid_response_error();
 		}
 
 		$text = '';
@@ -298,7 +311,7 @@ final class GeminiProvider extends AbstractProvider {
 		}
 
 		if ( '' === trim( $text ) ) {
-			return $this->declined_error();
+			return $this->invalid_response_error();
 		}
 
 		return $text;

@@ -341,13 +341,13 @@ final class DeepLProvider extends AbstractProvider {
 	 */
 	private function read_text( array $response ) {
 		if ( ! isset( $response['translations'][0]['text'] ) || ! is_string( $response['translations'][0]['text'] ) ) {
-			return $this->declined_error();
+			return $this->invalid_response_error();
 		}
 
 		$text = $response['translations'][0]['text'];
 
 		if ( '' === trim( $text ) ) {
-			return $this->declined_error();
+			return $this->invalid_response_error();
 		}
 
 		return $text;

@@ -197,18 +197,25 @@ final class OpenAiProviderTest extends TestCase {
 		$result = $this->provider->suggest( $this->request() );
 
 		$this->assertTrue( is_wp_error( $result ) );
-		$this->assertSame( 'mclogiora_suggestion_declined', $result->get_error_code() );
+		$this->assertSame(
+			'mclogiora_suggestion_incomplete',
+			$result->get_error_code(),
+			'A truncation is not a refusal: retrying one can work, retrying the other cannot.'
+		);
 	}
 
 	/**
-	 * Asserts an empty body is an error rather than an empty suggestion.
+	 * Asserts an empty body is an invalid response, not a decline.
 	 *
 	 * @return void
 	 */
-	public function test_an_empty_output_is_reported_as_an_error() {
+	public function test_an_empty_output_is_reported_as_an_invalid_response() {
 		$this->transport->will_return( $this->completed( '   ' ) );
 
-		$this->assertTrue( is_wp_error( $this->provider->suggest( $this->request() ) ) );
+		$result = $this->provider->suggest( $this->request() );
+
+		$this->assertTrue( is_wp_error( $result ) );
+		$this->assertSame( 'mclogiora_suggestion_invalid_response', $result->get_error_code() );
 	}
 
 	/**
