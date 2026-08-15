@@ -69,4 +69,37 @@ final class SuggestionSettings {
 
 		return $timeout > 0 ? $timeout : self::DEFAULT_TIMEOUT;
 	}
+
+	/**
+	 * Turns translation suggestions on or off for the whole site.
+	 *
+	 * @param bool $enabled Whether suggestions are allowed.
+	 * @return void
+	 */
+	public function set_enabled( $enabled ) {
+		update_option( self::OPTION_ENABLED, (bool) $enabled ? 1 : 0, false );
+	}
+
+	/**
+	 * Records the provider the owner chose.
+	 *
+	 * Changing the provider deliberately touches nothing else. Another
+	 * provider's stored credential and model selection survive, so switching
+	 * to compare two providers and switching back does not mean setting the
+	 * first one up again.
+	 *
+	 * @param string $provider_id Provider identifier, or an empty string.
+	 * @return void
+	 */
+	public function set_provider( $provider_id ) {
+		$provider_id = sanitize_key( (string) $provider_id );
+
+		if ( '' === $provider_id ) {
+			delete_option( self::OPTION_PROVIDER );
+
+			return;
+		}
+
+		update_option( self::OPTION_PROVIDER, $provider_id, false );
+	}
 }
