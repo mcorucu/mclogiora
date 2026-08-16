@@ -290,4 +290,67 @@ final class SuggestionSettingsIntegrationTest extends WP_UnitTestCase {
 			'A visitor must never trigger a provider request.'
 		);
 	}
+
+	/**
+	 * Asserts the screen reports the result of the last action.
+	 *
+	 * Every handler here finishes by redirecting with a short result code. The
+	 * screen shipped without reading that code back, so Test connection, Save
+	 * key and Refresh model list all completed and told the owner nothing --
+	 * found only by clicking the real buttons in a browser.
+	 *
+	 * @return void
+	 */
+	public function test_the_screen_reports_the_result_of_the_last_action() {
+		$expected = array(
+			'test_passed'          => 'The provider accepted the key.',
+			'test_failed'          => 'The provider did not accept the key.',
+			'credential_saved'     => 'The key was saved.',
+			'credential_removed'   => 'The stored key was removed.',
+			'credential_unchanged' => 'the stored key was left as it was',
+			'models_refreshed'     => 'The model list was refreshed.',
+			'model_retired'        => 'no longer offered',
+			'refresh_failed'       => 'The model list could not be refreshed.',
+			'saved'                => 'Settings saved.',
+			'unknown_provider'     => 'That provider is not available.',
+			'unknown_model'        => 'That model is not in the current list',
+		);
+
+		foreach ( $expected as $code => $message ) {
+			$_GET['mclogiora_notice'] = $code;
+
+			$html = $this->rendered();
+
+			$this->assertStringContainsString(
+				$message,
+				$html,
+				sprintf( 'The %s result must be reported to the owner.', $code )
+			);
+			$this->assertStringContainsString( 'notice', $html, 'The result must render as a WordPress notice.' );
+		}
+
+		$_GET['mclogiora_notice'] = 'test_failed';
+
+		$this->assertStringContainsString( 'notice-error', $this->rendered(), 'A failure must not read as success.' );
+
+		unset( $_GET['mclogiora_notice'] );
+	}
+
+	/**
+	 * Asserts nothing is reported when no action has just run.
+	 *
+	 * @return void
+	 */
+	public function test_no_result_is_reported_without_an_action() {
+		unset( $_GET['mclogiora_notice'] );
+
+		$this->assertStringNotContainsString( 'notice-success', $this->rendered(), 'A plain visit must report nothing.' );
+
+		$_GET['mclogiora_notice'] = 'not_a_real_code';
+
+		$this->assertStringNotContainsString( 'notice-success', $this->rendered(), 'An unknown code must report nothing.' );
+		$this->assertStringNotContainsString( 'notice-error', $this->rendered() );
+
+		unset( $_GET['mclogiora_notice'] );
+	}
 }
