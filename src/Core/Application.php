@@ -9,6 +9,7 @@ namespace McLogiora\Core;
 
 use McLogiora\Admin\AdminMenu;
 use McLogiora\Admin\AdminScreenRegistry;
+use McLogiora\Api\Rest\RestApiModule;
 use McLogiora\Admin\Settings\SettingsManager;
 use McLogiora\Assets\AssetLoader;
 use McLogiora\Capabilities\CapabilityRegistry;
@@ -245,6 +246,7 @@ final class Application {
 		$modules->add( new SuggestionSettingsScreen() );
 		$modules->add( new SeoModule() );
 		$modules->add( new SitemapIntegration() );
+		$modules->add( new RestApiModule() );
 		$modules->add( new InstallationFailureNotice() );
 		$modules->add( new EditorManager() );
 		$modules->add( new BlockEditorPanel() );
