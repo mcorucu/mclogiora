@@ -90,6 +90,8 @@ use McLogiora\Workflows\TranslationStatusTransitions;
 use McLogiora\Workflows\TranslationWorkflowService;
 use McLogiora\Workflows\TranslationWorkflowValidator;
 use McLogiora\Admin\MediaTranslationFields;
+use McLogiora\Admin\SuggestionAdminController;
+use McLogiora\Admin\SuggestionAdminState;
 use McLogiora\Admin\StringActionController;
 use McLogiora\Admin\StringManager;
 use McLogiora\Admin\WidgetTranslationManager;
@@ -252,6 +254,7 @@ final class Application {
 		$modules->add( new BlockEditorPanel() );
 		$modules->add( new ClassicEditorMetabox() );
 		$modules->add( new SuggestionEditorController() );
+		$modules->add( new SuggestionAdminController() );
 		$modules->add( new CompatibilityDashboard() );
 		$modules->add( new AdminMenu() );
 		$modules->register();
@@ -858,6 +861,18 @@ final class Application {
 			HttpTransport::class,
 			static function ( Container $container ) {
 				return new HttpTransport( $container->get( SuggestionSettings::class )->timeout() );
+			}
+		);
+
+		$this->container->set(
+			SuggestionAdminState::class,
+			static function ( Container $container ) {
+				return new SuggestionAdminState(
+					$container->get( SuggestionSettings::class ),
+					$container->get( ProviderRegistry::class ),
+					$container->get( ProviderReadiness::class ),
+					$container->get( CapabilityRegistry::class )
+				);
 			}
 		);
 
