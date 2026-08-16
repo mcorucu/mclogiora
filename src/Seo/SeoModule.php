@@ -187,6 +187,12 @@ final class SeoModule implements ModuleInterface {
 		 * Themes that build their own OpenGraph block can switch this off
 		 * rather than end up with two `og:locale` tags.
 		 *
+		 * Only reached once mcLogiora already owns the `og_locale` concern, so
+		 * this cannot switch output back on for a site where a recognised SEO
+		 * plugin has taken it.
+		 *
+		 * @since 0.12.0
+		 *
 		 * @param bool $enabled Whether to print the metadata.
 		 */
 		if ( ! apply_filters( 'mclogiora_seo_output_open_graph_locale', true ) ) {

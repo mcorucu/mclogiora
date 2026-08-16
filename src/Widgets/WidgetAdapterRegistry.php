@@ -55,6 +55,23 @@ final class WidgetAdapterRegistry {
 			new BlockWidgetAdapter(),
 		);
 
+		/**
+		 * Filters the widget translation adapters.
+		 *
+		 * An adapter declares which keys of a widget's option array hold
+		 * human-readable text. A widget with no adapter is reported as
+		 * unsupported and left completely untouched, so this is the only way to
+		 * make a third-party widget translatable.
+		 *
+		 * The core Text, Custom HTML and Block adapters are in the array when
+		 * it arrives, so a consumer can remove them as well as add its own.
+		 * Entries that do not implement the interface are ignored, and a
+		 * non-array return leaves the core set in place.
+		 *
+		 * @since 0.10.0
+		 *
+		 * @param WidgetAdapterInterface[] $adapters Registered adapters, core set included.
+		 */
 		$filtered = apply_filters( 'mclogiora_widget_adapters', $adapters );
 
 		return new self( is_array( $filtered ) ? $filtered : $adapters );

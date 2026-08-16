@@ -45,6 +45,17 @@ final class FeatureFlags {
 			return false;
 		}
 
+		/*
+		 * Internal. Deliberately NOT part of the public developer API, and it
+		 * carries no @since for that reason.
+		 *
+		 * Nothing in the plugin calls is_enabled(), and the table above has
+		 * fallen out of step with what shipped: switchers, SEO, builders and
+		 * external services are all listed false and all exist. Publishing a
+		 * filter over a table nobody reads and nothing maintains would document
+		 * a promise that is already untrue. See
+		 * docs/architecture/developer-api.md.
+		 */
 		return (bool) apply_filters( 'mclogiora_feature_enabled', $this->features[ $feature ], $feature );
 	}
 
