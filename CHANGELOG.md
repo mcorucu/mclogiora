@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.15.0
+
+- Added optional Translation Suggestions. The feature is off by default, needs no account with the plugin author, and does nothing until a site owner enables it, chooses a provider and supplies their own API key. A site that never opens the settings screen behaves exactly as it did in 0.14.0.
+- Added four provider adapters — OpenAI, Anthropic, Google Gemini and DeepL — behind one provider-neutral interface, using the WordPress HTTP API rather than vendor SDKs. Nothing outside an adapter knows a provider's request or response shape.
+- Language-model providers require an explicit model choice. The model list is fetched only when asked for, and suggestions stay unavailable until a model is selected. No model is chosen automatically, including a "sensible default", because that choice decides what the owner is billed. DeepL is a translation service rather than a model and has no selector.
+- Added the per-field review workflow used on every surface: Generate produces a preview and writes nothing, then Apply, Regenerate or Discard. There is no translate-on-save, no bulk translation and no path by which generating text can publish it.
+- Added suggestions to post, page and custom-post-type title and excerpt in the block editor, using the editor data layer rather than DOM access, and without marking the post dirty or issuing a second write.
+- Added the same two fields to the Classic editor. The section creates no form and every control is an explicit plain button, because Classic wraps the screen in its own form and a control that submitted it would have saved the post instead of asking for a translation.
+- Added suggestions for interface string translations, respecting a string's identity: two identical source strings registered under different text domains are different strings and translate independently.
+- Added suggestions for taxonomy term name and description in the Translation Manager. A term's slug is never sent to `wp_update_term()`, because a machine-translated slug would silently change every URL the term owns.
+- Added suggestions for media title, alternative text, caption and description. Media metadata is stored as one row per language, so every apply rewrites all four values with only the requested one changed.
+- Recorded review state honestly per storage model. Posts, pages, custom post types and terms move to `machine_suggested` and need an explicit human transition to `translated`. Interface strings carry their own machine-suggested status. Media metadata is stored as `translated`, because that storage has no machine-suggested state and claiming one would make the screen disagree with the database.
+- Added `PlaceholderShield`, which protects placeholders such as `%s` and `%1$s` across a provider round trip and refuses a suggestion that came back missing one. A broken placeholder is a fatal `sprintf` in production, not a typo, so refusing is better than applying.
+- Added server-authoritative source resolution. The browser sends an object id, a field name and a target language, never the text to translate, so the endpoints cannot be used as a translation proxy funded by the owner's provider quota.
+- Added short-lived preview tokens bound to user, object, field and language. Apply uses the stored preview rather than text from the browser, consumes the token on success, and refuses a token belonging to another field, another object, another user, or one already discarded.
+- Added credential handling that prefers `wp-config.php` constants over database storage, never redisplays a saved key, and states plainly that keys entered in the admin are stored as entered rather than claiming an encryption a plugin cannot honestly provide.
+- OpenAI requests use the Responses API and always send `store: false` as a policy constant with a strict-boolean regression test. No stateful OpenAI features are used: no conversations, no response chaining, no background jobs, no tools and no file uploads.
+- No telemetry, no usage reporting and no external request at boot, on activation, on an editor load or on a visitor request. The only outbound traffic is a provider call the owner explicitly triggered.
+- Post bodies, whole block documents and page-builder payloads are deliberately not machine-translated. Phase 15 proved those structures survive translation because mcLogiora copies them untouched; handing one to a language model and reassembling the answer fails silently when it fails, so it is documented as deferred rather than shipped partially.
+- Fixed the media translation fields being adopted by WordPress's own attachment form. `edit_form_after_editor` fires inside `<form id="post">`, and the parser discarded the nested per-language forms, which meant a translation could not be saved for the affected language and WordPress's own Update button posted the wrong action. The fields now declare their owning form explicitly and those forms are printed outside the post form.
+- Fixed keyboard focus being lost after applying or discarding a suggestion. Both actions remove the button that was just activated, which dropped focus to the document body; focus now returns to the field's Generate button.
+- Fixed the Translation Suggestions settings screen completing actions without reporting them. Test connection, Save key, Remove key, Refresh model list, Save model and Save Settings all redirected with a result the screen never displayed, so success and failure looked identical.
+- Fixed only one suggestion being applicable per translation. Applying a second field asked the workflow for a status it already held, and the refusal was treated as a failure and rolled the field back.
+
 ## 0.14.0
 
 - Added Phase 15 extended builder compatibility. Ten builders were assessed; the honest result is two adapters, three builders that need no code at all, and five that nobody here could legally install and so cannot be claimed.

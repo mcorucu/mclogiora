@@ -1,6 +1,6 @@
 # mcLogiora Planning
 
-Current phase: Phase 15 complete (Extended Builder Compatibility, v0.14.0). Next planned phase: Phase 16 — Translation Suggestions, gated on a WordPress 7.1 final compatibility smoke.
+Current phase: Phase 16 complete (Translation Suggestions, v0.15.0). Next planned phase: Phase 17 — Developer & Operations Layer. The release header still declares `Tested up to: 7.0`; raising it to 7.1 is a separate compatibility gate once WordPress 7.1 ships final.
 
 This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 
@@ -691,9 +691,15 @@ Phase 15: Extended Builder Compatibility
 
 - Bricks, Divi, Beaver Builder, WPBakery, Oxygen, Kadence, GenerateBlocks, Spectra, SeedProd, and Avada, each only as far as it can be supported safely and maintained honestly. Breadth here is explicitly subordinate to correctness.
 
-Phase 16: Translation Suggestions
+Phase 16: Translation Suggestions — complete (v0.15.0)
 
-- Suggestion provider interfaces, AJAX/REST suggestion workflow, optional external providers, bring-your-own API credentials, and a review-only UI. Suggestions never auto-publish, and manual translation must remain fully functional with no provider configured.
+- Delivered a provider-neutral suggestion interface with four adapters (OpenAI, Anthropic, Google Gemini, DeepL) over the WordPress HTTP API, an AJAX review workflow, bring-your-own credentials, and a review-only UI. Suggestions never auto-publish, and manual translation is fully functional with no provider configured.
+- Delivered per-field Generate/Preview/Apply/Regenerate/Discard on six surfaces: Settings control plane, the block editor, the Classic editor, String Translation, taxonomy terms, and media metadata.
+- Language-model providers require explicit model selection; no model is ever chosen automatically. DeepL has no model selector.
+- Scope held deliberately at named fields. Raw `post_content`, whole block documents, page-builder payloads and arbitrary meta are **not** machine-translated; see `docs/adr/0018-translation-suggestions.md`.
+- Review state is recorded per storage model rather than uniformly: relation-backed content moves to `machine_suggested`, strings carry their own machine-suggested status, and media metadata is stored as `translated` because that storage has no machine-suggested state.
+- A REST suggestion workflow was not built; the surfaces use admin AJAX. REST belongs with the Phase 17 developer layer.
+- Live provider qualification has not been performed. All qualification used a deterministic local transport double.
 
 Phase 17: Developer & Operations Layer
 
@@ -736,4 +742,11 @@ These notes record the Phase 01 discovery environment. They are historical conte
 
 ## Next Phase
 
-Phases 02 through 15 are complete. The next implementation phase is **Phase 16: Translation Suggestions**, after a WordPress 7.1 final compatibility smoke.
+Phases 02 through 16 are complete. The next implementation phase is **Phase 17: Developer & Operations Layer**.
+
+Two items are carried forward rather than resolved in Phase 16:
+
+- Raising `Tested up to` from 7.0 to 7.1 is a separate compatibility gate, to be run once WordPress 7.1 ships final. Phase 16 qualified against 7.1-RC3 and deliberately did not change the release header on the strength of a release candidate.
+- Live provider qualification with real credentials, per provider, including one representative failure per normalized error category.
+
+A low-severity observation is also carried to Phase 18: language-switcher block registration is not idempotent when `init` is fired more than once artificially. The normal WordPress lifecycle does not do this.

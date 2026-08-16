@@ -4,7 +4,7 @@ Tags: multilingual, translation, localization, language
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.14.0
+Stable tag: 0.15.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -64,17 +64,135 @@ A translated URL with no translation behind it returns a normal 404 rather than 
 
 mcLogiora never guesses your visitors' language from their location and never redirects them automatically. Flags are off by default, because a language is not a country.
 
-It does not include hreflang, canonical tags, sitemap integration, SEO plugin integrations, REST endpoints, AJAX handlers, or external service integrations yet.
+This release adds optional Translation Suggestions. If you switch them on and supply your own API key, mcLogiora can ask OpenAI, Anthropic, Google Gemini or DeepL to draft a translation of one field at a time, which you review before anything changes. The feature is off until you configure it, and translating by hand is unaffected. See "External Services" below for exactly what is sent and when.
+
+It does not include REST endpoints for translation management yet, and it does not machine-translate post bodies or page-builder layouts. See "What Translation Suggestions do not translate" below.
 
 == Privacy ==
 
-mcLogiora does not track users, does not collect telemetry, does not send beacon requests, and does not contact external services in this release.
+mcLogiora does not track users, does not collect telemetry, does not send beacon requests, and contains no analytics of any kind.
+
+mcLogiora contacts an external service only if you switch on Translation Suggestions, choose a provider and save your own API key, and then click a button that asks for a suggestion. Nothing is sent when a page loads, when the plugin is activated, when an editor opens, or when a visitor views your site. There is no mcLogiora server in the path: requests go from your site directly to the provider you chose.
 
 == External Services ==
 
-This release does not connect to any external services.
+mcLogiora's Translation Suggestions feature can connect to one external translation
+provider that you choose and configure. It is switched off by default. If you never
+enable it, mcLogiora makes no external requests at all.
 
-Future optional translation suggestion providers must be explicitly configured by a site administrator and documented before release.
+For every provider below, the following is true:
+
+* The service is optional and is not used unless you enable suggestions, select that provider, and save a credential.
+* You supply your own API key and the provider bills you directly. mcLogiora ships no keys and no credits.
+* Requests go from your site straight to the provider. mcLogiora does not proxy your content through any mcLogiora service, and no data is sent to the plugin author.
+* Only the single field you asked about is sent, and only at the moment you click a button. Generating a suggestion for a post title sends that title; it does not send the post body, the rest of your site, or any other field.
+* Your API key is sent to that provider so it can authenticate the request.
+* Translating by hand needs none of this and works exactly the same whether the feature is on or off.
+
+= OpenAI =
+
+Used when you select OpenAI as your suggestion provider. Your selected source text and your API key are sent to the OpenAI Responses API (`https://api.openai.com/v1/responses`) when you click Generate, so it can return a translation. Refreshing the model list and testing the connection contact `https://api.openai.com/v1/models`.
+
+mcLogiora sends `store: false` on every suggestion request, which asks OpenAI not to retain the request. mcLogiora uses no stateful OpenAI features: no conversations, no previous-response chaining, no background jobs, no tools, no file uploads.
+
+Terms: https://openai.com/policies/services-agreement/
+Privacy: https://openai.com/policies/row-privacy-policy/ (OpenAI publishes region-specific privacy policies; the full list is at https://openai.com/policies/)
+
+= Anthropic =
+
+Used when you select Anthropic as your suggestion provider. Your selected source text and your API key are sent to the Anthropic Messages API (`https://api.anthropic.com/v1/messages`) when you click Generate, so it can return a translation. Refreshing the model list and testing the connection contact `https://api.anthropic.com/v1/models`.
+
+Terms: https://www.anthropic.com/legal/commercial-terms
+Privacy: https://www.anthropic.com/legal/privacy
+
+= Google Gemini =
+
+Used when you select Google Gemini as your suggestion provider. Your selected source text and your API key are sent to the Gemini API (`https://generativelanguage.googleapis.com`) when you click Generate, so it can return a translation. Refreshing the model list and testing the connection contact the same API's model listing.
+
+Terms: https://ai.google.dev/gemini-api/terms
+Privacy: https://policies.google.com/privacy
+
+= DeepL =
+
+Used when you select DeepL as your suggestion provider. Your selected source text and your API key are sent to the DeepL Translate API when you click Generate, so it can return a translation. Testing the connection contacts DeepL's usage endpoint, which reports your quota and sends none of your content.
+
+DeepL Free and Pro keys use different hosts (`https://api-free.deepl.com` and `https://api.deepl.com`); mcLogiora selects the correct one from your key. DeepL is a dedicated translation service rather than a language model, so it has no model selection.
+
+Terms: https://www.deepl.com/en/pro-license
+Privacy: https://www.deepl.com/en/privacy
+
+= What is stored on your site =
+
+If you paste an API key into the mcLogiora settings screen it is stored in your site's options table as you entered it. mcLogiora does not claim to encrypt it: any encryption a plugin can perform has to keep the key material on the same site, which would obstruct a casual reader while misleading a careful one.
+
+If you prefer not to store a key in the database, define it in `wp-config.php` instead and mcLogiora will use that and tell you it is doing so:
+
+`define( 'MCLOGIORA_OPENAI_API_KEY', '...' );`
+`define( 'MCLOGIORA_ANTHROPIC_API_KEY', '...' );`
+`define( 'MCLOGIORA_GEMINI_API_KEY', '...' );`
+`define( 'MCLOGIORA_DEEPL_API_KEY', '...' );`
+
+A saved key is never shown again in the admin. The screen displays only a masked suffix so you can tell which key is installed.
+
+== Translation Suggestions ==
+
+Translation Suggestions let you ask a provider you already pay for to draft a
+translation of one field, which you then review before anything changes.
+
+= Turning it on =
+
+1. Open **mcLogiora → Translation Suggestions**.
+2. Tick **Allow translation suggestions on this site**.
+3. Choose a provider. Nothing is chosen for you.
+4. Save your API key for that provider, or define it in `wp-config.php`.
+5. Use **Test connection** to check the key. This sends none of your content.
+6. For OpenAI, Anthropic or Gemini, use **Refresh model list**, then choose a model and save it. Suggestions stay unavailable until you pick one — no model is selected for you, because that choice affects what you are billed. DeepL has no model selection.
+
+= Using it =
+
+Wherever suggestions are available you get a **Generate suggestion** button per
+field. Generating shows you a preview and changes nothing. From there you can:
+
+* **Apply suggestion** — write the suggested text to that field, and only that field.
+* **Regenerate** — ask again. One click, one request.
+* **Discard** — throw the preview away. Nothing is saved and no request is made.
+
+Nothing is ever translated automatically, on save, in bulk, or on publish. No
+suggestion is applied without you clicking Apply.
+
+= Where suggestions are available =
+
+* Posts, pages and custom post types, in both the block editor and the Classic editor: **title** and **excerpt**.
+* Interface strings, in String Translation: the **translation for your target language**.
+* Taxonomy terms, in the Translation Manager: **term name** and **term description**.
+* Media, on the attachment edit screen: **title**, **alternative text**, **caption** and **description**.
+
+= What Translation Suggestions do not translate =
+
+Phase 16 translates named fields only. It deliberately does not machine-translate:
+
+* the raw post body (`post_content`), or a block document as a whole
+* Elementor layouts, Beaver Builder layouts, or other page-builder payloads
+* arbitrary custom fields or post meta
+* a term's slug, or a media file, filename, URL or dimensions
+
+This is a safety decision rather than a missing feature. mcLogiora carries builder
+and block structures through translation by copying them untouched, which is why
+they survive. Sending a serialized block document to a language model and
+reassembling the answer fails quietly when it fails — a damaged block delimiter does
+not raise an error, it renders your page as visible HTML comments. That work needs a
+proven extraction layer first.
+
+= A suggestion is not an approval =
+
+Applying a suggestion records that a machine produced the text, so you can find it
+again and review it:
+
+* Posts, pages, custom post types and taxonomy terms move to **Machine suggested**. Moving them to **Translated** is a separate, explicit step that only a person can take.
+* Interface strings are stored with a machine-suggested status of their own.
+* Media metadata is stored as **Translated**, because mcLogiora's media translation storage has no machine-suggested state. Review machine output on media before relying on it — the storage cannot flag it for you.
+
+Machine translation is a draft. Read it before you publish it.
 
 == Installation ==
 
@@ -86,7 +204,7 @@ Future optional translation suggestion providers must be explicitly configured b
 
 = Does this version translate content? =
 
-It creates and links translations, but it does not translate text for you. Creating a translation makes a draft that starts from the source content, which you then translate yourself. There is no automatic or machine translation in this release.
+It creates and links translations, and it can now draft individual fields for you if you switch on Translation Suggestions and supply your own provider key. Creating a translation still makes a draft that starts from the source content. Suggestions are per-field, always previewed before they are applied, and never automatic: there is no translate-on-save, no bulk translation, and no machine text is published without you applying it. Post bodies and page-builder layouts are not machine-translated at all.
 
 = Does unlinking a translation delete anything? =
 
@@ -118,7 +236,7 @@ Yes. On activation, mcLogiora creates its language, translation relation, string
 
 = Does this version use external services? =
 
-No. There are no HTTP requests or external service integrations in this release. The SEO features work entirely through WordPress hooks; nothing is sent to Google, Bing, or anywhere else.
+Only if you ask it to. Translation Suggestions are off by default; with them off, mcLogiora makes no external requests at all. If you enable them, choose a provider and save your own API key, then the single field you click Generate on is sent to that provider. Nothing is sent on page loads, editor loads, activation, or visitor requests, and nothing is ever sent to the plugin author. The SEO features still work entirely through WordPress hooks and send nothing anywhere. See "External Services" above for per-provider detail.
 
 = Will this conflict with my SEO plugin? =
 
@@ -129,6 +247,23 @@ No. If Yoast SEO, Rank Math, All in One SEO, The SEO Framework, or Slim SEO is a
 Each translation points at itself. Sending every language back to the default one would tell search engines your translations are duplicates to ignore, which is the opposite of what translating a site is for.
 
 == Changelog ==
+
+= 0.15.0 =
+
+* Added optional Translation Suggestions. Off by default; you bring your own API key and the provider bills you directly.
+* Supported providers: OpenAI, Anthropic, Google Gemini and DeepL. Nothing is chosen for you.
+* The three language-model providers require you to pick a model explicitly. No model is ever selected automatically, because that choice affects what you are billed. DeepL has no model selection.
+* Per-field workflow everywhere it appears: Generate a preview, then Apply, Regenerate or Discard. Generating changes nothing.
+* Available for post and page title and excerpt in both the block editor and the Classic editor, interface string translations, taxonomy term name and description, and media title, alternative text, caption and description.
+* Applying a suggestion to a post, page, custom post type or term records it as Machine suggested, which a person must promote to Translated. Interface strings get their own machine-suggested status. Media metadata is stored as Translated because that storage has no machine-suggested state.
+* Placeholders such as %s and %1$s are protected across translation, and a suggestion that loses one is refused rather than applied.
+* Your site talks to the provider directly. There is no mcLogiora service in the path, no telemetry, and no external request until you click a button.
+* API keys can be defined in wp-config.php instead of the database, and a saved key is never redisplayed.
+* Post bodies, block documents and page-builder layouts are deliberately not machine-translated. See the readme for why.
+* Fixed: the media translation fields could be adopted by WordPress's own attachment form, which prevented saving a translation for one language and could send the wrong action when using WordPress's Update button.
+* Fixed: applying or discarding a suggestion left keyboard focus on nothing; it now returns to the field's Generate button.
+* Fixed: the Translation Suggestions settings screen completed actions such as Test connection without reporting the result.
+* Fixed: a second suggestion could not be applied to a translation that already had one.
 
 = 0.14.0 =
 * Added Beaver Builder support: a new translation starts with the source page's layout instead of an empty page.
