@@ -401,13 +401,13 @@ covered by the stability policy; the rest of `SeoSubject` is not.
 
 ## REST API
 
-Namespace `mclogiora/v1`. **Read-only.** No `POST`, `PUT`, `PATCH` or `DELETE`
-handler exists on any mcLogiora route — not a stub, not a "not implemented"
-placeholder. A write request to one of these paths is a 404 from WordPress.
-Programmatic writes arrive in a later slice.
+Namespace `mclogiora/v1`. Reads on every resource; one write, the translation
+status transition. `DELETE` is registered nowhere, and `/languages` and
+`/relations` accept no write verb at all.
 
-Every response is projected from the same readers documented above, so HTTP and
-PHP always answer the same question the same way.
+Every read response is projected from the same readers documented above, and the
+write returns the same projection, so HTTP and PHP always answer the same
+question the same way.
 
 ### Authentication
 
@@ -415,6 +415,13 @@ Ordinary WordPress REST authentication applies: cookies plus a nonce for
 same-origin requests, and whatever else the site has configured. mcLogiora ships
 no token system, no API key, and no CORS policy of its own, and it never will —
 authentication is WordPress's job.
+
+**Writes require no extra mcLogiora nonce.** A cookie-authenticated REST request
+already needs `X-WP-Nonce`, enforced by WordPress before any route runs; without
+it WordPress does not establish the user and the permission check refuses.
+Layering an admin-form nonce on top would add nothing and would make Application
+Password and other WordPress-native clients unable to call the write route at
+all.
 
 Permission is resolved through mcLogiora's capability boundary, the same one
 every admin screen checks.
@@ -519,9 +526,64 @@ posts, terms, strings, media, menu items and widgets: six answers with six ways
 to be subtly wrong. It is deferred rather than guessed at. `/languages` already
 covers the public case.
 
+### `POST|PUT|PATCH /mclogiora/v1/translations`
+
+Moves an existing translation to a new status. All three verbs do the same
+thing; `EDITABLE` is what core's own controllers register for a partial update,
+and it lets a client that can only `POST` call it.
+
+| Parameter | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `object_type` | string | yes | Same allow-list as the reads |
+| `object_id` | integer | yes | Positive |
+| `language` | string | yes | Must be configured on this site |
+| `status` | string | yes | One of the translation statuses |
+| `taxonomy` | string | no | Only affects the URL in the response |
+
+**Permission:** requires the capability to manage translations, checked before
+any lookup. The workflow re-checks it independently, so authorisation does not
+depend on the controller.
+
+Returns the same shape as `GET /translations`, carrying the new status:
+
+```json
+{
+  "object_type": "post", "object_id": 77, "language": "tr",
+  "source":      { "object_id": 42, "language": "en", "status": "original",     "…": "…" },
+  "translation": { "object_id": 77, "language": "tr", "status": "needs_review", "…": "…" }
+}
+```
+
+**REST decides nothing about which transitions are legal.** Whether a move is
+allowed, whether the source item may change status, and whether the caller may
+manage translations are all answered by `TranslationWorkflowService`, the same
+service the admin screens call. The route maps HTTP to one workflow call and
+projects the result.
+
+Repeating an identical request is **not** a no-op and **not** a second success.
+The first call returns 200; an identical repeat returns 409
+`mclogiora_status_unchanged` and changes nothing.
+
+A status change is a bookkeeping change. It edits no post content, title, slug,
+post status, modified time or revision, on either side of the relation, and it
+contacts no translation provider — moving a status to `machine_suggested` does
+not ask anyone to translate anything.
+
+#### Not yet writable
+
+Creating a translation, linking an existing object as a translation, and
+unlinking one are supported by the domain for both posts and terms, and none is
+exposed over REST yet. Each creates, links or detaches, and each needs its own
+security argument.
+
 ### Errors
 
 Codes are the contract; messages are not. Every error carries an HTTP status.
+
+REST-layer failures use the `mclogiora_rest_` prefix. A refusal that comes from
+the domain carries the **workflow's own code**, unchanged, so the same refusal
+reported by REST, by an admin screen and by a future CLI is identifiable as the
+same thing.
 
 | Code | Status | Meaning |
 | --- | --- | --- |
@@ -530,6 +592,23 @@ Codes are the contract; messages are not. Every error carries an HTTP status.
 | `mclogiora_rest_unknown_language` | 400 | The language is not configured on this site |
 | `mclogiora_rest_relation_not_found` | 404 | The object belongs to no translation group |
 | `mclogiora_rest_translation_not_found` | 404 | The group has no translation in that language |
+
+Domain refusals from the status write:
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| `mclogiora_translation_item_not_found` | 404 | No translation item for that object and language |
+| `mclogiora_unknown_target_status` | 400 | Not a recognised status |
+| `mclogiora_original_not_assignable` | 400 | `original` is a structural role, not a status you can set |
+| `mclogiora_missing_not_assignable` | 400 | `missing` describes an absent translation |
+| `mclogiora_status_unchanged` | 409 | Already at that status |
+| `mclogiora_invalid_status_transition` | 409 | Not reachable from the current status |
+| `mclogiora_original_status_immutable` | 409 | The source item of a group cannot change status |
+
+The 400/409 split answers two different questions. **400** means the request was
+wrong whatever state the site is in — retry after fixing the request. **409**
+means the request was well formed and conflicts with the state this translation
+is actually in — retry after the state changes.
 
 Invalid or missing parameters are rejected by WordPress's own argument
 validation with `rest_invalid_param` / `rest_missing_callback_param` and a 400,

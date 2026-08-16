@@ -4,7 +4,8 @@
 
 Accepted for the layer's shape. Partially implemented: Workstream A is built —
 slice 1 the public read API, slice 2 the hook contract review. Workstream B is
-under way: slice 1, the read-only REST surface, is built; REST writes are not.
+under way: slice 1 the read surface, slice 2 the first mutation family
+(translation status transitions). Six further domain mutations remain unexposed.
 Workstreams C through E are not started.
 
 ## Context
@@ -259,6 +260,58 @@ anonymous or subscriber caller.
 
 Permission is checked before the lookup, so a refused caller cannot tell a
 missing object from a forbidden one and probe for existence.
+
+#### One mutation family, chosen for what it cannot touch
+
+`TranslationWorkflowService` and its two sub-workflows expose seven mutations:
+create, link and unlink for posts, the same three for terms, and the status
+change. Slice 2 exposes exactly one of them.
+
+Status transitions were chosen over the other six for a reason that is not
+convenience. They are the only mutation that creates and destroys nothing: no
+post, no term, no content, no slug, no revision. That makes the blast-radius
+claim provable exactly rather than approximately — the tests assert a full post
+fingerprint and every relation row count is unchanged, which is an assertion the
+create and link operations could not make. Status changes are also the only
+mutation on the facade itself, and the only one that is object-type generic, so
+one route serves posts and terms where every other operation would need two.
+
+The remaining six are deferred with that stated, not left unmentioned.
+
+#### The controller decides nothing
+
+The handler maps HTTP arguments to one `change_status()` call and projects the
+result through the Slice 1 item projection. It does not check whether a
+transition is legal, whether the source item may change status, or whether the
+caller may manage translations. Restating any of those would create a second
+rulebook that eventually disagrees with the admin screens — the failure ADR 0010
+pre-empted by requiring REST to wrap the workflow. Nothing in the REST layer
+writes through a repository or `$wpdb`.
+
+The `status` argument's `enum` is the status *vocabulary*, not the transition
+rule, and it deliberately still contains `original` and `missing`. Excluding
+them would have REST answering a domain question with a generic
+`rest_invalid_param` instead of letting the workflow refuse with the precise
+reason those two are not assignable.
+
+#### Domain codes pass through; the status is REST's decision
+
+A refusal keeps the workflow's own error code so the same refusal is
+identifiable across REST, the admin screens and a future CLI. What REST adds is
+the HTTP status, and the split is deliberate: 400 when the request was wrong
+whatever the state, 409 when it was well formed and conflicts with the state
+this translation is in. Flattening both into one code would make
+retry-after-fixing-the-request indistinguishable from
+retry-after-the-state-changes. Defaulting the unmapped cases to 409 rather than
+500 follows from what they are — refusals, not failures.
+
+#### No second nonce
+
+Writes require no mcLogiora nonce. A cookie-authenticated REST request already
+needs `X-WP-Nonce`, enforced by WordPress before any route runs. Adding an
+admin-form nonce because the admin UI uses one would have copied a transport's
+security into a transport that already has its own, and would have made
+Application Password clients unable to call the route.
 
 #### Declared arguments only constrain if a validate_callback says so
 
