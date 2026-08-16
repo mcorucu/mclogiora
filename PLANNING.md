@@ -711,7 +711,7 @@ Phase 17: Developer & Operations Layer — in progress
 | | Workstream | Delivers | Status |
 | --- | --- | --- | --- |
 | A | Developer Extension API | Public read functions, then a reviewed hook contract | Complete |
-| B | REST API | `/mclogiora/v1/…` under permission callbacks | Not started |
+| B | REST API | `/mclogiora/v1/…` under permission callbacks | Slice 1 (reads) complete; writes not started |
 | C | WP-CLI | `wp mclogiora …`, wrapping the workflow services | Not started |
 | D | Import / Export | Portable packages with a dry run before any write | Not started |
 | E | Diagnostics | System Status screen and Site Health integration | Not started |
@@ -721,7 +721,9 @@ Phase 17: Developer & Operations Layer — in progress
 - Workstream A slice 2 reviewed all fourteen hooks the plugin fires and classified every one. Nine are now supported contracts with documented arguments, documented return semantics, an `@since` tag at the invocation, and a lifecycle test: `mclogiora_activated`, `mclogiora_deactivated`, `mclogiora_widget_adapters`, `mclogiora_register_payload_adapters`, `mclogiora_switcher_flag`, `mclogiora_seo_owns_concern`, `mclogiora_seo_output_open_graph_locale`, `mclogiora_seo_canonical_url`, and `mclogiora_seo_x_default_url`.
 - Five are recorded as unsupported with a specific reason. `mclogiora_register_modules` hands out the service container. `mclogiora_resolved_capability` is the security boundary every admin screen and write path checks, and WordPress offers no capability ordering that could narrow it honestly, so the decision is protected by a test on the unfiltered baseline instead. `mclogiora_feature_enabled` filters a table nothing reads and that no longer matches what shipped. `mclogiora_register_editors` and `mclogiora_register_settings` are deferred until `EditorInterface` and a real settings registry exist to freeze.
 - The only production change in slice 2 moved the payload adapter construction into `PayloadAdapterRegistry::with_core_adapters()`, mirroring the widget registry, because a hook invoked inside a cached container factory cannot be qualified as a contract. Behaviour is unchanged.
-- Next slice: workstream B, the REST API, wrapping the same resolver rather than restating its rules.
+- Workstream B slice 1 registered three read-only routes under `mclogiora/v1`, the namespace and vocabulary section 14 fixed: `GET /languages`, `GET /relations`, `GET /translations`. Every handler projects through `Api\PublicApi`, so HTTP adds no domain logic and cannot drift from what the functions say. No write method exists on any route — not even a stub — and a `POST` to a mcLogiora path is a 404 from WordPress.
+- `/languages` serves its active set publicly, because a page carrying a switcher already publishes every field it returns; `status=all` adds unpublished configuration and is gated. `/relations` and `/translations` require the capability to manage translations, because a relation record names object IDs whatever state those objects are in, and section 14 forbids exposing private post data or unpublished translation content to unauthorised users. A per-object public projection is deferred rather than guessed at.
+- Next slice: workstream B slice 2, REST mutation contracts, wrapping `TranslationWorkflowService` rather than restating its rules.
 
 Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
 

@@ -3,8 +3,9 @@
 ## Status
 
 Accepted for the layer's shape. Partially implemented: Workstream A is built —
-slice 1 the public read API, slice 2 the hook contract review. Workstreams B
-through E are not started.
+slice 1 the public read API, slice 2 the hook contract review. Workstream B is
+under way: slice 1, the read-only REST surface, is built; REST writes are not.
+Workstreams C through E are not started.
 
 ## Context
 
@@ -210,6 +211,65 @@ subject is the same mistake. Instead the contract names four methods —
 itself is internal. The promoted surface is a named subset of an object, not the
 object.
 
+### REST is a projection of the read API, not a second domain layer
+
+Workstream B's first slice registers three GET routes under `mclogiora/v1`, the
+namespace and vocabulary the plan already fixed. Every handler reads through
+`Api\PublicApi` — the same functions a theme calls — and none touches a
+repository. That is the whole reason A came first: a controller that queried
+storage directly would become a second definition of what a translation is, and
+the two would eventually disagree about which one HTTP should believe.
+
+Responses are rebuilt field by field rather than handed the reader's array and
+passed to `rest_ensure_response()`. Passing it through would publish, on the day
+it is added, any field a future projection gains — without anyone deciding to
+publish it. No domain object is ever serialized; the JSON contains scalars,
+nulls and arrays of them.
+
+Translated URLs are asked of `TranslatedUrlGenerator` through the read API
+rather than assembled from parts in a controller, for the reason it has always
+been the only URL authority.
+
+#### Read and write are separate slices on purpose
+
+No write method exists on any route, and no stub returns "not implemented" —
+`POST` to a mcLogiora path is a 404 from WordPress. Writes must go through
+`TranslationWorkflowService`, which checks capability inside each method as well
+as at the request boundary, and wiring that up is its own slice with its own
+security argument. Shipping reads first means the projection, the permission
+boundary and the error vocabulary are settled and tested before anything can
+change state through them.
+
+#### The permission split is per route, and the relation routes are closed
+
+`/languages` serves its active set publicly. Every field it returns is already
+published by the language switcher on any page carrying one, and by the
+`hreflang` block on pages carrying none; refusing it over HTTP would be theatre.
+`status=all` adds languages that are configured but not enabled — unpublished
+configuration nothing on the front end reveals — and is gated.
+
+`/relations` and `/translations` require the capability to manage translations.
+A relation record names object IDs whatever state those objects are in, the
+relation layer has never filtered by post status or by reader, and the plan
+forbids exposing private post data or unpublished translation content to
+unauthorised users. A per-object public projection is buildable but needs
+correct read authorisation for six object types; that is deferred rather than
+guessed at, and a test asserts a private translation's ID never reaches an
+anonymous or subscriber caller.
+
+Permission is checked before the lookup, so a refused caller cannot tell a
+missing object from a forbidden one and probe for existence.
+
+#### Declared arguments only constrain if a validate_callback says so
+
+Building this slice surfaced a WordPress detail worth recording:
+`register_rest_route()` installs no default `validate_callback`, and
+`WP_REST_Request::has_valid_params()` calls only what is registered. An `enum`
+or a `minimum` written beside a hand-authored argument therefore enforces
+nothing on its own — it reads as a constraint and behaves as a comment. The
+first version of this slice had exactly that bug, and a test caught it. Every
+argument now names its callback explicitly.
+
 ## Consequences
 
 - Themes and plugins can read languages, translation relations and translated
@@ -217,7 +277,8 @@ object.
   plugin boots.
 - The internals stay free to change. Repositories, value objects, the container
   and the schema are named in the documentation as explicitly not public.
-- Workstreams B through E each have one resolver to wrap.
+- Workstreams B through E each have one resolver to wrap, and B now demonstrates
+  that wrapping it is enough: three HTTP routes added no domain logic.
 - Nine hooks are supported contracts with documented arguments, documented
   return semantics, and a lifecycle test each. Five are recorded as unsupported
   with the specific reason, so finding one in the source does not read as a

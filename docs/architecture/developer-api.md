@@ -393,12 +393,160 @@ Named here so the boundary is explicit:
 - The database schema and table names. Read through the API, not through SQL.
 - Suggestion provider credentials, transports, previews, and settings storage.
 
-The three interfaces a supported filter requires — `WidgetAdapterInterface`,
-`TranslationPayloadAdapterInterface`, and the `SeoSubject` methods above — are
-the exception. Implementing them is how those filters are used, so they are
-covered by the stability policy.
+Three things are the exception, because using a supported filter requires them.
+`WidgetAdapterInterface` and `TranslationPayloadAdapterInterface` are interfaces
+you implement to register an adapter. The four `SeoSubject` methods listed above
+are not implemented but read, on an object the filter hands you. All three are
+covered by the stability policy; the rest of `SeoSubject` is not.
+
+## REST API
+
+Namespace `mclogiora/v1`. **Read-only.** No `POST`, `PUT`, `PATCH` or `DELETE`
+handler exists on any mcLogiora route — not a stub, not a "not implemented"
+placeholder. A write request to one of these paths is a 404 from WordPress.
+Programmatic writes arrive in a later slice.
+
+Every response is projected from the same readers documented above, so HTTP and
+PHP always answer the same question the same way.
+
+### Authentication
+
+Ordinary WordPress REST authentication applies: cookies plus a nonce for
+same-origin requests, and whatever else the site has configured. mcLogiora ships
+no token system, no API key, and no CORS policy of its own, and it never will —
+authentication is WordPress's job.
+
+Permission is resolved through mcLogiora's capability boundary, the same one
+every admin screen checks.
+
+> **REST does not bypass WordPress object permissions.** A returned object ID is
+> a relation record. Before fetching and rendering that object, apply the same
+> checks you would after `get_post_meta()`.
+
+### `GET /mclogiora/v1/languages`
+
+Returns the configured languages, in display order.
+
+| Parameter | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `status` | `active` \| `all` | `active` | `all` includes disabled languages and requires permission |
+
+**Permission:** public for `status=active`. The active set is already published
+on any page carrying a language switcher, and by the `hreflang` block on pages
+that carry none, so withholding it over HTTP would protect nothing. `status=all`
+adds languages that are configured but not enabled — unpublished site
+configuration that nothing on the front end reveals — and requires permission to
+manage translations.
+
+```json
+[
+  {
+    "code": "en", "locale": "en_US", "tag": "en-US",
+    "native_name": "English", "english_name": "English",
+    "direction": "ltr", "is_active": true, "is_default": true,
+    "order": 0, "home_url": "https://example.com/"
+  }
+]
+```
+
+There is deliberately no "current language" field. The request language is
+resolved from the routing prefix mcLogiora puts in front-end URLs, and a REST
+request carries none, so "current" here would always be the site default.
+Reporting it would be a confident answer to a question REST cannot ask.
+
+### `GET /mclogiora/v1/relations`
+
+Returns the translation group an object belongs to.
+
+| Parameter | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `object_type` | string | yes | One of `post`, `term`, `string`, `media`, `menu`, `widget`, `future` |
+| `object_id` | integer | yes | Positive |
+| `taxonomy` | string | no | Needed to resolve a URL for a term |
+
+**Permission:** requires the capability to manage translations. See *Why the
+relation routes are not public* below.
+
+```json
+{
+  "group_key": "9f1c…",
+  "object_type": "post",
+  "source": {
+    "object_id": 42, "object_type": "post", "language": "en",
+    "status": "original", "is_source": true,
+    "url": "https://example.com/about-us/"
+  },
+  "translations": {
+    "en": { "…": "…" },
+    "tr": {
+      "object_id": 77, "object_type": "post", "language": "tr",
+      "status": "translated", "is_source": false,
+      "url": "https://example.com/tr/hakkimizda/"
+    }
+  }
+}
+```
+
+`url` is `null` when no front-end URL can be resolved — a term whose taxonomy
+the caller did not name, or an object type that has no URL at all.
+
+### `GET /mclogiora/v1/translations`
+
+Returns one translation of an object, with its source alongside.
+
+Takes the same parameters plus a required `language`. Same permission.
+
+```json
+{
+  "object_type": "post",
+  "object_id": 42,
+  "language": "tr",
+  "source": { "object_id": 42, "language": "en", "status": "original", "…": "…" },
+  "translation": { "object_id": 77, "language": "tr", "status": "translated", "…": "…" }
+}
+```
+
+### Why the relation routes are not public
+
+A relation record names object IDs whatever state those objects are in: a draft
+translation, a private page, a scheduled post. The relation layer has never
+filtered by post status or by the reader, and serving it anonymously would
+announce that a private page exists and hand over its translation's ID.
+
+A public projection is buildable — filter each item by what the reader may
+actually see — but doing that correctly means correct read authorisation for
+posts, terms, strings, media, menu items and widgets: six answers with six ways
+to be subtly wrong. It is deferred rather than guessed at. `/languages` already
+covers the public case.
+
+### Errors
+
+Codes are the contract; messages are not. Every error carries an HTTP status.
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| `mclogiora_rest_forbidden` | 401 / 403 | 401 when not logged in, 403 when logged in without permission |
+| `mclogiora_rest_invalid_object_type` | 400 | `object_type` is not in the allow-list; the response `data.allowed` lists it |
+| `mclogiora_rest_unknown_language` | 400 | The language is not configured on this site |
+| `mclogiora_rest_relation_not_found` | 404 | The object belongs to no translation group |
+| `mclogiora_rest_translation_not_found` | 404 | The group has no translation in that language |
+
+Invalid or missing parameters are rejected by WordPress's own argument
+validation with `rest_invalid_param` / `rest_missing_callback_param` and a 400,
+before any lookup runs. Errors never carry SQL, table names, class names, or
+paths.
+
+Permission is checked before the lookup, so an unauthorised caller cannot probe
+which objects exist by telling a 403 from a 404.
+
+### Not yet in REST
+
+`/strings`, `/suggestions`, `/switcher`, `/import`, `/export` and `/status` are
+sketched in the plan and are not registered. Nothing about suggestions is
+reachable over REST: no provider credential, setting, preview or model cache is
+exposed, and a REST read makes no outbound HTTP request at all.
 
 ## Not yet built
 
-REST routes, WP-CLI commands, import/export, and the System Status and Site
-Health surfaces are the remaining Phase 17 workstreams. See ADR 0019.
+WP-CLI commands, import/export, and the System Status and Site Health surfaces
+are the remaining Phase 17 workstreams, along with REST writes. See ADR 0019.
