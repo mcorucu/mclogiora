@@ -13,6 +13,10 @@ use McLogiora\Core\Container;
 use McLogiora\Languages\Language;
 use McLogiora\Languages\LanguageServiceInterface;
 use McLogiora\Relations\ContentType;
+use McLogiora\Relations\TranslationGroup;
+use McLogiora\Relations\TranslationItem;
+use McLogiora\Relations\TranslationRelationServiceInterface;
+use McLogiora\Relations\TranslationStatus;
 use McLogiora\Strings\StringRepositoryInterface;
 use McLogiora\Strings\StringSource;
 use McLogiora\Suggestions\SuggestionPreview;
@@ -52,7 +56,9 @@ final class SuggestionAdminController implements ModuleInterface {
 	 * @var array<string,string>
 	 */
 	private static $surfaces = array(
-		SuggestionSurface::STRING => ContentType::STRING,
+		SuggestionSurface::STRING           => ContentType::STRING,
+		SuggestionSurface::TERM_NAME        => ContentType::TERM,
+		SuggestionSurface::TERM_DESCRIPTION => ContentType::TERM,
 	);
 
 	/**
@@ -91,6 +97,13 @@ final class SuggestionAdminController implements ModuleInterface {
 	private $languages = null;
 
 	/**
+	 * Relation service.
+	 *
+	 * @var TranslationRelationServiceInterface|null
+	 */
+	private $relations = null;
+
+	/**
 	 * Effective capability.
 	 *
 	 * @var string
@@ -109,6 +122,7 @@ final class SuggestionAdminController implements ModuleInterface {
 		$this->previews    = $container->get( SuggestionPreviewStore::class );
 		$this->strings     = $container->get( StringRepositoryInterface::class );
 		$this->languages   = $container->get( LanguageServiceInterface::class );
+		$this->relations   = $container->get( TranslationRelationServiceInterface::class );
 		$this->capability  = $container->get( CapabilityRegistry::class )
 			->resolve( CapabilityRegistry::MANAGE_TRANSLATIONS );
 
@@ -295,6 +309,26 @@ final class SuggestionAdminController implements ModuleInterface {
 			);
 		}
 
+		if ( ContentType::TERM === self::$surfaces[ $surface ] ) {
+			return $this->resolve_term_request( $surface, $object_id, (string) $target->code() );
+		}
+
+		return $this->resolve_string_request( $surface, $object_id, (string) $target->code() );
+	}
+
+	/**
+	 * Resolves an interface-string request.
+	 *
+	 * A string has no relation row. Its source is the registered string itself
+	 * and its source language is the site default, so the context is derived
+	 * from configuration rather than looked up.
+	 *
+	 * @param string $surface Requested surface.
+	 * @param int    $string_id String identifier.
+	 * @param string $target_language Target language code.
+	 * @return array<string,mixed>
+	 */
+	private function resolve_string_request( $surface, $string_id, $target_language ) {
 		$default = $this->languages->get_default_language();
 
 		if ( ! $default instanceof Language ) {
@@ -304,7 +338,7 @@ final class SuggestionAdminController implements ModuleInterface {
 			);
 		}
 
-		if ( $default->code() === $target->code() ) {
+		if ( $default->code() === $target_language ) {
 			/*
 			 * The default language is what everything is translated *from*.
 			 * Translating into it would let someone spend quota rewriting the
@@ -319,10 +353,121 @@ final class SuggestionAdminController implements ModuleInterface {
 		return array(
 			'surface'         => $surface,
 			'object_type'     => self::$surfaces[ $surface ],
-			'source_id'       => $object_id,
-			'target_id'       => $object_id,
+			'source_id'       => $string_id,
+			'target_id'       => $string_id,
 			'source_language' => (string) $default->code(),
-			'target_language' => (string) $target->code(),
+			'target_language' => $target_language,
+		);
+	}
+
+	/**
+	 * Resolves a taxonomy term request from its translation relation.
+	 *
+	 * A term is relation-backed, so nothing about the pairing is taken from the
+	 * request beyond the target term's own id. The group says which term is the
+	 * source and which languages the two sides speak, which is what makes a
+	 * request naming an unrelated term, the wrong language or the source term
+	 * itself impossible to honour rather than merely discouraged.
+	 *
+	 * @param string $surface Requested surface.
+	 * @param int    $term_id Target term identifier.
+	 * @param string $target_language Target language code.
+	 * @return array<string,mixed>
+	 */
+	private function resolve_term_request( $surface, $term_id, $target_language ) {
+		$term = get_term( $term_id );
+
+		if ( ! $term instanceof \WP_Term ) {
+			wp_send_json_error(
+				array( 'message' => __( 'That term could not be found.', 'mclogiora' ) ),
+				400
+			);
+		}
+
+		if ( ! current_user_can( 'edit_term', $term_id ) ) {
+			wp_send_json_error(
+				array( 'message' => __( 'You are not allowed to edit this term.', 'mclogiora' ) ),
+				403
+			);
+		}
+
+		$group = $this->relations instanceof TranslationRelationServiceInterface
+			? $this->relations->get_translation_set_for_object( ContentType::TERM, (string) $term_id )
+			: null;
+
+		if ( ! $group instanceof TranslationGroup ) {
+			wp_send_json_error(
+				array( 'message' => __( 'This term is not part of a translation group.', 'mclogiora' ) ),
+				400
+			);
+		}
+
+		$target = null;
+		$source = null;
+
+		foreach ( $group->items() as $item ) {
+			if ( ! $item instanceof TranslationItem ) {
+				continue;
+			}
+
+			if ( (int) $item->object_id() === (int) $term_id ) {
+				$target = $item;
+			}
+
+			if ( TranslationStatus::ORIGINAL === $item->status() ) {
+				$source = $item;
+			}
+		}
+
+		if ( ! $target instanceof TranslationItem || ! $source instanceof TranslationItem ) {
+			wp_send_json_error(
+				array( 'message' => __( 'The source of this translated term could not be found.', 'mclogiora' ) ),
+				400
+			);
+		}
+
+		if ( (int) $source->object_id() === (int) $term_id ) {
+			/*
+			 * The source term is the thing being translated from. Offering to
+			 * translate it into its own language is nonsense, and allowing it
+			 * would let someone spend quota rewriting the original.
+			 */
+			wp_send_json_error(
+				array( 'message' => __( 'This is the source term, so there is nothing to translate into.', 'mclogiora' ) ),
+				400
+			);
+		}
+
+		if ( (string) $target->language_code() !== $target_language ) {
+			wp_send_json_error(
+				array( 'message' => __( 'That language does not match this translated term.', 'mclogiora' ) ),
+				400
+			);
+		}
+
+		$source_term = get_term( (int) $source->object_id() );
+
+		if ( ! $source_term instanceof \WP_Term ) {
+			wp_send_json_error(
+				array( 'message' => __( 'The source of this translated term could not be found.', 'mclogiora' ) ),
+				400
+			);
+		}
+
+		if ( (string) $source_term->taxonomy !== (string) $term->taxonomy ) {
+			wp_send_json_error(
+				array( 'message' => __( 'The source term belongs to a different taxonomy.', 'mclogiora' ) ),
+				400
+			);
+		}
+
+		return array(
+			'surface'         => $surface,
+			'object_type'     => ContentType::TERM,
+			'source_id'       => (int) $source->object_id(),
+			'target_id'       => (int) $term_id,
+			'source_language' => (string) $source->language_code(),
+			'target_language' => $target_language,
 		);
 	}
 
@@ -348,8 +493,12 @@ final class SuggestionAdminController implements ModuleInterface {
 	 * @return string
 	 */
 	private function source_text( array $request ) {
-		if ( SuggestionSurface::STRING !== $request['surface'] ) {
-			return '';
+		if ( SuggestionSurface::TERM_NAME === $request['surface'] ) {
+			return (string) $this->source_term( $request )->name;
+		}
+
+		if ( SuggestionSurface::TERM_DESCRIPTION === $request['surface'] ) {
+			return (string) $this->source_term( $request )->description;
 		}
 
 		$source = $this->strings->find( (int) $request['source_id'] );
@@ -365,18 +514,47 @@ final class SuggestionAdminController implements ModuleInterface {
 	}
 
 	/**
+	 * Returns the source term a request resolved to.
+	 *
+	 * Named explicitly per field by the caller rather than resolved from a
+	 * variable, for the same reason the apply service writes two literal term
+	 * columns: a field name that reaches a property lookup from request data is a
+	 * hole waiting to be widened.
+	 *
+	 * @param array<string,mixed> $request Validated request.
+	 * @return \WP_Term
+	 */
+	private function source_term( array $request ) {
+		$term = get_term( (int) $request['source_id'] );
+
+		if ( ! $term instanceof \WP_Term ) {
+			wp_send_json_error(
+				array( 'message' => __( 'The source of this translated term could not be found.', 'mclogiora' ) ),
+				400
+			);
+		}
+
+		return $term;
+	}
+
+	/**
 	 * Returns the status a surface honestly reports after Apply.
 	 *
-	 * Strings carry their own status column and record the machine-suggested
-	 * value, so a suggested string is reported as suggested rather than passed
-	 * off as a finished translation.
+	 * Strings carry their own status column and terms are relation-backed, and
+	 * both record the machine-suggested value, so a suggestion is reported as a
+	 * suggestion rather than passed off as a finished translation. Surfaces whose
+	 * storage has no such state report nothing rather than claiming one.
 	 *
 	 * @param string $surface Applied surface.
 	 * @return string
 	 */
 	private function applied_status( $surface ) {
-		if ( SuggestionSurface::STRING === $surface ) {
-			return \McLogiora\Relations\TranslationStatus::MACHINE_SUGGESTED;
+		if ( in_array(
+			$surface,
+			array( SuggestionSurface::STRING, SuggestionSurface::TERM_NAME, SuggestionSurface::TERM_DESCRIPTION ),
+			true
+		) ) {
+			return TranslationStatus::MACHINE_SUGGESTED;
 		}
 
 		return '';

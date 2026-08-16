@@ -18,7 +18,9 @@ use McLogiora\Languages\Language;
 use McLogiora\Languages\LanguageServiceInterface;
 use McLogiora\Taxonomies\TaxonomyTranslationServiceInterface;
 use McLogiora\Taxonomies\TranslatableTaxonomy;
+use McLogiora\Admin\SuggestionAdminState;
 use McLogiora\Admin\TranslationActionController;
+use McLogiora\Suggestions\SuggestionSurface;
 use McLogiora\Workflows\TranslationStatusTransitions;
 
 defined( 'ABSPATH' ) || exit;
@@ -27,6 +29,7 @@ defined( 'ABSPATH' ) || exit;
  * Registers the Translation Manager screen.
  */
 final class TranslationManager implements ModuleInterface {
+	const SUGGESTIONS_HANDLE = 'mclogiora-admin-suggestions';
 	/**
 	 * Relation service.
 	 *
@@ -70,6 +73,13 @@ final class TranslationManager implements ModuleInterface {
 	private $transitions = null;
 
 	/**
+	 * Suggestion state provider.
+	 *
+	 * @var SuggestionAdminState|null
+	 */
+	private $suggestions = null;
+
+	/**
 	 * Registers the Translation Manager screen.
 	 *
 	 * @param Container $container Service container.
@@ -83,6 +93,7 @@ final class TranslationManager implements ModuleInterface {
 		$this->content_service  = $container->get( ContentTranslationServiceInterface::class );
 		$this->taxonomy_service = $container->get( TaxonomyTranslationServiceInterface::class );
 		$this->transitions      = $container->get( TranslationStatusTransitions::class );
+		$this->suggestions      = $container->get( SuggestionAdminState::class );
 
 		$registry = $container->get( AdminScreenRegistry::class );
 		$registry->add(
@@ -109,6 +120,8 @@ final class TranslationManager implements ModuleInterface {
 		if ( ! current_user_can( $this->capability ) ) {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'mclogiora' ) );
 		}
+
+		$this->enqueue_suggestions();
 
 		$groups              = $this->relation_service instanceof TranslationRelationServiceInterface ? $this->relation_service->get_placeholder_groups() : array();
 		$languages           = $this->language_service instanceof LanguageServiceInterface ? $this->language_service->get_active_languages() : array();
@@ -384,6 +397,163 @@ final class TranslationManager implements ModuleInterface {
 				'language'  => $language,
 			)
 		);
+
+		if ( ContentType::TERM === $object_type ) {
+			$this->render_term_suggestions( $item );
+		}
+
+		echo '</div>';
+	}
+
+
+	/**
+	 * Loads the shared suggestion script for this screen only.
+	 *
+	 * Enqueued from render(), so the asset never reaches another admin page and
+	 * never reaches the front end. Nothing is shipped when the feature is
+	 * unavailable: the controls already explain why, and handing the browser an
+	 * action list for something it may not do would be worse than useless.
+	 *
+	 * @return void
+	 */
+	private function enqueue_suggestions() {
+		if ( ! $this->suggestions instanceof SuggestionAdminState ) {
+			return;
+		}
+
+		$state = $this->suggestions->current();
+
+		if ( empty( $state['available'] ) ) {
+			return;
+		}
+
+		$path = MCLOGIORA_PATH . 'assets/js/admin-suggestions.js';
+
+		wp_enqueue_script(
+			self::SUGGESTIONS_HANDLE,
+			MCLOGIORA_URL . 'assets/js/admin-suggestions.js',
+			array( 'wp-i18n' ),
+			file_exists( $path ) ? (string) filemtime( $path ) : MCLOGIORA_VERSION,
+			true
+		);
+
+		wp_set_script_translations( self::SUGGESTIONS_HANDLE, 'mclogiora', MCLOGIORA_PATH . 'languages' );
+
+		wp_add_inline_script(
+			self::SUGGESTIONS_HANDLE,
+			'window.mcLogioraAdminSuggestions = ' . wp_json_encode(
+				array(
+					'ajaxUrl'       => $state['ajaxUrl'],
+					'actions'       => $state['actions'],
+					'nonce'         => $state['nonce'],
+					'providerLabel' => $state['providerLabel'],
+					'modelLabel'    => $state['modelLabel'],
+				)
+			) . ';',
+			'before'
+		);
+
+		wp_enqueue_style(
+			self::SUGGESTIONS_HANDLE,
+			MCLOGIORA_URL . 'assets/css/editor-panel.css',
+			array(),
+			MCLOGIORA_VERSION
+		);
+	}
+
+	/**
+	 * Renders the suggestion controls for one translated term.
+	 *
+	 * Only offered for terms, and only for the two fields the apply service is
+	 * willing to write. A slug is deliberately absent: a machine-translated slug
+	 * would change every URL the term owns, silently.
+	 *
+	 * The controls carry the target term's id and language, never any text. The
+	 * endpoint resolves the relation, finds the source term and reads the
+	 * authoritative value itself, so the browser cannot choose what the owner
+	 * pays to translate.
+	 *
+	 * No form is opened. This cell already contains the status and unlink forms,
+	 * and a control that submitted one of those would do something else entirely.
+	 *
+	 * @param TranslationItem $item Translation item.
+	 * @return void
+	 */
+	private function render_term_suggestions( TranslationItem $item ) {
+		if ( ! $this->suggestions instanceof SuggestionAdminState ) {
+			return;
+		}
+
+		$state = $this->suggestions->current();
+
+		echo '<div class="mclogiora-editor__suggestions">';
+
+		printf( '<h4>%s</h4>', esc_html__( 'Translation Suggestions', 'mclogiora' ) );
+
+		if ( empty( $state['available'] ) ) {
+			printf( '<p class="mclogiora-editor__meta">%s</p>', esc_html( $state['reason'] ) );
+
+			if ( ! empty( $state['settingsUrl'] ) ) {
+				printf(
+					'<p><a href="%1$s">%2$s</a></p>',
+					esc_url( $state['settingsUrl'] ),
+					esc_html__( 'Translation Suggestions settings', 'mclogiora' )
+				);
+			}
+
+			echo '</div>';
+
+			return;
+		}
+
+		$this->render_term_suggestion_field(
+			$item,
+			SuggestionSurface::TERM_NAME,
+			__( 'Term name', 'mclogiora' ),
+			__( 'Generate Term name suggestion', 'mclogiora' )
+		);
+
+		$this->render_term_suggestion_field(
+			$item,
+			SuggestionSurface::TERM_DESCRIPTION,
+			__( 'Term description', 'mclogiora' ),
+			__( 'Generate Term description suggestion', 'mclogiora' )
+		);
+
+		echo '</div>';
+	}
+
+	/**
+	 * Renders one term field's suggestion control.
+	 *
+	 * @param TranslationItem $item Translation item.
+	 * @param string          $surface Suggestion surface.
+	 * @param string          $label Visible field label.
+	 * @param string          $accessible_label Accessible name for the generate button.
+	 * @return void
+	 */
+	private function render_term_suggestion_field( TranslationItem $item, $surface, $label, $accessible_label ) {
+		printf(
+			'<div class="mclogiora-editor__row" data-mclogiora-suggest data-surface="%1$s" data-object="%2$s" data-language="%3$s" data-field-label="%4$s">',
+			esc_attr( $surface ),
+			esc_attr( (string) $item->object_id() ),
+			esc_attr( (string) $item->language_code() ),
+			esc_attr( $label )
+		);
+
+		echo '<div class="mclogiora-editor__row-head">';
+
+		printf( '<strong>%s</strong>', esc_html( $label ) );
+
+		printf(
+			'<button type="button" class="button button-secondary" data-mclogiora-generate aria-label="%1$s">%2$s</button>',
+			esc_attr( $accessible_label ),
+			esc_html__( 'Generate suggestion', 'mclogiora' )
+		);
+
+		echo '</div>';
+
+		echo '<div class="mclogiora-editor__feedback" data-mclogiora-feedback></div>';
 
 		echo '</div>';
 	}
