@@ -26,6 +26,58 @@ final class PayloadAdapterRegistry {
 	private $adapters = array();
 
 	/**
+	 * Builds the registry with the core adapters and any filtered additions.
+	 *
+	 * Named rather than inlined into the container so the extension filter has
+	 * one reachable, testable entry point, matching how the widget adapter
+	 * registry is built. A hook that can only be exercised through a cached
+	 * container entry cannot be qualified as a contract.
+	 *
+	 * @return self
+	 */
+	public static function with_core_adapters() {
+		$registry = new self();
+
+		/*
+		 * All three are registered unconditionally and each reports its own
+		 * availability, so a site without Elementor, Beaver Builder or ACF
+		 * loads them without touching any of those plugins' classes.
+		 */
+		$registry->add( new ElementorPayloadAdapter() );
+		$registry->add( new BeaverBuilderPayloadAdapter() );
+		$registry->add( new AcfPayloadAdapter() );
+
+		/**
+		 * Filters the additional translation payload adapters to register.
+		 *
+		 * An adapter gives a newly created translation the starting state its
+		 * builder expects. It copies structure, never meaning; nothing here
+		 * translates text.
+		 *
+		 * The filtered value always starts as an empty array, so this hook only
+		 * ever adds adapters. The core adapters are registered before it runs
+		 * and cannot be removed through it. Entries that do not implement the
+		 * interface are ignored, as is a non-array return.
+		 *
+		 * @since 0.13.0
+		 *
+		 * @param TranslationPayloadAdapterInterface[] $extra Adapters to add. Empty by default.
+		 * @param PayloadAdapterRegistry               $registry Registry the adapters are added to.
+		 */
+		$extra = apply_filters( 'mclogiora_register_payload_adapters', array(), $registry );
+
+		if ( is_array( $extra ) ) {
+			foreach ( $extra as $adapter ) {
+				if ( $adapter instanceof TranslationPayloadAdapterInterface ) {
+					$registry->add( $adapter );
+				}
+			}
+		}
+
+		return $registry;
+	}
+
+	/**
 	 * Adds an adapter.
 	 *
 	 * @param TranslationPayloadAdapterInterface $adapter Adapter.
