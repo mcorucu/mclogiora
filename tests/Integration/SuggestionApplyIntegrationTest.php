@@ -414,6 +414,73 @@ final class SuggestionApplyIntegrationTest extends WP_UnitTestCase {
 		$this->assertInstanceOf( SuggestionPreview::class, $this->previews->find( $preview->token() ) );
 	}
 
+
+	/**
+	 * Asserts a second field can be applied to the same translation.
+	 *
+	 * Found in browser qualification. Applying the title moves the relation to
+	 * `machine_suggested`; applying the excerpt afterwards then asked for the
+	 * same status again, which the transition policy rightly refuses as
+	 * unchanged. The apply service treated that refusal as a failure, rolled
+	 * the excerpt back and reported "the translation already has this status",
+	 * so every translation could receive exactly one suggestion and no more.
+	 *
+	 * Applying a title and then an excerpt is the first thing anyone does.
+	 *
+	 * @return void
+	 */
+	public function test_a_second_field_can_be_applied_to_the_same_translation() {
+		$title = $this->preview( 'Turkce baslik' );
+
+		$this->assertInstanceOf(
+			SuggestionPreview::class,
+			$this->apply->apply( $title->token(), $this->context() )
+		);
+
+		$this->assertSame( TranslationStatus::MACHINE_SUGGESTED, $this->status() );
+
+		$excerpt = $this->preview( 'Turkce ozet', SuggestionSurface::POST_EXCERPT );
+
+		$result = $this->apply->apply(
+			$excerpt->token(),
+			$this->context( SuggestionSurface::POST_EXCERPT )
+		);
+
+		$this->assertInstanceOf(
+			SuggestionPreview::class,
+			$result,
+			is_wp_error( $result ) ? $result->get_error_message() : 'The second apply must succeed.'
+		);
+
+		$this->assertSame( 'Turkce baslik', get_post_field( 'post_title', $this->target_id ) );
+		$this->assertSame( 'Turkce ozet', get_post_field( 'post_excerpt', $this->target_id ) );
+		$this->assertSame( TranslationStatus::MACHINE_SUGGESTED, $this->status() );
+	}
+
+	/**
+	 * Asserts a translated item is still protected from being overwritten.
+	 *
+	 * The fix above absorbs only the "already in this status" refusal. Every
+	 * other refusal must still fail and still roll the field back, so the
+	 * rollback test's guarantee is unchanged.
+	 *
+	 * @return void
+	 */
+	public function test_absorbing_the_unchanged_status_did_not_open_translated() {
+		$this->assertNotWPError(
+			$this->container->get( TranslationWorkflowService::class )
+				->change_status( ContentType::POST, $this->target_id, 'tr', TranslationStatus::TRANSLATED )
+		);
+
+		$original = get_post_field( 'post_title', $this->target_id );
+
+		$preview = $this->preview( 'Makine cevirisi' );
+
+		$this->assertTrue( is_wp_error( $this->apply->apply( $preview->token(), $this->context() ) ) );
+		$this->assertSame( $original, get_post_field( 'post_title', $this->target_id ) );
+		$this->assertSame( TranslationStatus::TRANSLATED, $this->status() );
+	}
+
 	/**
 	 * Asserts the human review step is what reaches `translated`.
 	 *

@@ -246,12 +246,7 @@ final class TranslationSuggestionApplyService {
 			return $updated;
 		}
 
-		$status = $this->workflows->change_status(
-			ContentType::TERM,
-			$term_id,
-			$preview->target_language(),
-			TranslationStatus::MACHINE_SUGGESTED
-		);
+		$status = $this->mark_machine_suggested( ContentType::TERM, $term_id, $preview->target_language() );
 
 		if ( is_wp_error( $status ) ) {
 			$this->write_term_field( $term_id, $term->taxonomy, $is_name, $previous );
@@ -439,12 +434,7 @@ final class TranslationSuggestionApplyService {
 			return $updated;
 		}
 
-		$status = $this->workflows->change_status(
-			ContentType::POST,
-			$target_id,
-			$preview->target_language(),
-			TranslationStatus::MACHINE_SUGGESTED
-		);
+		$status = $this->mark_machine_suggested( ContentType::POST, $target_id, $preview->target_language() );
 
 		if ( is_wp_error( $status ) ) {
 			$this->write_post_field( $target_id, $is_title, $previous );
@@ -455,6 +445,50 @@ final class TranslationSuggestionApplyService {
 		$this->previews->consume( $preview->token() );
 
 		return $preview;
+	}
+
+
+	/**
+	 * Records the machine-suggested state, tolerating it already being set.
+	 *
+	 * The transition policy refuses a move from a status to itself, which is
+	 * right for a workflow action but wrong here: applying a second suggestion
+	 * to the same translation is a legitimate thing to do, and the relation is
+	 * already in exactly the state the apply wants it in.
+	 *
+	 * Without this, applying a title would make the translation
+	 * machine_suggested and then every later excerpt apply would fail, roll
+	 * its field back, and report a confusing "already has this status" error --
+	 * so each translation could only ever receive one suggestion. Found in
+	 * browser qualification, where applying a title and then an excerpt is the
+	 * obvious thing a person does.
+	 *
+	 * Only the "unchanged" case is absorbed. Every other refusal -- a
+	 * translated item that must not be overwritten, an unknown status, a
+	 * missing item -- still fails and still triggers the field rollback.
+	 *
+	 * @param string $object_type Content type.
+	 * @param int    $object_id Object identifier.
+	 * @param string $language Target language code.
+	 * @return true|\WP_Error
+	 */
+	private function mark_machine_suggested( $object_type, $object_id, $language ) {
+		$changed = $this->workflows->change_status(
+			$object_type,
+			$object_id,
+			$language,
+			TranslationStatus::MACHINE_SUGGESTED
+		);
+
+		if ( ! is_wp_error( $changed ) ) {
+			return true;
+		}
+
+		if ( 'mclogiora_status_unchanged' === $changed->get_error_code() ) {
+			return true;
+		}
+
+		return $changed;
 	}
 
 	/**
