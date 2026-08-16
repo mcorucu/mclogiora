@@ -2,43 +2,43 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: mcLogiora 0.14.0\n"
+"Project-Id-Version: mcLogiora 0.15.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mclogiora\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-15T12:41:04+00:00\n"
+"POT-Creation-Date: 2026-08-16T18:05:52+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mclogiora\n"
 
 #. Plugin Name of the plugin
-#: mclogiora.php:3
+#: mclogiora.php
 #: src/Admin/AdminMenu.php:96
 #: src/Admin/AdminMenu.php:97
-#: assets/js/editor-panel.js:261
+#: assets/js/editor-panel.js:628
 msgid "mcLogiora"
 msgstr ""
 
 #. Plugin URI of the plugin
-#: mclogiora.php:4
+#: mclogiora.php
 msgid "https://mcorucu.com/"
 msgstr ""
 
 #. Description of the plugin
-#: mclogiora.php:5
+#: mclogiora.php
 msgid "A modern multilingual platform foundation for WordPress."
 msgstr ""
 
 #. Author of the plugin
-#: mclogiora.php:10
+#: mclogiora.php
 msgid "Mehmet Can Orucu"
 msgstr ""
 
 #. Author URI of the plugin
-#: mclogiora.php:11
+#: mclogiora.php
 msgid "https://mcorucu.com"
 msgstr ""
 
@@ -53,11 +53,11 @@ msgstr ""
 #: src/Admin/AdminMenu.php:144
 #: src/Admin/AdminMenu.php:161
 #: src/Admin/RoutingSettingsScreen.php:85
-#: src/Admin/StringManager.php:88
+#: src/Admin/StringManager.php:98
 #: src/Admin/WidgetTranslationManager.php:87
 #: src/Compatibility/CompatibilityDashboard.php:78
 #: src/Languages/LanguageManager.php:74
-#: src/Relations/TranslationManager.php:110
+#: src/Relations/TranslationManager.php:121
 #: src/Setup/SetupWizard.php:91
 msgid "You do not have permission to access this page."
 msgstr ""
@@ -107,7 +107,7 @@ msgid "Categories, tags, and eligible public custom taxonomies are prepared for 
 msgstr ""
 
 #: src/Admin/AdminMenu.php:225
-#: src/Relations/TranslationManager.php:171
+#: src/Relations/TranslationManager.php:184
 msgid "Excluded Integrations"
 msgstr ""
 
@@ -139,35 +139,87 @@ msgstr ""
 msgid "You do not have permission to do that."
 msgstr ""
 
-#: src/Admin/MediaTranslationFields.php:100
-#: src/Editors/ClassicEditorMetabox.php:92
+#: src/Admin/MediaTranslationFields.php:252
+#: src/Admin/StringManager.php:426
+#: src/Editors/ClassicEditorMetabox.php:317
+#: src/Relations/TranslationManager.php:551
+#: assets/js/admin-suggestions.js:193
+#: assets/js/classic-suggestions.js:185
+#: assets/js/editor-panel.js:283
+msgid "Generate suggestion"
+msgstr ""
+
+#: src/Admin/MediaTranslationFields.php:284
+#: src/Admin/StringManager.php:405
+#: src/Editors/ClassicEditorMetabox.php:273
+#: src/Relations/TranslationManager.php:500
+#: assets/js/editor-panel.js:381
+msgid "Translation Suggestions settings"
+msgstr ""
+
+#: src/Admin/MediaTranslationFields.php:324
+#: src/Editors/ClassicEditorMetabox.php:102
 msgid "mcLogiora Translations"
 msgstr ""
 
-#: src/Admin/MediaTranslationFields.php:101
+#: src/Admin/MediaTranslationFields.php:325
 msgid "The file itself is shared across languages. Only this text is translated."
 msgstr ""
 
-#: src/Admin/MediaTranslationFields.php:118
+#: src/Admin/MediaTranslationFields.php:349
+#: src/Editors/ClassicEditorMetabox.php:284
 #: src/Switcher/SwitcherWidget.php:89
 #: src/Widgets/CustomHtmlWidgetAdapter.php:51
 #: src/Widgets/TextWidgetAdapter.php:51
+#: assets/js/editor-panel.js:390
 msgid "Title"
 msgstr ""
 
-#: src/Admin/MediaTranslationFields.php:124
+#: src/Admin/MediaTranslationFields.php:359
+msgid "Media title"
+msgstr ""
+
+#: src/Admin/MediaTranslationFields.php:360
+msgid "Generate Media title suggestion"
+msgstr ""
+
+#: src/Admin/MediaTranslationFields.php:365
 msgid "Alternative text"
 msgstr ""
 
-#: src/Admin/MediaTranslationFields.php:130
+#: src/Admin/MediaTranslationFields.php:375
+msgid "Media alt text"
+msgstr ""
+
+#: src/Admin/MediaTranslationFields.php:376
+msgid "Generate Media alt suggestion"
+msgstr ""
+
+#: src/Admin/MediaTranslationFields.php:381
 msgid "Caption"
 msgstr ""
 
-#: src/Admin/MediaTranslationFields.php:136
+#: src/Admin/MediaTranslationFields.php:391
+msgid "Media caption"
+msgstr ""
+
+#: src/Admin/MediaTranslationFields.php:392
+msgid "Generate Media caption suggestion"
+msgstr ""
+
+#: src/Admin/MediaTranslationFields.php:397
 msgid "Description"
 msgstr ""
 
-#: src/Admin/MediaTranslationFields.php:140
+#: src/Admin/MediaTranslationFields.php:407
+msgid "Media description"
+msgstr ""
+
+#: src/Admin/MediaTranslationFields.php:408
+msgid "Generate Media description suggestion"
+msgstr ""
+
+#: src/Admin/MediaTranslationFields.php:412
 msgid "Save Translation"
 msgstr ""
 
@@ -262,6 +314,7 @@ msgid "mcLogiora never links a language to content in a different language. A mi
 msgstr ""
 
 #: src/Admin/RoutingSettingsScreen.php:173
+#: src/Admin/SuggestionSettingsScreen.php:223
 msgid "Save Settings"
 msgstr ""
 
@@ -287,152 +340,456 @@ msgid "You are not allowed to change these settings."
 msgstr ""
 
 #: src/Admin/RoutingSettingsScreen.php:255
+#: src/Admin/SuggestionSettingsScreen.php:254
 msgid "Settings saved."
 msgstr ""
 
-#: src/Admin/StringManager.php:69
+#: src/Admin/StringManager.php:79
 msgid "mcLogiora String Translation"
 msgstr ""
 
-#: src/Admin/StringManager.php:72
-#: src/Admin/StringManager.php:100
+#: src/Admin/StringManager.php:82
+#: src/Admin/StringManager.php:112
 msgid "String Translation"
 msgstr ""
 
-#: src/Admin/StringManager.php:99
+#: src/Admin/StringManager.php:111
 #: src/Admin/WidgetTranslationManager.php:95
 msgid "Translation Data"
 msgstr ""
 
-#: src/Admin/StringManager.php:101
+#: src/Admin/StringManager.php:113
 msgid "Manage translations for interface strings found in your theme and plugins. Scanning only runs when you ask for it, and never during normal site traffic."
 msgstr ""
 
-#: src/Admin/StringManager.php:106
+#: src/Admin/StringManager.php:118
 msgid "String filters"
 msgstr ""
 
-#: src/Admin/StringManager.php:110
-#: src/Relations/TranslationManager.php:163
+#: src/Admin/StringManager.php:122
+#: src/Relations/TranslationManager.php:176
 msgid "Search"
 msgstr ""
 
-#: src/Admin/StringManager.php:114
-#: src/Admin/StringManager.php:235
+#: src/Admin/StringManager.php:126
+#: src/Admin/StringManager.php:247
 msgid "Text domain"
 msgstr ""
 
-#: src/Admin/StringManager.php:118
-#: src/Admin/StringManager.php:237
+#: src/Admin/StringManager.php:130
+#: src/Admin/StringManager.php:249
 msgid "Origin"
 msgstr ""
 
-#: src/Admin/StringManager.php:120
+#: src/Admin/StringManager.php:132
 msgid "Any origin"
 msgstr ""
 
-#: src/Admin/StringManager.php:128
+#: src/Admin/StringManager.php:140
 msgid "Filter"
 msgstr ""
 
-#: src/Admin/StringManager.php:134
+#: src/Admin/StringManager.php:146
 msgid "Registered Strings"
 msgstr ""
 
-#: src/Admin/StringManager.php:136
+#: src/Admin/StringManager.php:148
 msgid "Source strings discovered by scanning or registered manually."
 msgstr ""
 
-#: src/Admin/StringManager.php:139
+#: src/Admin/StringManager.php:151
 #: src/Languages/LanguageManager.php:277
-#: src/Relations/TranslationManager.php:188
+#: src/Relations/TranslationManager.php:201
 msgid "Active Languages"
 msgstr ""
 
-#: src/Admin/StringManager.php:141
+#: src/Admin/StringManager.php:153
 msgid "Languages available as translation targets."
 msgstr ""
 
-#: src/Admin/StringManager.php:159
+#: src/Admin/StringManager.php:171
 msgid "Scan for Strings"
 msgstr ""
 
-#: src/Admin/StringManager.php:160
+#: src/Admin/StringManager.php:172
 msgid "Reads the source files of a theme or plugin and registers the translatable strings it finds. This runs only when you submit this form."
 msgstr ""
 
-#: src/Admin/StringManager.php:165
+#: src/Admin/StringManager.php:177
 msgid "Scope"
 msgstr ""
 
-#: src/Admin/StringManager.php:167
+#: src/Admin/StringManager.php:179
 msgid "Theme"
 msgstr ""
 
-#: src/Admin/StringManager.php:168
+#: src/Admin/StringManager.php:180
 msgid "Plugin"
 msgstr ""
 
-#: src/Admin/StringManager.php:172
+#: src/Admin/StringManager.php:184
 msgid "Directory name"
 msgstr ""
 
-#: src/Admin/StringManager.php:175
+#: src/Admin/StringManager.php:187
 msgid "Scan"
 msgstr ""
 
-#: src/Admin/StringManager.php:193
+#: src/Admin/StringManager.php:205
 msgid "Add and activate at least one language before translating strings."
 msgstr ""
 
-#: src/Admin/StringManager.php:202
+#: src/Admin/StringManager.php:214
 msgid "No strings match these filters yet. Run a scan to discover strings."
 msgstr ""
 
-#: src/Admin/StringManager.php:218
+#: src/Admin/StringManager.php:230
 #: src/Admin/WidgetTranslationManager.php:143
-#: src/Relations/TranslationManager.php:151
-#: src/Relations/TranslationManager.php:441
-#: src/Relations/TranslationManager.php:468
+#: src/Relations/TranslationManager.php:164
+#: src/Relations/TranslationManager.php:611
+#: src/Relations/TranslationManager.php:638
 msgid "Target language"
 msgstr ""
 
-#: src/Admin/StringManager.php:234
+#: src/Admin/StringManager.php:246
 msgid "Source string"
 msgstr ""
 
-#: src/Admin/StringManager.php:236
+#: src/Admin/StringManager.php:248
 msgid "Context"
 msgstr ""
 
-#: src/Admin/StringManager.php:238
+#: src/Admin/StringManager.php:250
 msgid "Translation"
 msgstr ""
 
-#: src/Admin/StringManager.php:270
+#: src/Admin/StringManager.php:282
 msgid "Not seen in the last scan. The translation is kept."
 msgstr ""
 
-#: src/Admin/StringManager.php:283
+#: src/Admin/StringManager.php:295
 msgid "Save"
 msgstr ""
 
-#: src/Admin/StringManager.php:331
+#: src/Admin/StringManager.php:420
+msgid "String"
+msgstr ""
+
+#: src/Admin/StringManager.php:425
+msgid "Generate String suggestion"
+msgstr ""
+
+#: src/Admin/StringManager.php:486
 #: src/Admin/WidgetTranslationManager.php:216
 msgid "The action could not be completed."
 msgstr ""
 
-#: src/Admin/StringManager.php:338
+#: src/Admin/StringManager.php:493
 msgid "The scan finished. Discovered strings are listed below."
 msgstr ""
 
-#: src/Admin/StringManager.php:339
+#: src/Admin/StringManager.php:494
 #: src/Admin/WidgetTranslationManager.php:224
 msgid "The translation was saved."
 msgstr ""
 
+#: src/Admin/SuggestionAdminController.php:157
+msgid "The source text is empty, so there is nothing to translate."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:279
+#: src/Admin/SuggestionAdminState.php:112
+#: src/Media/MediaTranslationService.php:137
+#: src/Menus/MenuTranslationWorkflow.php:139
+#: src/Strings/StringRegistry.php:97
+#: src/Widgets/WidgetTranslationService.php:107
+#: src/Workflows/TranslationWorkflowValidator.php:108
+msgid "You are not allowed to manage translations."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:289
+#: src/Editors/SuggestionEditorController.php:258
+msgid "Translation suggestions are not available for that field."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:302
+msgid "That translation could not be found."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:311
+msgid "That language is not configured on this site."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:344
+#: src/Admin/SuggestionAdminController.php:522
+msgid "No default language is configured on this site."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:356
+#: src/Admin/SuggestionAdminController.php:534
+msgid "This is the source language, so there is nothing to translate into."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:390
+msgid "That term could not be found."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:397
+#: src/Suggestions/TranslationSuggestionApplyService.php:236
+msgid "You are not allowed to edit this term."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:408
+msgid "This term is not part of a translation group."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:432
+#: src/Admin/SuggestionAdminController.php:460
+#: src/Admin/SuggestionAdminController.php:642
+msgid "The source of this translated term could not be found."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:444
+msgid "This is the source term, so there is nothing to translate into."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:451
+msgid "That language does not match this translated term."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:467
+msgid "The source term belongs to a different taxonomy."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:506
+#: src/Admin/SuggestionAdminController.php:618
+msgid "That attachment could not be found."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:513
+#: src/Media/MediaTranslationService.php:147
+msgid "You are not allowed to edit this attachment."
+msgstr ""
+
+#: src/Admin/SuggestionAdminController.php:599
+msgid "That string could not be found."
+msgstr ""
+
+#: src/Admin/SuggestionAdminState.php:118
+#: src/Editors/SuggestionEditorState.php:123
+#: src/Suggestions/TranslationSuggestionService.php:108
+msgid "Translation suggestions are switched off for this site."
+msgstr ""
+
+#: src/Admin/SuggestionAdminState.php:126
+#: src/Editors/SuggestionEditorState.php:131
+msgid "No translation provider has been chosen yet."
+msgstr ""
+
+#: src/Admin/SuggestionAdminState.php:135
+#: src/Editors/SuggestionEditorState.php:140
+msgid "The chosen provider still needs a model."
+msgstr ""
+
+#: src/Admin/SuggestionAdminState.php:136
+#: src/Editors/SuggestionEditorState.php:141
+msgid "The chosen provider still needs an API key."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:136
+msgid "mcLogiora Translation Suggestions"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:139
+#: src/Admin/SuggestionSettingsScreen.php:174
+#: src/Editors/ClassicEditorMetabox.php:264
+#: src/Relations/TranslationManager.php:491
+#: assets/js/editor-panel.js:399
+msgid "Translation Suggestions"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:165
+#: src/Admin/SuggestionSettingsScreen.php:603
+#: src/Admin/SuggestionSettingsScreen.php:625
+msgid "You are not allowed to manage these settings."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:173
+msgid "Optional"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:176
+msgid "Ask a translation provider you already pay for to draft a translation, which you then review before anything changes."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:182
+msgid "What this sends, and when"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:184
+msgid "These providers are optional external services, switched off until you turn them on."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:185
+msgid "You supply your own credentials and the provider bills you directly. mcLogiora ships no keys and no credits."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:186
+msgid "Text leaves your site only when you explicitly ask for a suggestion, and only the single field you asked about."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:187
+msgid "Translating by hand needs none of this and is unaffected by anything on this page."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:188
+msgid "mcLogiora itself receives nothing. Requests go from your site straight to the provider you chose."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:197
+msgid "Translation suggestions"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:201
+msgid "Allow translation suggestions on this site"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:205
+msgid "While this is off, no provider is contacted for any reason."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:209
+msgid "Provider used for suggestions"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:211
+#: src/Admin/SuggestionSettingsScreen.php:414
+msgid "— None chosen —"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:220
+msgid "Nothing is chosen for you. Suggestions stay unavailable until you pick a provider and finish configuring it below."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:255
+msgid "The key was saved."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:256
+msgid "The stored key was removed."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:257
+msgid "The provider accepted the key."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:258
+msgid "The model list was refreshed."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:268
+msgid "The key box was empty, so the stored key was left as it was."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:269
+msgid "The model you had chosen is no longer offered, so the choice was cleared. Choose one from the refreshed list."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:270
+msgid "This provider offers no model choice."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:280
+msgid "The provider did not accept the key. Check it and try again."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:281
+msgid "The model list could not be refreshed. Check the key and try again."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:282
+msgid "That provider is not available."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:283
+msgid "That model is not in the current list for this provider. Refresh the list and choose again."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:310
+msgid "Status:"
+msgstr ""
+
+#. translators: %s: PHP constant name.
+#: src/Admin/SuggestionSettingsScreen.php:326
+#, php-format
+msgid "This key comes from the %s constant in wp-config.php. It is never copied into the database and cannot be viewed or changed from here."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:338
+msgid "API key"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:346
+msgid "Not set"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:350
+msgid "A saved key is never shown again. Leaving this empty changes nothing."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:352
+msgid "Save key"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:360
+msgid "Remove stored key"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:371
+msgid "Test connection"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:372
+msgid "Checks the key against the provider. Sends none of your content."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:380
+msgid "This provider is a dedicated translation service and offers no model choice."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:401
+msgid "Refresh model list"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:405
+msgid "No models have been fetched yet. Refresh the list to choose one."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:412
+msgid "Model"
+msgstr ""
+
+#. translators: %s: model name.
+#: src/Admin/SuggestionSettingsScreen.php:422
+#, php-format
+msgid "%s (recommended)"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:432
+msgid "Save model"
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:609
+#: src/Admin/SuggestionSettingsScreen.php:639
+msgid "That request could not be verified. Please try again."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:633
+msgid "That translation provider is not available."
+msgstr ""
+
 #: src/Admin/TranslationActionController.php:138
-#: src/Workflows/TranslationStatusTransitions.php:119
+#: src/Workflows/TranslationStatusTransitions.php:128
 msgid "The requested translation status is not recognised."
 msgstr ""
 
@@ -500,7 +857,7 @@ msgid "Create translated navigation menus and review which widget types mcLogior
 msgstr ""
 
 #: src/Admin/WidgetTranslationManager.php:117
-#: src/Relations/TranslationManager.php:422
+#: src/Relations/TranslationManager.php:592
 msgid "Add and activate at least one language before creating translations."
 msgstr ""
 
@@ -578,47 +935,47 @@ msgstr ""
 msgid "Beaver Builder"
 msgstr ""
 
-#: src/Compatibility/BuilderCompatibilityRegistry.php:208
+#: src/Compatibility/BuilderCompatibilityRegistry.php:209
 #: src/Compatibility/BuilderDetector.php:86
 msgid "Kadence Blocks"
 msgstr ""
 
-#: src/Compatibility/BuilderCompatibilityRegistry.php:220
+#: src/Compatibility/BuilderCompatibilityRegistry.php:221
 #: src/Compatibility/BuilderDetector.php:92
 msgid "GenerateBlocks"
 msgstr ""
 
-#: src/Compatibility/BuilderCompatibilityRegistry.php:232
+#: src/Compatibility/BuilderCompatibilityRegistry.php:233
 #: src/Compatibility/BuilderDetector.php:98
 msgid "Spectra"
 msgstr ""
 
-#: src/Compatibility/BuilderCompatibilityRegistry.php:244
+#: src/Compatibility/BuilderCompatibilityRegistry.php:245
 #: src/Compatibility/BuilderDetector.php:104
 msgid "SeedProd"
 msgstr ""
 
-#: src/Compatibility/BuilderCompatibilityRegistry.php:260
+#: src/Compatibility/BuilderCompatibilityRegistry.php:262
 #: src/Compatibility/BuilderDetector.php:56
 msgid "Bricks"
 msgstr ""
 
-#: src/Compatibility/BuilderCompatibilityRegistry.php:271
+#: src/Compatibility/BuilderCompatibilityRegistry.php:273
 #: src/Compatibility/BuilderDetector.php:68
 msgid "Divi"
 msgstr ""
 
-#: src/Compatibility/BuilderCompatibilityRegistry.php:282
+#: src/Compatibility/BuilderCompatibilityRegistry.php:284
 #: src/Compatibility/BuilderDetector.php:80
 msgid "WPBakery"
 msgstr ""
 
-#: src/Compatibility/BuilderCompatibilityRegistry.php:293
+#: src/Compatibility/BuilderCompatibilityRegistry.php:295
 #: src/Compatibility/BuilderDetector.php:74
 msgid "Oxygen"
 msgstr ""
 
-#: src/Compatibility/BuilderCompatibilityRegistry.php:303
+#: src/Compatibility/BuilderCompatibilityRegistry.php:305
 msgid "Avada"
 msgstr ""
 
@@ -797,57 +1154,70 @@ msgstr ""
 msgid "WordPress Classic Editor"
 msgstr ""
 
-#: src/Editors/ClassicEditorMetabox.php:153
-#: assets/js/editor-panel.js:277
+#: src/Editors/ClassicEditorMetabox.php:231
+#: assets/js/editor-panel.js:645
 msgid "You do not have permission to change translations."
 msgstr ""
 
-#: src/Editors/ClassicEditorMetabox.php:170
+#: src/Editors/ClassicEditorMetabox.php:284
+msgid "Generate Title suggestion"
+msgstr ""
+
+#: src/Editors/ClassicEditorMetabox.php:285
+#: assets/js/editor-panel.js:391
+msgid "Excerpt"
+msgstr ""
+
+#: src/Editors/ClassicEditorMetabox.php:285
+msgid "Generate Excerpt suggestion"
+msgstr ""
+
+#: src/Editors/ClassicEditorMetabox.php:343
 #: src/Setup/SetupWizard.php:249
 #: src/Switcher/SwitcherRenderer.php:68
-#: assets/js/editor-panel.js:229
+#: assets/js/editor-panel.js:596
 msgid "Language"
 msgstr ""
 
-#: src/Editors/ClassicEditorMetabox.php:178
-#: src/Relations/TranslationManager.php:203
-#: assets/js/editor-panel.js:240
+#: src/Editors/ClassicEditorMetabox.php:351
+#: src/Relations/TranslationManager.php:216
+#: assets/js/editor-panel.js:607
 msgid "Source"
 msgstr ""
 
-#: src/Editors/ClassicEditorMetabox.php:188
-#: assets/js/editor-panel.js:251
+#: src/Editors/ClassicEditorMetabox.php:361
+#: assets/js/editor-panel.js:618
 msgid "Edit source"
 msgstr ""
 
 #. translators: %s: date and time.
-#: src/Editors/ClassicEditorMetabox.php:246
-#: assets/js/editor-panel.js:97
+#: src/Editors/ClassicEditorMetabox.php:419
+#: assets/js/editor-panel.js:464
 #, php-format,js-format
 msgid "Source updated: %s"
 msgstr ""
 
 #. translators: %s: date and time.
-#: src/Editors/ClassicEditorMetabox.php:253
-#: assets/js/editor-panel.js:107
+#: src/Editors/ClassicEditorMetabox.php:426
+#: assets/js/editor-panel.js:474
 #, php-format,js-format
 msgid "Translation updated: %s"
 msgstr ""
 
-#: src/Editors/ClassicEditorMetabox.php:272
-#: src/Editors/ClassicEditorMetabox.php:278
-#: assets/js/editor-panel.js:133
-#: assets/js/editor-panel.js:151
+#: src/Editors/ClassicEditorMetabox.php:445
+#: src/Editors/ClassicEditorMetabox.php:451
+#: assets/js/editor-panel.js:500
+#: assets/js/editor-panel.js:518
 msgid "View"
 msgstr ""
 
-#: src/Editors/ClassicEditorMetabox.php:275
-#: assets/js/editor-panel.js:142
+#: src/Editors/ClassicEditorMetabox.php:448
+#: assets/js/editor-panel.js:509
 msgid "Edit translation"
 msgstr ""
 
-#: src/Editors/ClassicEditorMetabox.php:332
-#: assets/js/editor-panel.js:166
+#: src/Editors/ClassicEditorMetabox.php:505
+#: assets/js/editor-panel.js:533
 msgid "Create translation"
 msgstr ""
 
@@ -881,6 +1251,31 @@ msgstr ""
 
 #: src/Editors/Payload/ElementorPayloadAdapter.php:125
 msgid "The Elementor layout could not be saved to the translation."
+msgstr ""
+
+#: src/Editors/SuggestionEditorController.php:139
+msgid "The source field is empty, so there is nothing to translate."
+msgstr ""
+
+#: src/Editors/SuggestionEditorController.php:265
+#: src/Suggestions/TranslationSuggestionApplyService.php:419
+msgid "You are not allowed to edit this translation."
+msgstr ""
+
+#: src/Editors/SuggestionEditorController.php:274
+msgid "This content is not part of a translation group."
+msgstr ""
+
+#: src/Editors/SuggestionEditorController.php:298
+msgid "The source of this translation could not be found."
+msgstr ""
+
+#: src/Editors/SuggestionEditorController.php:310
+msgid "This is the source content, so there is nothing to translate into."
+msgstr ""
+
+#: src/Editors/SuggestionEditorState.php:117
+msgid "You cannot edit this translation."
 msgstr ""
 
 #: src/Editors/TranslationStatusPresenter.php:67
@@ -1171,7 +1566,7 @@ msgstr ""
 
 #: src/Languages/LanguageManager.php:359
 #: src/Languages/LanguageManager.php:473
-#: src/Relations/TranslationManager.php:157
+#: src/Relations/TranslationManager.php:170
 msgid "Status"
 msgstr ""
 
@@ -1293,20 +1688,8 @@ msgstr ""
 msgid "The media translation could not be saved."
 msgstr ""
 
-#: src/Media/MediaTranslationService.php:137
-#: src/Menus/MenuTranslationWorkflow.php:139
-#: src/Strings/StringRegistry.php:97
-#: src/Widgets/WidgetTranslationService.php:107
-#: src/Workflows/TranslationWorkflowValidator.php:108
-msgid "You are not allowed to manage translations."
-msgstr ""
-
 #: src/Media/MediaTranslationService.php:143
 msgid "The attachment identifier is not valid."
-msgstr ""
-
-#: src/Media/MediaTranslationService.php:147
-msgid "You are not allowed to edit this attachment."
 msgstr ""
 
 #: src/Media/MediaTranslationService.php:153
@@ -1462,227 +1845,243 @@ msgstr ""
 msgid "The relation tables are not available. Reactivate the plugin to run database migrations."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:91
+#: src/Relations/TranslationManager.php:102
 msgid "mcLogiora Translation Manager"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:94
-#: src/Relations/TranslationManager.php:125
+#: src/Relations/TranslationManager.php:105
+#: src/Relations/TranslationManager.php:138
 msgid "Translation Manager"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:124
+#: src/Relations/TranslationManager.php:137
 msgid "Translation Relations"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:126
+#: src/Relations/TranslationManager.php:139
 msgid "Review translation relations and run translation actions. Every action is explicit: nothing is translated automatically, and unlinking never deletes content."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:131
+#: src/Relations/TranslationManager.php:144
 msgid "Translation manager filters"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:133
+#: src/Relations/TranslationManager.php:146
 msgid "Content type"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:135
+#: src/Relations/TranslationManager.php:148
 msgid "All content types"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:139
+#: src/Relations/TranslationManager.php:152
 msgid "Taxonomy"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:141
+#: src/Relations/TranslationManager.php:154
 msgid "All taxonomies"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:145
+#: src/Relations/TranslationManager.php:158
 msgid "Source language"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:147
+#: src/Relations/TranslationManager.php:160
 msgid "Any source"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:153
+#: src/Relations/TranslationManager.php:166
 msgid "Any target"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:159
+#: src/Relations/TranslationManager.php:172
 msgid "Any status"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:164
+#: src/Relations/TranslationManager.php:177
 msgid "Search relations later"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:172
+#: src/Relations/TranslationManager.php:185
 msgid "WooCommerce and LMS support are planned as future free compatibility modules. This foundation focuses on posts, pages, public custom post types, categories, tags, and public custom taxonomies."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:183
+#: src/Relations/TranslationManager.php:196
 msgid "Relation Groups"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:185
+#: src/Relations/TranslationManager.php:198
 msgid "Active plugin-owned relation groups currently available to the manager."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:190
+#: src/Relations/TranslationManager.php:203
 msgid "Used to calculate missing languages for each relation group."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:195
+#: src/Relations/TranslationManager.php:208
 msgid "Translation Status Table"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:196
+#: src/Relations/TranslationManager.php:209
 msgid "Relation records are read from the persistence layer. Actions remain placeholders until reviewed admin write flows are introduced."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:201
+#: src/Relations/TranslationManager.php:214
 msgid "Group"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:202
+#: src/Relations/TranslationManager.php:215
 msgid "Content Type"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:204
+#: src/Relations/TranslationManager.php:217
 msgid "Targets"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:205
+#: src/Relations/TranslationManager.php:218
 msgid "Missing Languages"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:206
+#: src/Relations/TranslationManager.php:219
 msgid "Outdated"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:207
+#: src/Relations/TranslationManager.php:220
 msgid "Future Actions"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:213
+#: src/Relations/TranslationManager.php:226
 msgid "No translation relation groups have been created yet."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:239
+#: src/Relations/TranslationManager.php:252
 msgid "Post/Page/CPT Support Overview"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:240
+#: src/Relations/TranslationManager.php:253
 msgid "These content types are prepared for future translation workflows."
 msgstr ""
 
 #. translators: %d: number of excluded content types.
-#: src/Relations/TranslationManager.php:254
+#: src/Relations/TranslationManager.php:267
 #, php-format
 msgid "%d excluded content type detected."
 msgid_plural "%d excluded content types detected."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Relations/TranslationManager.php:275
+#: src/Relations/TranslationManager.php:288
 msgid "Taxonomy Support Overview"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:276
+#: src/Relations/TranslationManager.php:289
 msgid "These taxonomies are prepared for future translation workflows."
 msgstr ""
 
 #. translators: %d: number of excluded taxonomies.
-#: src/Relations/TranslationManager.php:290
+#: src/Relations/TranslationManager.php:303
 #, php-format
 msgid "%d excluded taxonomy detected."
 msgid_plural "%d excluded taxonomies detected."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Relations/TranslationManager.php:313
+#: src/Relations/TranslationManager.php:326
 msgid "Unknown"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:314
+#: src/Relations/TranslationManager.php:327
 msgid "No source"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:322
-#: src/Relations/TranslationManager.php:323
+#: src/Relations/TranslationManager.php:335
+#: src/Relations/TranslationManager.php:336
 msgid "None"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:325
+#: src/Relations/TranslationManager.php:338
 msgid "Translation actions"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:330
+#: src/Relations/TranslationManager.php:343
 msgid "No translations yet."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:368
+#: src/Relations/TranslationManager.php:381
 msgid "Mark Translated"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:369
+#: src/Relations/TranslationManager.php:382
 msgid "Mark Needs Review"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:381
+#: src/Relations/TranslationManager.php:394
 msgid "Unlink"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:431
-#: src/Relations/TranslationManager.php:450
+#: src/Relations/TranslationManager.php:512
+msgid "Term name"
+msgstr ""
+
+#: src/Relations/TranslationManager.php:513
+msgid "Generate Term name suggestion"
+msgstr ""
+
+#: src/Relations/TranslationManager.php:519
+msgid "Term description"
+msgstr ""
+
+#: src/Relations/TranslationManager.php:520
+msgid "Generate Term description suggestion"
+msgstr ""
+
+#: src/Relations/TranslationManager.php:601
+#: src/Relations/TranslationManager.php:620
 msgid "Create Translation"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:432
+#: src/Relations/TranslationManager.php:602
 msgid "Creates a new draft in the target language and links it to the source. The draft starts from the source title, content, and excerpt."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:437
-#: src/Relations/TranslationManager.php:460
+#: src/Relations/TranslationManager.php:607
+#: src/Relations/TranslationManager.php:630
 msgid "Source content ID"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:454
+#: src/Relations/TranslationManager.php:624
 msgid "Link Existing Translation"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:455
+#: src/Relations/TranslationManager.php:625
 msgid "Connects content that is already translated. No content is copied or changed; only the relation is recorded."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:464
+#: src/Relations/TranslationManager.php:634
 msgid "Existing translation ID"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:477
+#: src/Relations/TranslationManager.php:647
 msgid "Link Existing"
 msgstr ""
 
-#: src/Relations/TranslationManager.php:502
+#: src/Relations/TranslationManager.php:672
 msgid "The translation action could not be completed."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:514
+#: src/Relations/TranslationManager.php:684
 msgid "The translation was created as a draft."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:515
+#: src/Relations/TranslationManager.php:685
 msgid "The existing content was linked as a translation."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:516
+#: src/Relations/TranslationManager.php:686
 msgid "The translation was unlinked. The content itself was not changed."
 msgstr ""
 
-#: src/Relations/TranslationManager.php:517
+#: src/Relations/TranslationManager.php:687
 msgid "The translation status was updated."
 msgstr ""
 
@@ -1830,6 +2229,276 @@ msgstr ""
 msgid "The string could not be found."
 msgstr ""
 
+#: src/Suggestions/HttpTransport.php:80
+msgid "The translation request could not be encoded."
+msgstr ""
+
+#. translators: %s: underlying transport error.
+#: src/Suggestions/HttpTransport.php:161
+#, php-format
+msgid "The translation provider could not be reached: %s"
+msgstr ""
+
+#: src/Suggestions/HttpTransport.php:175
+msgid "The translation provider returned a response mcLogiora could not read."
+msgstr ""
+
+#: src/Suggestions/HttpTransport.php:205
+msgid "The translation provider rejected the stored credential."
+msgstr ""
+
+#: src/Suggestions/HttpTransport.php:210
+msgid "The translation provider is rate limiting this site. Try again shortly."
+msgstr ""
+
+#: src/Suggestions/HttpTransport.php:220
+msgid "The translation provider reports that this account is out of quota."
+msgstr ""
+
+#: src/Suggestions/HttpTransport.php:225
+msgid "The translation provider reported a temporary error. Try again shortly."
+msgstr ""
+
+#: src/Suggestions/HttpTransport.php:230
+msgid "The translation provider redirected the request, which mcLogiora does not follow."
+msgstr ""
+
+#: src/Suggestions/HttpTransport.php:235
+msgid "The translation provider rejected the request."
+msgstr ""
+
+#. translators: 1: normalised message, 2: provider-supplied detail.
+#: src/Suggestions/HttpTransport.php:242
+#, php-format
+msgid "%1$s Provider said: %2$s"
+msgstr ""
+
+#. translators: %s: the placeholder that was lost, such as %1$s.
+#: src/Suggestions/PlaceholderShield.php:194
+#, php-format
+msgid "The provider removed %s from the translation."
+msgstr ""
+
+#. translators: 1: the placeholder, 2: how many times it came back.
+#: src/Suggestions/PlaceholderShield.php:203
+#, php-format
+msgid "The provider returned %1$s %2$d times instead of once."
+msgstr ""
+
+#: src/Suggestions/PlaceholderShield.php:219
+msgid "The provider invented a placeholder that was not in the source text."
+msgstr ""
+
+#: src/Suggestions/ProviderReadiness.php:96
+msgid "Ready"
+msgstr ""
+
+#: src/Suggestions/ProviderReadiness.php:99
+msgid "Model required"
+msgstr ""
+
+#: src/Suggestions/ProviderReadiness.php:102
+msgid "Not configured"
+msgstr ""
+
+#: src/Suggestions/ProviderReadiness.php:118
+msgid "Refresh the model list, then choose a model and save."
+msgstr ""
+
+#: src/Suggestions/ProviderReadiness.php:121
+msgid "Add an API key for this provider."
+msgstr ""
+
+#: src/Suggestions/ProviderReadiness.php:133
+msgid "Configured via wp-config.php"
+msgstr ""
+
+#: src/Suggestions/ProviderReadiness.php:137
+msgid "Saved in the database"
+msgstr ""
+
+#: src/Suggestions/Providers/AnthropicProvider.php:99
+msgid "Anthropic"
+msgstr ""
+
+#: src/Suggestions/Providers/AnthropicProvider.php:144
+msgid "Add an Anthropic API key before testing the connection."
+msgstr ""
+
+#: src/Suggestions/Providers/AnthropicProvider.php:164
+msgid "Add an Anthropic API key before refreshing the model list."
+msgstr ""
+
+#: src/Suggestions/Providers/AnthropicProvider.php:177
+msgid "Anthropic returned a model list mcLogiora could not read."
+msgstr ""
+
+#: src/Suggestions/Providers/AnthropicProvider.php:219
+#: src/Suggestions/Providers/DeepLProvider.php:207
+#: src/Suggestions/Providers/GeminiProvider.php:230
+#: src/Suggestions/Providers/OpenAiProvider.php:239
+msgid "The source text could not be prepared safely for translation."
+msgstr ""
+
+#: src/Suggestions/Providers/AnthropicProvider.php:273
+msgid "the translation was longer than the allowed output"
+msgstr ""
+
+#: src/Suggestions/Providers/DeepLProvider.php:91
+msgid "DeepL"
+msgstr ""
+
+#: src/Suggestions/Providers/DeepLProvider.php:141
+msgid "Add a DeepL API key before testing the connection."
+msgstr ""
+
+#: src/Suggestions/Providers/DeepLProvider.php:166
+msgid "Add a DeepL API key before checking usage."
+msgstr ""
+
+#: src/Suggestions/Providers/DeepLProvider.php:197
+msgid "DeepL does not accept the target language for this translation."
+msgstr ""
+
+#: src/Suggestions/Providers/GeminiProvider.php:92
+msgid "Google Gemini"
+msgstr ""
+
+#: src/Suggestions/Providers/GeminiProvider.php:140
+msgid "Add a Google Gemini API key before testing the connection."
+msgstr ""
+
+#: src/Suggestions/Providers/GeminiProvider.php:160
+msgid "Add a Google Gemini API key before refreshing the model list."
+msgstr ""
+
+#: src/Suggestions/Providers/GeminiProvider.php:173
+msgid "Google Gemini returned a model list mcLogiora could not read."
+msgstr ""
+
+#: src/Suggestions/Providers/OpenAiProvider.php:95
+msgid "OpenAI"
+msgstr ""
+
+#: src/Suggestions/Providers/OpenAiProvider.php:149
+msgid "Add an OpenAI API key before testing the connection."
+msgstr ""
+
+#: src/Suggestions/Providers/OpenAiProvider.php:169
+msgid "Add an OpenAI API key before refreshing the model list."
+msgstr ""
+
+#: src/Suggestions/Providers/OpenAiProvider.php:182
+msgid "OpenAI returned a model list mcLogiora could not read."
+msgstr ""
+
+#. translators: %s: provider name.
+#: src/Suggestions/SuggestionError.php:108
+#, php-format
+msgid "%s declined this translation request."
+msgstr ""
+
+#. translators: %s: provider name.
+#: src/Suggestions/SuggestionError.php:127
+#, php-format
+msgid "%s returned an incomplete translation. Try again, or choose another model."
+msgstr ""
+
+#. translators: %s: provider name.
+#: src/Suggestions/SuggestionError.php:145
+#, php-format
+msgid "%s returned an invalid response."
+msgstr ""
+
+#. translators: %s: provider name.
+#: src/Suggestions/SuggestionError.php:163
+#, php-format
+msgid "%s needs an API key and a selected model before it can suggest translations."
+msgstr ""
+
+#. translators: %s: short reason reported by the provider.
+#: src/Suggestions/SuggestionError.php:189
+#, php-format
+msgid "Reason given: %s"
+msgstr ""
+
+#: src/Suggestions/SuggestionPreviewStore.php:66
+msgid "A translation suggestion cannot be stored without a signed-in user."
+msgstr ""
+
+#: src/Suggestions/SuggestionPreviewStore.php:93
+msgid "The translation suggestion could not be stored for review."
+msgstr ""
+
+#: src/Suggestions/TranslationSuggestionApplyService.php:112
+msgid "This translation suggestion is no longer available. Generate a new one."
+msgstr ""
+
+#: src/Suggestions/TranslationSuggestionApplyService.php:134
+#: src/Suggestions/TranslationSuggestionApplyService.php:171
+msgid "This translation suggestion does not belong to this content."
+msgstr ""
+
+#: src/Suggestions/TranslationSuggestionApplyService.php:141
+msgid "Translation suggestions cannot be applied to this field."
+msgstr ""
+
+#: src/Suggestions/TranslationSuggestionApplyService.php:208
+msgid "Applying suggestions to this field is not available yet."
+msgstr ""
+
+#: src/Suggestions/TranslationSuggestionApplyService.php:229
+msgid "The translated term this suggestion belongs to no longer exists."
+msgstr ""
+
+#: src/Suggestions/TranslationSuggestionApplyService.php:306
+msgid "Media translations are not available on this site."
+msgstr ""
+
+#: src/Suggestions/TranslationSuggestionApplyService.php:317
+msgid "The translated media metadata could not be read."
+msgstr ""
+
+#: src/Suggestions/TranslationSuggestionApplyService.php:372
+msgid "String translations are not available on this site."
+msgstr ""
+
+#: src/Suggestions/TranslationSuggestionApplyService.php:412
+msgid "The translation this suggestion belongs to no longer exists."
+msgstr ""
+
+#: src/Suggestions/TranslationSuggestionService.php:120
+msgid "Translation suggestions are not available for this field."
+msgstr ""
+
+#: src/Suggestions/TranslationSuggestionService.php:129
+msgid "There is nothing to translate."
+msgstr ""
+
+#: src/Suggestions/TranslationSuggestionService.php:139
+msgid "A source and target language are both required."
+msgstr ""
+
+#: src/Suggestions/TranslationSuggestionService.php:146
+msgid "The source and target languages are the same."
+msgstr ""
+
+#: src/Suggestions/TranslationSuggestionService.php:155
+msgid "No translation provider is selected for this site."
+msgstr ""
+
+#. translators: %s: provider name.
+#: src/Suggestions/TranslationSuggestionService.php:169
+#, php-format
+msgid "%s is not fully configured. Add a credential and choose a model."
+msgstr ""
+
+#. translators: %s: provider name.
+#: src/Suggestions/TranslationSuggestionService.php:180
+#, php-format
+msgid "%s cannot translate between these languages."
+msgstr ""
+
 #: src/Switcher/SwitcherRenderer.php:109
 msgid "(translation not available)"
 msgstr ""
@@ -1961,32 +2630,28 @@ msgstr ""
 msgid "You are not allowed to edit terms."
 msgstr ""
 
-#: src/Workflows/TranslationStatusTransitions.php:112
+#: src/Workflows/TranslationStatusTransitions.php:121
 msgid "The current translation status is not recognised."
 msgstr ""
 
-#: src/Workflows/TranslationStatusTransitions.php:126
+#: src/Workflows/TranslationStatusTransitions.php:135
 msgid "The original status cannot be assigned. Changing the source of a translation group is a separate workflow."
 msgstr ""
 
-#: src/Workflows/TranslationStatusTransitions.php:133
+#: src/Workflows/TranslationStatusTransitions.php:142
 msgid "The missing status describes an absent translation and cannot be assigned."
 msgstr ""
 
-#: src/Workflows/TranslationStatusTransitions.php:140
-msgid "The machine suggested status is reserved for translation suggestion workflows."
-msgstr ""
-
-#: src/Workflows/TranslationStatusTransitions.php:147
+#: src/Workflows/TranslationStatusTransitions.php:163
 msgid "The source item of a translation group cannot change translation status."
 msgstr ""
 
-#: src/Workflows/TranslationStatusTransitions.php:154
+#: src/Workflows/TranslationStatusTransitions.php:170
 msgid "The translation already has this status."
 msgstr ""
 
 #. translators: 1: current translation status, 2: requested translation status.
-#: src/Workflows/TranslationStatusTransitions.php:163
+#: src/Workflows/TranslationStatusTransitions.php:179
 #, php-format
 msgid "A translation cannot move from %1$s to %2$s."
 msgstr ""
@@ -2070,4 +2735,77 @@ msgstr ""
 
 #: src/Workflows/TranslationWorkflowValidator.php:398
 msgid "A translated term must belong to the same taxonomy as its source."
+msgstr ""
+
+#: assets/js/admin-suggestions.js:68
+#: assets/js/classic-suggestions.js:79
+#: assets/js/editor-panel.js:80
+msgid "The suggestion request could not be completed."
+msgstr ""
+
+#. translators: 1: provider name, 2: model name.
+#: assets/js/admin-suggestions.js:90
+#: assets/js/classic-suggestions.js:101
+#: assets/js/editor-panel.js:322
+#, js-format
+msgid "Suggested by %1$s (%2$s)"
+msgstr ""
+
+#. translators: %s: provider name.
+#: assets/js/admin-suggestions.js:98
+#: assets/js/classic-suggestions.js:109
+#: assets/js/editor-panel.js:328
+#, js-format
+msgid "Suggested by %s"
+msgstr ""
+
+#: assets/js/admin-suggestions.js:192
+#: assets/js/classic-suggestions.js:184
+#: assets/js/classic-suggestions.js:441
+#: assets/js/editor-panel.js:282
+msgid "Regenerate"
+msgstr ""
+
+#: assets/js/admin-suggestions.js:204
+#: assets/js/classic-suggestions.js:196
+#: assets/js/editor-panel.js:294
+msgid "Applying suggestion…"
+msgstr ""
+
+#: assets/js/admin-suggestions.js:205
+#: assets/js/classic-suggestions.js:197
+#: assets/js/editor-panel.js:295
+msgid "Asking the provider…"
+msgstr ""
+
+#: assets/js/admin-suggestions.js:236
+#: assets/js/classic-suggestions.js:228
+#: assets/js/classic-suggestions.js:448
+#: assets/js/editor-panel.js:341
+msgid "Apply suggestion"
+msgstr ""
+
+#: assets/js/admin-suggestions.js:248
+#: assets/js/classic-suggestions.js:240
+#: assets/js/classic-suggestions.js:455
+#: assets/js/editor-panel.js:346
+msgid "Discard"
+msgstr ""
+
+#. translators: %s: field name, for example Title.
+#: assets/js/classic-suggestions.js:438
+#, js-format
+msgid "Regenerate %s suggestion"
+msgstr ""
+
+#. translators: %s: field name, for example Title.
+#: assets/js/classic-suggestions.js:445
+#, js-format
+msgid "Apply %s suggestion"
+msgstr ""
+
+#. translators: %s: field name, for example Title.
+#: assets/js/classic-suggestions.js:452
+#, js-format
+msgid "Discard %s suggestion"
 msgstr ""
