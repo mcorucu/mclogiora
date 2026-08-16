@@ -11,6 +11,7 @@ use McLogiora\Api\PublicApi;
 use McLogiora\Capabilities\CapabilityRegistry;
 use McLogiora\Contracts\ModuleInterface;
 use McLogiora\Core\Container;
+use McLogiora\Workflows\TranslationWorkflowService;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -72,8 +73,12 @@ final class RestApiModule implements ModuleInterface {
 			? $this->container->get( CapabilityRegistry::class )
 			: new CapabilityRegistry();
 
+		$workflows = $this->container->has( TranslationWorkflowService::class )
+			? $this->container->get( TranslationWorkflowService::class )
+			: null;
+
 		$languages = new LanguagesController( $api, $capability );
-		$relations = new RelationsController( $api, $capability );
+		$relations = new RelationsController( $api, $capability, $workflows );
 
 		$languages->register_routes( self::NAMESPACE_V1 );
 		$relations->register_routes( self::NAMESPACE_V1 );

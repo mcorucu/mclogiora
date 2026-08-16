@@ -10,8 +10,11 @@ namespace McLogiora\Api\Rest;
 use McLogiora\Api\PublicApi;
 use McLogiora\Capabilities\CapabilityRegistry;
 use McLogiora\Relations\ContentType;
+use McLogiora\Relations\TranslationStatus;
+use McLogiora\Workflows\TranslationWorkflowService;
 use WP_REST_Request;
 use WP_REST_Response;
+use WP_REST_Server;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -54,14 +57,23 @@ final class RelationsController {
 	private $capabilities;
 
 	/**
+	 * Translation workflow service, or null when unavailable.
+	 *
+	 * @var TranslationWorkflowService|null
+	 */
+	private $workflows;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param PublicApi          $api Public read API.
-	 * @param CapabilityRegistry $capabilities Capability registry.
+	 * @param PublicApi                       $api Public read API.
+	 * @param CapabilityRegistry              $capabilities Capability registry.
+	 * @param TranslationWorkflowService|null $workflows Workflow service.
 	 */
-	public function __construct( PublicApi $api, CapabilityRegistry $capabilities ) {
+	public function __construct( PublicApi $api, CapabilityRegistry $capabilities, $workflows = null ) {
 		$this->api          = $api;
 		$this->capabilities = $capabilities;
+		$this->workflows    = $workflows instanceof TranslationWorkflowService ? $workflows : null;
 	}
 
 	/**
@@ -84,6 +96,16 @@ final class RelationsController {
 			)
 		);
 
+		$language_arg = array(
+			'language' => array(
+				'description'       => __( 'Language code of the translation.', 'mclogiora' ),
+				'type'              => 'string',
+				'required'          => true,
+				'validate_callback' => 'rest_validate_request_arg',
+				'sanitize_callback' => 'sanitize_key',
+			),
+		);
+
 		register_rest_route(
 			$namespace_v1,
 			self::TRANSLATIONS_ROUTE,
@@ -92,13 +114,29 @@ final class RelationsController {
 					'methods'             => 'GET',
 					'callback'            => array( $this, 'get_translation' ),
 					'permission_callback' => array( $this, 'permissions_check' ),
+					'args'                => array_merge( $this->object_args(), $language_arg ),
+				),
+				array(
+
+					/*
+					 * EDITABLE, matching what core's own controllers register
+					 * for a partial update. It covers POST, PUT and PATCH, so a
+					 * client that can only POST -- which includes WordPress's
+					 * own apiFetch with a method override -- can still call it.
+					 * DELETE is registered nowhere in this namespace.
+					 */
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_translation_status' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
 					'args'                => array_merge(
 						$this->object_args(),
+						$language_arg,
 						array(
-							'language' => array(
-								'description'       => __( 'Language code of the translation to resolve.', 'mclogiora' ),
+							'status' => array(
+								'description'       => __( 'Translation status to move to.', 'mclogiora' ),
 								'type'              => 'string',
 								'required'          => true,
+								'enum'              => TranslationStatus::all(),
 								'validate_callback' => 'rest_validate_request_arg',
 								'sanitize_callback' => 'sanitize_key',
 							),
@@ -183,6 +221,69 @@ final class RelationsController {
 		}
 
 		if ( ! isset( $group['translations'][ $language ] ) ) {
+			return RestErrors::translation_not_found();
+		}
+
+		return rest_ensure_response(
+			array(
+				'object_type' => (string) $group['object_type'],
+				'object_id'   => $object_id,
+				'language'    => $language,
+				'source'      => null === $group['source'] ? null : $this->project_item( $group['source'], $taxonomy ),
+				'translation' => $this->project_item( $group['translations'][ $language ], $taxonomy ),
+			)
+		);
+	}
+
+	/**
+	 * Moves a translation to a new status.
+	 *
+	 * The whole handler is a mapping: HTTP arguments in, one workflow call,
+	 * the Slice 1 projection out. It decides nothing. Whether a transition is
+	 * legal, whether the source item may change status at all, and whether the
+	 * caller may manage translations are all `TranslationWorkflowService`'s
+	 * answers, and restating any of them here would create a second rulebook
+	 * that eventually disagrees with the admin screens.
+	 *
+	 * Nothing is written through a repository or `$wpdb` from this class.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|\WP_Error
+	 */
+	public function update_translation_status( WP_REST_Request $request ) {
+		$object_type = $this->object_type( $request );
+
+		if ( is_wp_error( $object_type ) ) {
+			return $object_type;
+		}
+
+		$language = (string) $request->get_param( 'language' );
+
+		if ( ! $this->is_configured_language( $language ) ) {
+			return RestErrors::unknown_language();
+		}
+
+		if ( ! $this->workflows instanceof TranslationWorkflowService ) {
+			return RestErrors::relation_not_found();
+		}
+
+		$object_id = (int) $request->get_param( 'object_id' );
+
+		$result = $this->workflows->change_status(
+			$object_type,
+			$object_id,
+			$language,
+			(string) $request->get_param( 'status' )
+		);
+
+		if ( is_wp_error( $result ) ) {
+			return RestErrors::from_workflow( $result );
+		}
+
+		$taxonomy = (string) $request->get_param( 'taxonomy' );
+		$group    = $this->api->translation_group( $object_id, $object_type );
+
+		if ( null === $group || ! isset( $group['translations'][ $language ] ) ) {
 			return RestErrors::translation_not_found();
 		}
 
