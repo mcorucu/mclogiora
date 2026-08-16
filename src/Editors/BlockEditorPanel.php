@@ -45,6 +45,13 @@ final class BlockEditorPanel implements ModuleInterface {
 	private $readiness = null;
 
 	/**
+	 * Suggestion state provider.
+	 *
+	 * @var SuggestionEditorState|null
+	 */
+	private $suggestions = null;
+
+	/**
 	 * Registers the editor assets.
 	 *
 	 * @param Container $container Service container.
@@ -57,7 +64,8 @@ final class BlockEditorPanel implements ModuleInterface {
 			return;
 		}
 
-		$this->model = $container->get( EditorTranslationModel::class );
+		$this->model       = $container->get( EditorTranslationModel::class );
+		$this->suggestions = $container->get( SuggestionEditorState::class );
 
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue' ) );
 	}
@@ -95,6 +103,10 @@ final class BlockEditorPanel implements ModuleInterface {
 		);
 
 		wp_set_script_translations( self::HANDLE, 'mclogiora', MCLOGIORA_PATH . 'languages' );
+
+		if ( $this->suggestions instanceof SuggestionEditorState ) {
+			$model['suggestions'] = $this->suggestions->for_post( $this->current_post_id() );
+		}
 
 		wp_add_inline_script(
 			self::HANDLE,
