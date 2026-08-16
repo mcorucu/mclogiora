@@ -1,6 +1,6 @@
 # mcLogiora Planning
 
-Current phase: Phase 16 complete (Translation Suggestions, v0.15.0). Next planned phase: Phase 17 — Developer & Operations Layer. The release header still declares `Tested up to: 7.0`; raising it to 7.1 is a separate compatibility gate once WordPress 7.1 ships final.
+Current phase: Phase 17 in progress (Developer & Operations Layer). Phase 16 is complete (Translation Suggestions, v0.15.0), and the version header still reads 0.15.0: the release carrying Phase 17 is chosen at Phase 17 closure, not at its start. The release header still declares `Tested up to: 7.0`; raising it to 7.1 is a separate compatibility gate once WordPress 7.1 ships final.
 
 This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 
@@ -463,17 +463,19 @@ REST should power Gutenberg panels, setup wizard interactions, suggestions, impo
 
 mcLogiora should provide a stable developer API before encouraging third-party extensions.
 
+The published contract now lives in `docs/architecture/developer-api.md`, which is authoritative over the sketch below.
+
 Planned public functions:
 
-- `mclogiora_get_current_language()`
-- `mclogiora_get_default_language()`
-- `mclogiora_get_languages()`
-- `mclogiora_get_translation($object_id, $object_type, $language)`
-- `mclogiora_get_translation_group($object_id, $object_type)`
-- `mclogiora_get_language_url($language, $object_id = null)`
-- `mclogiora_render_language_switcher($args = array())`
+- `mclogiora_get_current_language()` — delivered
+- `mclogiora_get_default_language()` — delivered
+- `mclogiora_get_languages()` — delivered
+- `mclogiora_get_translation($object_id, $object_type, $language)` — delivered
+- `mclogiora_get_translation_group($object_id, $object_type)` — delivered
+- `mclogiora_get_language_url($language, $object_id = null)` — delivered, with optional object type and taxonomy arguments so translated terms are reachable
+- `mclogiora_render_language_switcher($args = array())` — not added. `mclogiora_language_switcher()` has shipped since 0.11.0 and is the supported name; a second name for the same function would be sprawl.
 
-Planned filters/actions:
+Planned filters/actions. None of these is implemented as a public contract yet; the fourteen hooks the plugin already fires are inventoried in `docs/architecture/developer-api.md` and are explicitly not public:
 
 - `mclogiora_register_modules`
 - `mclogiora_register_builder_adapters`
@@ -701,9 +703,22 @@ Phase 16: Translation Suggestions — complete (v0.15.0)
 - A REST suggestion workflow was not built; the surfaces use admin AJAX. REST belongs with the Phase 17 developer layer.
 - Live provider qualification has not been performed. All qualification used a deterministic local transport double.
 
-Phase 17: Developer & Operations Layer
+Phase 17: Developer & Operations Layer — in progress
 
 - REST API, import/export with dry-run, WP-CLI commands, System Status, Site Health integration, and the public developer API.
+- Decomposed into five workstreams, deliberately sequential rather than parallel. Workstream A comes first because section 15 of this document requires a stable developer API before third-party extension is encouraged, and because B through E are each a consumer of A's resolver. See `docs/adr/0019-developer-and-operations-layer.md`.
+
+| | Workstream | Delivers | Status |
+| --- | --- | --- | --- |
+| A | Developer Extension API | Public read functions, then a reviewed hook contract | Slice 1 complete |
+| B | REST API | `/mclogiora/v1/…` under permission callbacks | Not started |
+| C | WP-CLI | `wp mclogiora …`, wrapping the workflow services | Not started |
+| D | Import / Export | Portable packages with a dry run before any write | Not started |
+| E | Diagnostics | System Status screen and Site Health integration | Not started |
+
+- Workstream A slice 1 delivered six `mclogiora_`-prefixed read functions returning plain arrays, documented in `docs/architecture/developer-api.md` alongside the three template tags that have shipped since 0.11.0. Nothing writes, no hook is added, and no existing hook is promoted: the fourteen the plugin already fires are recorded as an inventory, and reviewing them is the rest of workstream A.
+- Domain objects deliberately do not cross the boundary. Callers receive projections, so the repositories, the value objects, the container, and the source-change fields behind the needs-update detector stay free to change.
+- Next slice: workstream A's hook review, which fixes argument lists as contracts and decides which of the fourteen existing hooks become supported extension points.
 
 Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
 
@@ -742,9 +757,9 @@ These notes record the Phase 01 discovery environment. They are historical conte
 
 ## Next Phase
 
-Phases 02 through 16 are complete. The next implementation phase is **Phase 17: Developer & Operations Layer**.
+Phases 02 through 16 are complete. **Phase 17: Developer & Operations Layer** is in progress; its workstream decomposition and current slice status are in section 20.
 
-Two items are carried forward rather than resolved in Phase 16:
+Two items are carried forward rather than resolved in Phase 16, and Phase 17 does not resolve them:
 
 - Raising `Tested up to` from 7.0 to 7.1 is a separate compatibility gate, to be run once WordPress 7.1 ships final. Phase 16 qualified against 7.1-RC3 and deliberately did not change the release header on the strength of a release candidate.
 - Live provider qualification with real credentials, per provider, including one representative failure per normalized error category.
