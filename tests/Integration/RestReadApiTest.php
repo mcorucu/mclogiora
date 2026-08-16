@@ -162,13 +162,17 @@ final class RestReadApiTest extends WP_UnitTestCase {
 	/**
 	 * Asserts every mcLogiora route is GET-only and carries a permission check.
 	 *
-	 * This is the slice boundary made mechanical: a write handler added by
-	 * accident fails here rather than in review.
+	 * A write handler added to a read resource by accident fails here rather
+	 * than in review. The translations route is exempt from the write check and
+	 * only from that check: it deliberately carries the status mutation, whose
+	 * verbs RestMutationApiTest audits across the whole namespace. Its GET
+	 * handler is still swept here like any other.
 	 *
 	 * @return void
 	 */
-	public function test_every_route_is_read_only_with_an_explicit_permission_callback() {
-		$checked = 0;
+	public function test_every_read_route_is_read_only_with_an_explicit_permission_callback() {
+		$writable = self::NS . '/translations';
+		$checked  = 0;
 
 		foreach ( $this->server->get_routes() as $path => $handlers ) {
 			/*
@@ -184,22 +188,26 @@ final class RestReadApiTest extends WP_UnitTestCase {
 					continue;
 				}
 
+				$this->assertTrue(
+					isset( $handler['permission_callback'] ) && is_callable( $handler['permission_callback'] ),
+					$path . ' must declare a callable permission_callback.'
+				);
+
+				if ( empty( $handler['methods']['GET'] ) ) {
+					$this->assertSame( $writable, $path, 'Only the translations route may carry a non-GET handler.' );
+
+					continue;
+				}
+
 				++$checked;
 
 				foreach ( array( 'POST', 'PUT', 'PATCH', 'DELETE' ) as $write ) {
 					$this->assertArrayNotHasKey(
 						$write,
 						$handler['methods'],
-						$path . ' must not expose ' . $write . ' in this slice.'
+						$path . ' must not expose ' . $write . ' on a read handler.'
 					);
 				}
-
-				$this->assertArrayHasKey( 'GET', $handler['methods'] );
-
-				$this->assertTrue(
-					isset( $handler['permission_callback'] ) && is_callable( $handler['permission_callback'] ),
-					$path . ' must declare a callable permission_callback.'
-				);
 			}
 		}
 
