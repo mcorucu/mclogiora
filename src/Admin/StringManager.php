@@ -8,6 +8,7 @@
 namespace McLogiora\Admin;
 
 use McLogiora\Capabilities\CapabilityRegistry;
+use McLogiora\Suggestions\SuggestionSurface;
 use McLogiora\Contracts\ModuleInterface;
 use McLogiora\Core\Container;
 use McLogiora\Languages\Language;
@@ -27,7 +28,8 @@ defined( 'ABSPATH' ) || exit;
  * is introduced, and no scripts are enqueued.
  */
 final class StringManager implements ModuleInterface {
-	const PAGE_SLUG = 'mclogiora-string-translation';
+	const SUGGESTIONS_HANDLE = 'mclogiora-admin-suggestions';
+	const PAGE_SLUG          = 'mclogiora-string-translation';
 
 	/**
 	 * Effective admin capability.
@@ -51,16 +53,24 @@ final class StringManager implements ModuleInterface {
 	private $languages = null;
 
 	/**
+	 * Suggestion state provider.
+	 *
+	 * @var SuggestionAdminState|null
+	 */
+	private $suggestions = null;
+
+	/**
 	 * Registers the screen.
 	 *
 	 * @param Container $container Service container.
 	 * @return void
 	 */
 	public function register( Container $container ) {
-		$capabilities     = $container->get( CapabilityRegistry::class );
-		$this->capability = $capabilities->resolve( CapabilityRegistry::MANAGE_TRANSLATIONS );
-		$this->strings    = $container->get( StringRepositoryInterface::class );
-		$this->languages  = $container->get( LanguageServiceInterface::class );
+		$capabilities      = $container->get( CapabilityRegistry::class );
+		$this->capability  = $capabilities->resolve( CapabilityRegistry::MANAGE_TRANSLATIONS );
+		$this->strings     = $container->get( StringRepositoryInterface::class );
+		$this->languages   = $container->get( LanguageServiceInterface::class );
+		$this->suggestions = $container->get( SuggestionAdminState::class );
 
 		$registry = $container->get( AdminScreenRegistry::class );
 		$registry->add(
@@ -87,6 +97,8 @@ final class StringManager implements ModuleInterface {
 		if ( ! current_user_can( $this->capability ) ) {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'mclogiora' ) );
 		}
+
+		$this->enqueue_suggestions();
 
 		$filters   = $this->read_filters();
 		$strings   = $this->strings->query( $filters );
@@ -279,12 +291,155 @@ final class StringManager implements ModuleInterface {
 					<input type="hidden" name="string_id" value="<?php echo esc_attr( (string) $string->id() ); ?>">
 					<input type="hidden" name="language" value="<?php echo esc_attr( $language_code ); ?>">
 					<?php wp_nonce_field( StringActionController::NONCE_ACTION, StringActionController::NONCE_NAME ); ?>
-					<textarea name="translated_text" rows="2" cols="40"><?php echo esc_textarea( $value ); ?></textarea>
+					<textarea id="<?php echo esc_attr( $this->field_id( $string, $language_code ) ); ?>" name="translated_text" rows="2" cols="40"><?php echo esc_textarea( $value ); ?></textarea>
 					<button type="submit" class="button"><?php esc_html_e( 'Save', 'mclogiora' ); ?></button>
 				</form>
+				<?php $this->render_suggestion_control( $string, $language_code ); ?>
 			</td>
 		</tr>
 		<?php
+	}
+
+
+	/**
+	 * Loads the suggestion script for this screen only.
+	 *
+	 * Enqueued from render(), so the asset never reaches another admin page and
+	 * never reaches the front end. Nothing is shipped when the feature is
+	 * unavailable: the row markup already explains why, and handing the browser
+	 * an action list for something it may not do would be worse than useless.
+	 *
+	 * @return void
+	 */
+	private function enqueue_suggestions() {
+		if ( ! $this->suggestions instanceof SuggestionAdminState ) {
+			return;
+		}
+
+		$state = $this->suggestions->current();
+
+		if ( empty( $state['available'] ) ) {
+			return;
+		}
+
+		$path = MCLOGIORA_PATH . 'assets/js/admin-suggestions.js';
+
+		wp_enqueue_script(
+			self::SUGGESTIONS_HANDLE,
+			MCLOGIORA_URL . 'assets/js/admin-suggestions.js',
+			array( 'wp-i18n' ),
+			file_exists( $path ) ? (string) filemtime( $path ) : MCLOGIORA_VERSION,
+			true
+		);
+
+		wp_set_script_translations( self::SUGGESTIONS_HANDLE, 'mclogiora', MCLOGIORA_PATH . 'languages' );
+
+		wp_add_inline_script(
+			self::SUGGESTIONS_HANDLE,
+			'window.mcLogioraAdminSuggestions = ' . wp_json_encode(
+				array(
+					'ajaxUrl'       => $state['ajaxUrl'],
+					'actions'       => $state['actions'],
+					'nonce'         => $state['nonce'],
+					'providerLabel' => $state['providerLabel'],
+					'modelLabel'    => $state['modelLabel'],
+				)
+			) . ';',
+			'before'
+		);
+
+		wp_enqueue_style(
+			self::SUGGESTIONS_HANDLE,
+			MCLOGIORA_URL . 'assets/css/editor-panel.css',
+			array(),
+			MCLOGIORA_VERSION
+		);
+	}
+
+	/**
+	 * Renders the suggestion control for one string and target language.
+	 *
+	 * The control carries an id and a language, never the source text: the
+	 * endpoint resolves the string itself, so the browser cannot choose what the
+	 * owner pays to translate. Two identical source strings registered under
+	 * different text domains are different rows and are named by different ids
+	 * here, so they translate independently.
+	 *
+	 * No form is opened. The row already contains one for saving by hand, and a
+	 * control that submitted it would save the wrong thing.
+	 *
+	 * @param StringSource $source Source string.
+	 * @param string       $language_code Target language code.
+	 * @return void
+	 */
+	private function render_suggestion_control( StringSource $source, $language_code ) {
+		if ( ! $this->suggestions instanceof SuggestionAdminState ) {
+			return;
+		}
+
+		$default = $this->languages instanceof LanguageServiceInterface
+			? $this->languages->get_default_language()
+			: null;
+
+		if ( $default instanceof Language && $default->code() === $language_code ) {
+			/*
+			 * This column is showing the default language, which is what
+			 * everything else is translated from. There is nothing to translate
+			 * into, so no control is offered rather than one that would always
+			 * be refused.
+			 */
+			return;
+		}
+
+		$state = $this->suggestions->current();
+
+		echo '<div class="mclogiora-editor__suggestions">';
+
+		if ( empty( $state['available'] ) ) {
+			printf( '<p class="mclogiora-editor__meta">%s</p>', esc_html( $state['reason'] ) );
+
+			if ( ! empty( $state['settingsUrl'] ) ) {
+				printf(
+					'<p><a href="%1$s">%2$s</a></p>',
+					esc_url( $state['settingsUrl'] ),
+					esc_html__( 'Translation Suggestions settings', 'mclogiora' )
+				);
+			}
+
+			echo '</div>';
+
+			return;
+		}
+
+		printf(
+			'<div data-mclogiora-suggest data-surface="%1$s" data-object="%2$s" data-language="%3$s" data-field="%4$s" data-field-label="%5$s">',
+			esc_attr( SuggestionSurface::STRING ),
+			esc_attr( (string) $source->id() ),
+			esc_attr( $language_code ),
+			esc_attr( $this->field_id( $source, $language_code ) ),
+			esc_attr__( 'String', 'mclogiora' )
+		);
+
+		printf(
+			'<button type="button" class="button button-secondary" data-mclogiora-generate aria-label="%1$s">%2$s</button>',
+			esc_attr__( 'Generate String suggestion', 'mclogiora' ),
+			esc_html__( 'Generate suggestion', 'mclogiora' )
+		);
+
+		echo '<div class="mclogiora-editor__feedback" data-mclogiora-feedback></div>';
+
+		echo '</div></div>';
+	}
+
+	/**
+	 * Returns the id of the textarea a suggestion would be applied into.
+	 *
+	 * @param StringSource $source Source string.
+	 * @param string       $language_code Target language code.
+	 * @return string
+	 */
+	private function field_id( StringSource $source, $language_code ) {
+		return 'mclogiora-string-' . (int) $source->id() . '-' . sanitize_key( $language_code );
 	}
 
 	/**
