@@ -56,9 +56,13 @@ final class SuggestionAdminController implements ModuleInterface {
 	 * @var array<string,string>
 	 */
 	private static $surfaces = array(
-		SuggestionSurface::STRING           => ContentType::STRING,
-		SuggestionSurface::TERM_NAME        => ContentType::TERM,
-		SuggestionSurface::TERM_DESCRIPTION => ContentType::TERM,
+		SuggestionSurface::STRING            => ContentType::STRING,
+		SuggestionSurface::TERM_NAME         => ContentType::TERM,
+		SuggestionSurface::TERM_DESCRIPTION  => ContentType::TERM,
+		SuggestionSurface::MEDIA_TITLE       => ContentType::MEDIA,
+		SuggestionSurface::MEDIA_ALT         => ContentType::MEDIA,
+		SuggestionSurface::MEDIA_CAPTION     => ContentType::MEDIA,
+		SuggestionSurface::MEDIA_DESCRIPTION => ContentType::MEDIA,
 	);
 
 	/**
@@ -313,6 +317,10 @@ final class SuggestionAdminController implements ModuleInterface {
 			return $this->resolve_term_request( $surface, $object_id, (string) $target->code() );
 		}
 
+		if ( ContentType::MEDIA === self::$surfaces[ $surface ] ) {
+			return $this->resolve_media_request( $surface, $object_id, (string) $target->code() );
+		}
+
 		return $this->resolve_string_request( $surface, $object_id, (string) $target->code() );
 	}
 
@@ -471,6 +479,73 @@ final class SuggestionAdminController implements ModuleInterface {
 		);
 	}
 
+
+	/**
+	 * Resolves an attachment metadata request.
+	 *
+	 * An attachment carries its own default-language text on the post itself --
+	 * title, caption and description as post fields, alternative text as post
+	 * meta -- and the translated values live in a per-language row keyed by
+	 * attachment and language. So the source is the attachment as WordPress
+	 * stores it, and only the target language comes from the request.
+	 *
+	 * Nothing about the file is reachable from here. The four metadata fields are
+	 * the entire allow-list, checked before this point, which is why a request
+	 * naming a filename, a URL, a MIME type or a dimension has nowhere to land.
+	 *
+	 * @param string $surface Requested surface.
+	 * @param int    $attachment_id Attachment identifier.
+	 * @param string $target_language Target language code.
+	 * @return array<string,mixed>
+	 */
+	private function resolve_media_request( $surface, $attachment_id, $target_language ) {
+		$attachment = get_post( $attachment_id );
+
+		if ( ! $attachment instanceof \WP_Post || 'attachment' !== $attachment->post_type ) {
+			wp_send_json_error(
+				array( 'message' => __( 'That attachment could not be found.', 'mclogiora' ) ),
+				400
+			);
+		}
+
+		if ( ! current_user_can( 'edit_post', $attachment_id ) ) {
+			wp_send_json_error(
+				array( 'message' => __( 'You are not allowed to edit this attachment.', 'mclogiora' ) ),
+				403
+			);
+		}
+
+		$default = $this->languages->get_default_language();
+
+		if ( ! $default instanceof Language ) {
+			wp_send_json_error(
+				array( 'message' => __( 'No default language is configured on this site.', 'mclogiora' ) ),
+				400
+			);
+		}
+
+		if ( $default->code() === $target_language ) {
+			/*
+			 * The attachment's own metadata *is* the default language. Offering to
+			 * translate it into its own language would let someone spend quota
+			 * rewriting the original.
+			 */
+			wp_send_json_error(
+				array( 'message' => __( 'This is the source language, so there is nothing to translate into.', 'mclogiora' ) ),
+				400
+			);
+		}
+
+		return array(
+			'surface'         => $surface,
+			'object_type'     => ContentType::MEDIA,
+			'source_id'       => (int) $attachment_id,
+			'target_id'       => (int) $attachment_id,
+			'source_language' => (string) $default->code(),
+			'target_language' => $target_language,
+		);
+	}
+
 	/**
 	 * Returns the preview token from the request.
 	 *
@@ -493,6 +568,22 @@ final class SuggestionAdminController implements ModuleInterface {
 	 * @return string
 	 */
 	private function source_text( array $request ) {
+		if ( SuggestionSurface::MEDIA_TITLE === $request['surface'] ) {
+			return (string) $this->source_attachment( $request )->post_title;
+		}
+
+		if ( SuggestionSurface::MEDIA_ALT === $request['surface'] ) {
+			return (string) get_post_meta( (int) $request['source_id'], '_wp_attachment_image_alt', true );
+		}
+
+		if ( SuggestionSurface::MEDIA_CAPTION === $request['surface'] ) {
+			return (string) $this->source_attachment( $request )->post_excerpt;
+		}
+
+		if ( SuggestionSurface::MEDIA_DESCRIPTION === $request['surface'] ) {
+			return (string) $this->source_attachment( $request )->post_content;
+		}
+
 		if ( SuggestionSurface::TERM_NAME === $request['surface'] ) {
 			return (string) $this->source_term( $request )->name;
 		}
@@ -511,6 +602,25 @@ final class SuggestionAdminController implements ModuleInterface {
 		}
 
 		return (string) $source->text();
+	}
+
+	/**
+	 * Returns the attachment a request resolved to.
+	 *
+	 * @param array<string,mixed> $request Validated request.
+	 * @return \WP_Post
+	 */
+	private function source_attachment( array $request ) {
+		$attachment = get_post( (int) $request['source_id'] );
+
+		if ( ! $attachment instanceof \WP_Post ) {
+			wp_send_json_error(
+				array( 'message' => __( 'That attachment could not be found.', 'mclogiora' ) ),
+				400
+			);
+		}
+
+		return $attachment;
 	}
 
 	/**
@@ -542,21 +652,28 @@ final class SuggestionAdminController implements ModuleInterface {
 	 *
 	 * Strings carry their own status column and terms are relation-backed, and
 	 * both record the machine-suggested value, so a suggestion is reported as a
-	 * suggestion rather than passed off as a finished translation. Surfaces whose
-	 * storage has no such state report nothing rather than claiming one.
+	 * suggestion rather than passed off as a finished translation. Media has no
+	 * such state and its real status is reported instead, because a screen that
+	 * claimed one would disagree with the database.
 	 *
 	 * @param string $surface Applied surface.
 	 * @return string
 	 */
 	private function applied_status( $surface ) {
-		if ( in_array(
-			$surface,
-			array( SuggestionSurface::STRING, SuggestionSurface::TERM_NAME, SuggestionSurface::TERM_DESCRIPTION ),
-			true
-		) ) {
-			return TranslationStatus::MACHINE_SUGGESTED;
+		if ( ContentType::MEDIA === self::$surfaces[ $surface ] ) {
+			/*
+			 * Media metadata is stored by MediaTranslationService, which records
+			 * TRANSLATED and has no machine-suggested state. Reporting
+			 * machine_suggested here to match the other surfaces would be a
+			 * comfortable lie: the database would say one thing and the screen
+			 * another. The real status is returned instead, and the screen says
+			 * a suggestion was applied without claiming a status that does not
+			 * exist. Giving media that state is a schema change, not a Phase 16
+			 * presentation detail.
+			 */
+			return TranslationStatus::TRANSLATED;
 		}
 
-		return '';
+		return TranslationStatus::MACHINE_SUGGESTED;
 	}
 }
