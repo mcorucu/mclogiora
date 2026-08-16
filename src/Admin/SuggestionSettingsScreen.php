@@ -176,6 +176,8 @@ final class SuggestionSettingsScreen implements ModuleInterface {
 					<?php esc_html_e( 'Ask a translation provider you already pay for to draft a translation, which you then review before anything changes.', 'mclogiora' ); ?>
 				</p>
 
+				<?php $this->render_notice(); ?>
+
 				<article class="mclogiora-info-card">
 					<h2><?php esc_html_e( 'What this sends, and when', 'mclogiora' ); ?></h2>
 					<ul>
@@ -228,6 +230,62 @@ final class SuggestionSettingsScreen implements ModuleInterface {
 			</section>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Renders the result of the last action.
+	 *
+	 * Every handler on this screen finishes by redirecting with a short result
+	 * code, so without this the owner clicks Test connection, Save key or
+	 * Refresh model list and is told nothing at all. Only local wording is
+	 * printed; no provider message travels in the URL.
+	 *
+	 * @return void
+	 */
+	private function render_notice() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only redirect feedback.
+		$notice = isset( $_GET['mclogiora_notice'] ) ? sanitize_key( wp_unslash( $_GET['mclogiora_notice'] ) ) : '';
+
+		if ( '' === $notice ) {
+			return;
+		}
+
+		$successes = array(
+			'saved'              => __( 'Settings saved.', 'mclogiora' ),
+			'credential_saved'   => __( 'The key was saved.', 'mclogiora' ),
+			'credential_removed' => __( 'The stored key was removed.', 'mclogiora' ),
+			'test_passed'        => __( 'The provider accepted the key.', 'mclogiora' ),
+			'models_refreshed'   => __( 'The model list was refreshed.', 'mclogiora' ),
+		);
+
+		if ( isset( $successes[ $notice ] ) ) {
+			printf( '<div class="notice notice-success"><p>%s</p></div>', esc_html( $successes[ $notice ] ) );
+
+			return;
+		}
+
+		$warnings = array(
+			'credential_unchanged' => __( 'The key box was empty, so the stored key was left as it was.', 'mclogiora' ),
+			'model_retired'        => __( 'The model you had chosen is no longer offered, so the choice was cleared. Choose one from the refreshed list.', 'mclogiora' ),
+			'no_models'            => __( 'This provider offers no model choice.', 'mclogiora' ),
+		);
+
+		if ( isset( $warnings[ $notice ] ) ) {
+			printf( '<div class="notice notice-warning"><p>%s</p></div>', esc_html( $warnings[ $notice ] ) );
+
+			return;
+		}
+
+		$errors = array(
+			'test_failed'      => __( 'The provider did not accept the key. Check it and try again.', 'mclogiora' ),
+			'refresh_failed'   => __( 'The model list could not be refreshed. Check the key and try again.', 'mclogiora' ),
+			'unknown_provider' => __( 'That provider is not available.', 'mclogiora' ),
+			'unknown_model'    => __( 'That model is not in the current list for this provider. Refresh the list and choose again.', 'mclogiora' ),
+		);
+
+		if ( isset( $errors[ $notice ] ) ) {
+			printf( '<div class="notice notice-error"><p>%s</p></div>', esc_html( $errors[ $notice ] ) );
+		}
 	}
 
 	/**
@@ -422,7 +480,14 @@ final class SuggestionSettingsScreen implements ModuleInterface {
 	public function handle_save_credential() {
 		$provider = $this->guarded_provider( self::NONCE_CREDENTIAL, self::NONCE_CREDENTIAL . '_nonce' );
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified in guarded_provider().
+		/*
+		 * A credential is an opaque secret and is kept byte-exact. Passing it
+		 * through sanitize_text_field() would silently corrupt keys that legally
+		 * contain characters the sanitiser strips, leaving the owner with a
+		 * stored key that cannot work and no way to see why. It is unslashed,
+		 * cast and trimmed here, and it is never echoed or interpolated.
+		 */
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Verified in guarded_provider(); stored byte-exact by design.
 		$value = isset( $_POST['credential'] ) ? trim( (string) wp_unslash( $_POST['credential'] ) ) : '';
 
 		if ( '' === $value ) {
