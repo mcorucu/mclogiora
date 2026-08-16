@@ -36,6 +36,8 @@
 
 
 	var useState = wp.element.useState;
+	var useRef = wp.element.useRef;
+	var useEffect = wp.element.useEffect;
 	var suggestions = data.suggestions || null;
 
 	/**
@@ -151,6 +153,46 @@
 		var error = errorHook[ 0 ];
 		var setError = errorHook[ 1 ];
 
+		var rowRef = useRef( null );
+		var generateRef = useRef( null );
+		var restoreFocus = useRef( false );
+
+		/*
+		 * Applying or discarding removes the very button that was activated,
+		 * which drops focus to the document body and loses a keyboard user's
+		 * place. Focus returns to the Generate button, the one control that
+		 * survives every redraw.
+		 *
+		 * The wait for the request to finish is not incidental. While it is in
+		 * flight that button is disabled, and focusing a disabled button does
+		 * nothing -- so restoring focus mid-request would silently do nothing
+		 * and leave the user on the body anyway.
+		 */
+		useEffect( function () {
+			if ( ! restoreFocus.current || 'loading' === phase || 'applying' === phase ) {
+				return;
+			}
+
+			restoreFocus.current = false;
+
+			if ( generateRef.current ) {
+				generateRef.current.focus();
+			}
+		} );
+
+		/**
+		 * Records whether focus is inside this row before it is redrawn.
+		 *
+		 * A user who has already clicked elsewhere is never yanked back.
+		 *
+		 * @return {void}
+		 */
+		function markFocusForRestore() {
+			restoreFocus.current = !! (
+				rowRef.current && rowRef.current.contains( document.activeElement )
+			);
+		}
+
 		function fail( message ) {
 			setError( message );
 			setPhase( preview ? 'preview' : 'idle' );
@@ -181,6 +223,8 @@
 				return;
 			}
 
+			markFocusForRestore();
+
 			setError( '' );
 			setPhase( 'applying' );
 
@@ -201,6 +245,8 @@
 			}
 
 			var token = preview.token;
+
+			markFocusForRestore();
 
 			setPreview( null );
 			setError( '' );
@@ -229,7 +275,8 @@
 						variant: 'secondary',
 						isBusy: 'loading' === phase,
 						disabled: busy,
-						onClick: generate
+						onClick: generate,
+						ref: generateRef
 					},
 					preview
 						? __( 'Regenerate', 'mclogiora' )
@@ -302,7 +349,7 @@
 			);
 		}
 
-		return el( 'li', { className: 'mclogiora-editor__row' }, children );
+		return el( 'li', { className: 'mclogiora-editor__row', ref: rowRef }, children );
 	}
 
 	/**
