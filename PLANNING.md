@@ -475,18 +475,18 @@ Planned public functions:
 - `mclogiora_get_language_url($language, $object_id = null)` — delivered, with optional object type and taxonomy arguments so translated terms are reachable
 - `mclogiora_render_language_switcher($args = array())` — not added. `mclogiora_language_switcher()` has shipped since 0.11.0 and is the supported name; a second name for the same function would be sprawl.
 
-Planned filters/actions. None of these is implemented as a public contract yet; the fourteen hooks the plugin already fires are inventoried in `docs/architecture/developer-api.md` and are explicitly not public:
+Planned filters/actions. This list was a sketch; the hooks that exist and their support status are recorded in `docs/architecture/developer-api.md`, which is authoritative. Names below that were never built are not commitments to build them:
 
-- `mclogiora_register_modules`
-- `mclogiora_register_builder_adapters`
-- `mclogiora_register_seo_adapters`
-- `mclogiora_register_suggestion_providers`
-- `mclogiora_supported_object_types`
-- `mclogiora_language_switcher_args`
-- `mclogiora_language_url`
-- `mclogiora_translation_status`
-- `mclogiora_should_render_hreflang`
-- `mclogiora_external_service_disclosures`
+- `mclogiora_register_modules` — exists, deliberately **not** supported: it hands out the service container.
+- `mclogiora_register_builder_adapters` — shipped under the name `mclogiora_register_payload_adapters`, and supported.
+- `mclogiora_register_seo_adapters` — not built. SEO adapter ownership is settled through the supported `mclogiora_seo_owns_concern` filter instead.
+- `mclogiora_register_suggestion_providers` — not built. Third-party provider registration remains an open question bound by ADR 0018's constraints.
+- `mclogiora_supported_object_types` — not built.
+- `mclogiora_language_switcher_args` — not built. Switcher presentation is settled per instance through shortcode, block, and widget attributes.
+- `mclogiora_language_url` — not built. Translated URLs are read through `mclogiora_get_language_url()`.
+- `mclogiora_translation_status` — not built.
+- `mclogiora_should_render_hreflang` — shipped as the `hreflang` concern of the supported `mclogiora_seo_owns_concern` filter.
+- `mclogiora_external_service_disclosures` — not built.
 
 Developer documentation should include examples for custom post types, custom taxonomies, builder adapters, suggestion providers, SEO output overrides, and custom switcher rendering.
 
@@ -710,15 +710,18 @@ Phase 17: Developer & Operations Layer — in progress
 
 | | Workstream | Delivers | Status |
 | --- | --- | --- | --- |
-| A | Developer Extension API | Public read functions, then a reviewed hook contract | Slice 1 complete |
+| A | Developer Extension API | Public read functions, then a reviewed hook contract | Complete |
 | B | REST API | `/mclogiora/v1/…` under permission callbacks | Not started |
 | C | WP-CLI | `wp mclogiora …`, wrapping the workflow services | Not started |
 | D | Import / Export | Portable packages with a dry run before any write | Not started |
 | E | Diagnostics | System Status screen and Site Health integration | Not started |
 
-- Workstream A slice 1 delivered six `mclogiora_`-prefixed read functions returning plain arrays, documented in `docs/architecture/developer-api.md` alongside the three template tags that have shipped since 0.11.0. Nothing writes, no hook is added, and no existing hook is promoted: the fourteen the plugin already fires are recorded as an inventory, and reviewing them is the rest of workstream A.
+- Workstream A slice 1 delivered six `mclogiora_`-prefixed read functions returning plain arrays, documented in `docs/architecture/developer-api.md` alongside the three template tags that have shipped since 0.11.0. Nothing writes and no hook was added.
 - Domain objects deliberately do not cross the boundary. Callers receive projections, so the repositories, the value objects, the container, and the source-change fields behind the needs-update detector stay free to change.
-- Next slice: workstream A's hook review, which fixes argument lists as contracts and decides which of the fourteen existing hooks become supported extension points.
+- Workstream A slice 2 reviewed all fourteen hooks the plugin fires and classified every one. Nine are now supported contracts with documented arguments, documented return semantics, an `@since` tag at the invocation, and a lifecycle test: `mclogiora_activated`, `mclogiora_deactivated`, `mclogiora_widget_adapters`, `mclogiora_register_payload_adapters`, `mclogiora_switcher_flag`, `mclogiora_seo_owns_concern`, `mclogiora_seo_output_open_graph_locale`, `mclogiora_seo_canonical_url`, and `mclogiora_seo_x_default_url`.
+- Five are recorded as unsupported with a specific reason. `mclogiora_register_modules` hands out the service container. `mclogiora_resolved_capability` is the security boundary every admin screen and write path checks, and WordPress offers no capability ordering that could narrow it honestly, so the decision is protected by a test on the unfiltered baseline instead. `mclogiora_feature_enabled` filters a table nothing reads and that no longer matches what shipped. `mclogiora_register_editors` and `mclogiora_register_settings` are deferred until `EditorInterface` and a real settings registry exist to freeze.
+- The only production change in slice 2 moved the payload adapter construction into `PayloadAdapterRegistry::with_core_adapters()`, mirroring the widget registry, because a hook invoked inside a cached container factory cannot be qualified as a contract. Behaviour is unchanged.
+- Next slice: workstream B, the REST API, wrapping the same resolver rather than restating its rules.
 
 Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
 
