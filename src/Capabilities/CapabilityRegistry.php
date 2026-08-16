@@ -42,6 +42,23 @@ final class CapabilityRegistry {
 	 * @return string
 	 */
 	public function resolve( $planned_capability ) {
+		/*
+		 * Internal. Deliberately NOT part of the public developer API, and it
+		 * carries no @since for that reason.
+		 *
+		 * This is the security boundary. Every mcLogiora admin screen and every
+		 * write path -- translations, menus, widgets, media, strings, languages,
+		 * suggestions -- checks whatever this returns. A callback returning
+		 * 'read' opens all of it to any logged-in subscriber.
+		 *
+		 * It is not narrowed to "equal or stronger" because WordPress has no
+		 * capability ordering to compare against: current_user_can() is a
+		 * boolean per capability, and role plugins add capabilities that no
+		 * lattice here could rank. Inventing one would be a guess enforcing a
+		 * security rule. Keeping the hook unsupported is the honest option.
+		 *
+		 * See docs/architecture/developer-api.md.
+		 */
 		return (string) apply_filters( 'mclogiora_resolved_capability', 'manage_options', $planned_capability );
 	}
 }

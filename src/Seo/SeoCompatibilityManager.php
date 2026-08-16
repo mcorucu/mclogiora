@@ -120,6 +120,19 @@ final class SeoCompatibilityManager {
 		/**
 		 * Filters whether mcLogiora emits output for one SEO concern.
 		 *
+		 * Two plugins must never write the same tag. mcLogiora stands down
+		 * automatically for the SEO plugins it recognises, and this filter is
+		 * how a site settles ownership for one it does not.
+		 *
+		 * Returning `false` removes that output entirely. For `hreflang` that
+		 * usually means the site has no language annotation at all, since none
+		 * of the common SEO plugins produces one.
+		 *
+		 * `$concern` is one of `canonical`, `hreflang`, `og_locale`, `sitemap`.
+		 * An unrecognised concern arrives with `$owns` already `true`.
+		 *
+		 * @since 0.12.0
+		 *
 		 * @param bool   $owns Whether mcLogiora owns the concern.
 		 * @param string $concern Concern identifier.
 		 */

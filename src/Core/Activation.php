@@ -49,6 +49,21 @@ final class Activation {
 			InstallationFailure::clear();
 		}
 
+		/**
+		 * Fires once mcLogiora has finished activating.
+		 *
+		 * Runs last in the activation routine: the environment has already
+		 * validated, the schema install has been attempted, and any failure has
+		 * been recorded. It does not fire at all when validation fails, because
+		 * activation is aborted before this point.
+		 *
+		 * A `WP_Error` argument means the tables are not there. Anything that
+		 * seeds data must check it rather than assume a successful activation.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param true|\WP_Error $installed Whether the schema install succeeded.
+		 */
 		do_action( 'mclogiora_activated', $installed );
 	}
 }
