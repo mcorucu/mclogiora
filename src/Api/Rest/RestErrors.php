@@ -105,6 +105,53 @@ final class RestErrors {
 	}
 
 	/**
+	 * Re-emits a workflow refusal as a REST error with a deliberate status.
+	 *
+	 * The workflow's own code is passed through rather than translated into a
+	 * REST-specific one, so a refusal reported by REST, by an admin screen and
+	 * by a future CLI carries the same identifier. A mapping table would be one
+	 * more thing to keep in step with the domain, and it would drift.
+	 *
+	 * The split is between two different questions. A 400 means the request was
+	 * wrong whatever state the site is in: a status that cannot be assigned to
+	 * anything, or one that is not a status at all. A 409 means the request was
+	 * well formed and conflicts with the state this translation is actually in
+	 * -- already at that status, or not allowed to move there from where it is.
+	 * Flattening both into one code would make a retry-after-fixing-the-request
+	 * indistinguishable from a retry-after-the-state-changes.
+	 *
+	 * Workflow messages are written for people and name no table, class, query
+	 * or path, so they are safe to return as-is.
+	 *
+	 * @param \WP_Error $error Workflow error.
+	 * @return \WP_Error
+	 */
+	public static function from_workflow( \WP_Error $error ) {
+		$code = $error->get_error_code();
+
+		$statuses = array(
+			'mclogiora_cannot_manage_translations' => is_user_logged_in() ? 403 : 401,
+			'mclogiora_translation_item_not_found' => 404,
+			'mclogiora_relation_item_not_found'    => 404,
+			'mclogiora_unknown_target_status'      => 400,
+			'mclogiora_original_not_assignable'    => 400,
+			'mclogiora_missing_not_assignable'     => 400,
+			'mclogiora_relation_status_invalid'    => 400,
+		);
+
+		/*
+		 * Anything not named above is a conflict with stored state:
+		 * status_unchanged, invalid_status_transition,
+		 * original_status_immutable, unknown_current_status, and the
+		 * repository's original-status locks. Defaulting to 409 rather than 500
+		 * is deliberate -- these are refusals, not failures.
+		 */
+		$status = isset( $statuses[ $code ] ) ? $statuses[ $code ] : 409;
+
+		return new WP_Error( $code, $error->get_error_message(), array( 'status' => $status ) );
+	}
+
+	/**
 	 * Returns whether the current user may read mcLogiora translation data.
 	 *
 	 * Routed through `CapabilityRegistry` so REST checks the same boundary every
