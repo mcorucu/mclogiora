@@ -15,8 +15,12 @@ The decision record is [ADR 0019](../adr/0019-developer-and-operations-layer.md)
 - A published array shape only ever gains keys. Removing or renaming one is a
   breaking change and gets a major-version note in `CHANGELOG.md`.
 - `@since x.x.x` in the source means "the next release"; the placeholder is
-  replaced when the release version is chosen.
-- Public API is covered by tests. A helper without a contract test is not
+  replaced when the release version is chosen. A hook's `@since` records when the
+  hook was introduced, not when it was documented, so several supported hooks
+  carry earlier versions than the read API.
+- A supported hook carries an `@since` tag at its invocation. An unsupported one
+  deliberately does not, so the source itself distinguishes them.
+- Public API is covered by tests. A helper or hook without a contract test is not
   public.
 
 ## Public API
@@ -162,44 +166,217 @@ foreach ( mclogiora_get_languages() as $language ) {
 
 ## Hooks
 
-mcLogiora fires the actions and filters below. **None of them is part of the
-public API yet.** They exist because internal subsystems needed them, their
-argument lists have not been reviewed as contracts, and several of them sit on
-top of security invariants. Promoting a hook means fixing its arguments,
-proving its lifecycle position with a test, and writing down what a consumer may
-and may not do with it; that work is its own tranche and has not been done.
+mcLogiora fires fourteen hooks. Nine are supported contracts and are documented
+below. Five are not, and are listed under **Unsupported hooks** so that finding
+one in the source does not read as a promise.
 
-Recorded here so the inventory is honest, not so it is used.
+> **Presence in source does not imply a compatibility guarantee.** Only the
+> hooks under *Public actions* and *Public filters* are covered by the stability
+> policy at the top of this file. Every supported hook carries an `@since` tag at
+> its invocation; an unsupported one deliberately does not.
 
-### Actions
+Each supported hook has a lifecycle contract test in
+`tests/Integration/PublicHookContractTest.php`.
 
-| Hook | Fired in | Arguments |
+### Public actions
+
+#### `mclogiora_activated`
+
+*Since 0.1.0. Fired in `Core\Activation::activate()`.*
+
+Fires once, last in the activation routine. The environment has already
+validated, the schema install has been attempted, and any failure has been
+recorded. It does not fire when validation fails, because activation aborts
+before it.
+
+| Parameter | Type | Description |
 | --- | --- | --- |
-| `mclogiora_activated` | `Core\Activation` | `$installed` (`true` or `WP_Error`) |
-| `mclogiora_deactivated` | `Core\Deactivation` | none |
-| `mclogiora_register_settings` | `Admin\Settings\SettingsManager` | none |
+| `$installed` | `true\|WP_Error` | Whether the schema install succeeded |
 
-### Filters
+A `WP_Error` means the tables are not there. Anything that seeds data must check
+it rather than assume a successful activation.
 
-| Hook | Filtered in | Value |
+```php
+add_action( 'mclogiora_activated', function ( $installed ) {
+    if ( is_wp_error( $installed ) ) {
+        return; // No schema; nothing to seed.
+    }
+
+    // Safe: mcLogiora's tables exist.
+} );
+```
+
+#### `mclogiora_deactivated`
+
+*Since 0.1.0. Fired in `Core\Deactivation::deactivate()`.* No parameters.
+
+Deactivation deletes nothing: no table is dropped, no option is removed, and
+every translation relation survives. Data removal is the uninstall routine's job
+and is user-controlled. Consumers should follow the same rule.
+
+### Public filters
+
+#### `mclogiora_widget_adapters`
+
+*Since 0.10.0. Filtered in `Widgets\WidgetAdapterRegistry::with_core_adapters()`.*
+
+An adapter declares which keys of a widget's option array hold human-readable
+text. A widget with no adapter is reported as unsupported and left completely
+untouched, so this is the only way to make a third-party widget translatable.
+
+| Parameter | Type | Description |
 | --- | --- | --- |
-| `mclogiora_register_modules` | `Core\ModuleLoader` | Module list, plus the service container |
-| `mclogiora_register_editors` | `Editors\EditorManager` | Editor adapter list |
-| `mclogiora_register_payload_adapters` | `Core\Application` | Builder payload adapter list |
-| `mclogiora_widget_adapters` | `Widgets\WidgetAdapterRegistry` | Widget adapter list |
-| `mclogiora_feature_enabled` | `Core\FeatureFlags` | Whether a feature is on |
-| `mclogiora_resolved_capability` | `Capabilities\CapabilityRegistry` | Effective WordPress capability |
-| `mclogiora_switcher_flag` | `Switcher\SwitcherRenderer` | Optional flag character for a language |
-| `mclogiora_seo_owns_concern` | `Seo\SeoCompatibilityManager` | Whether mcLogiora owns an SEO concern |
-| `mclogiora_seo_output_open_graph_locale` | `Seo\SeoModule` | Whether to emit the OpenGraph locale |
-| `mclogiora_seo_canonical_url` | `Seo\CanonicalService` | Canonical URL |
-| `mclogiora_seo_x_default_url` | `Seo\AlternateUrlService` | `x-default` URL |
+| `$adapters` | `WidgetAdapterInterface[]` | Registered adapters, core set included |
 
-Two of these deserve a specific warning if you use them anyway.
-`mclogiora_register_modules` hands out the service container, so consuming it
-promotes every service inside it. `mclogiora_resolved_capability` decides which
-WordPress capability an mcLogiora permission maps to, and a filter that returns
-a weaker capability weakens every admin screen and every write behind it.
+Return the array. The core Text, Custom HTML and Block adapters are present when
+it arrives, so a consumer can remove them as well as add its own. Entries that
+do not implement `WidgetAdapterInterface` are ignored, and a non-array return
+leaves the core set in place.
+
+```php
+add_filter( 'mclogiora_widget_adapters', function ( $adapters ) {
+    $adapters[] = new My_Widget_Adapter();
+
+    return $adapters;
+} );
+```
+
+#### `mclogiora_register_payload_adapters`
+
+*Since 0.13.0. Filtered in `Editors\Payload\PayloadAdapterRegistry::with_core_adapters()`.*
+
+A payload adapter gives a newly created translation the starting state its
+builder expects. It copies structure, never meaning; nothing here translates
+text.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `$extra` | `TranslationPayloadAdapterInterface[]` | Adapters to add. Always empty on arrival |
+| `$registry` | `PayloadAdapterRegistry` | The registry the adapters are added to |
+
+Additive only. The filtered value always starts as an empty array and the core
+adapters are registered before it runs, so this hook cannot remove them. Entries
+that do not implement `TranslationPayloadAdapterInterface` are ignored, as is a
+non-array return.
+
+Prefer returning your adapters over calling `$registry->add()` directly; the
+return value is the contract.
+
+#### `mclogiora_switcher_flag`
+
+*Since 0.11.0. Filtered in `Switcher\SwitcherRenderer`.*
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `$flag` | `string` | Flag text. Empty by default |
+| `$code` | `string` | Language code the flag is for |
+
+**Return plain text, not HTML.** The value is placed in the switcher label and
+escaped with `esc_html()` before output, so markup is displayed literally rather
+than rendered. Escaping is mcLogiora's responsibility, and this filter is
+deliberately not an HTML injection point.
+
+Returning an empty string — the default — shows no flag. That default is a
+decision, not an omission: a language is not a country, and shipping a mapping
+would make a political claim on a site owner's behalf. Only consulted when the
+switcher instance has flags switched on.
+
+```php
+add_filter( 'mclogiora_switcher_flag', function ( $flag, $code ) {
+    $flags = array( 'tr' => '🇹🇷', 'de' => '🇩🇪' );
+
+    return isset( $flags[ $code ] ) ? $flags[ $code ] : $flag;
+}, 10, 2 );
+```
+
+#### `mclogiora_seo_owns_concern`
+
+*Since 0.12.0. Filtered in `Seo\SeoCompatibilityManager::owns()`.*
+
+Two plugins must never write the same tag. mcLogiora stands down automatically
+for the SEO plugins it recognises; this filter is how a site settles ownership
+for one it does not.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `$owns` | `bool` | Whether mcLogiora owns the concern |
+| `$concern` | `string` | One of `canonical`, `hreflang`, `og_locale`, `sitemap` |
+
+Returning `false` removes that output entirely. For `hreflang` that usually
+means the site has no language annotation at all, since none of the common SEO
+plugins produces one.
+
+#### `mclogiora_seo_output_open_graph_locale`
+
+*Since 0.12.0. Filtered in `Seo\SeoModule`.* One `bool` parameter, `true` by
+default. Return `false` for a theme that emits its own OpenGraph block, rather
+than ending up with two `og:locale` tags. Only reached once mcLogiora already
+owns the `og_locale` concern, so it cannot switch output back on for a site
+where a recognised SEO plugin has taken it.
+
+#### `mclogiora_seo_canonical_url`
+
+*Since 0.12.0. Filtered in `Seo\CanonicalService::canonical_url()`.*
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `$url` | `string` | Canonical URL, or an empty string |
+| `$subject` | `SeoSubject` | Request subject — see below |
+| `$language_code` | `string` | Current language code |
+
+Return a URL, or an empty string to suppress the tag. A non-string return is
+treated as an empty string rather than printed. Escaping is mcLogiora's
+responsibility; return a raw URL.
+
+Singular requests never reach this filter: WordPress core prints their canonical
+and mcLogiora does not compete with it.
+
+#### `mclogiora_seo_x_default_url`
+
+*Since 0.12.0. Filtered in `Seo\AlternateUrlService::x_default_url()`.*
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `$url` | `string` | Default-language URL, or an empty string |
+| `$subject` | `SeoSubject` | Request subject — see below |
+
+Return an empty string to omit the annotation. A non-string return is treated as
+empty. The value arrives already empty when the default language has no
+equivalent for this subject, because there is nothing honest to point at;
+filling it in aims visitors at a guess.
+
+#### The `SeoSubject` argument
+
+`SeoSubject` is passed to the two filters above for context. **The class is
+internal; only four of its methods are contract**:
+
+| Method | Returns |
+| --- | --- |
+| `kind()` | `post`, `term`, or `home` |
+| `object_id()` | `int`, zero for the home subject |
+| `taxonomy()` | `string`, empty unless `kind()` is `term` |
+| `is_home()` | `bool` |
+
+Anything else on the class may be added, renamed, or removed. Do not type-hint
+it in a signature you cannot change.
+
+### Unsupported hooks
+
+These exist, and removing them would break sites that already use them, so they
+stay. They are **not** part of the public API, they carry no `@since`, and they
+may change or disappear without a major-version note.
+
+| Hook | Why it is not supported |
+| --- | --- |
+| `mclogiora_register_modules` | Hands out `Core\Container`. Supporting it would turn every service inside into a permanent compatibility contract, and a consumer can return a module list with the core modules missing, silently disabling the plugin. |
+| `mclogiora_resolved_capability` | **Security boundary.** Every admin screen and every write path — translations, menus, widgets, media, strings, languages, suggestions — checks whatever this returns. A callback returning `read` opens all of it to any logged-in subscriber. It is not narrowed to "equal or stronger" because WordPress has no capability ordering to compare against: `current_user_can()` is a boolean per capability, and role plugins add capabilities no lattice here could rank. Inventing one would be a guess enforcing a security rule. |
+| `mclogiora_feature_enabled` | Nothing in the plugin calls `FeatureFlags::is_enabled()`, and the flag table has fallen out of step with what shipped — switchers, SEO, builders and external services are all listed `false` and all exist. Publishing a filter over a table nobody reads would document a promise that is already untrue. |
+| `mclogiora_register_editors` | The concept is sound, but supporting it would freeze `EditorInterface`, which still carries `get_placeholder_areas()` from the Phase 09 foundation and takes an internal `EditorContext`. Publishing an interface with a method named "placeholder" commits to keeping the placeholder. Deferred until that interface is reviewed. |
+| `mclogiora_register_settings` | A reserved no-op. It passes no registry and mcLogiora registers no setting through it, so today it is a private alias for `admin_init`, which consumers already have. Deferred until a settings registry exists to hand out. |
+
+To add a builder, use `mclogiora_register_payload_adapters` rather than
+`mclogiora_register_editors`: payload adapters are supported and are what
+actually prepares a translation's content.
 
 ## Not public API
 
@@ -210,9 +387,16 @@ Named here so the boundary is explicit:
 - `Api\PublicApi` itself. The supported entry points are the functions.
 - The `*_placeholder` methods on `TranslationRelationServiceInterface`. They are
   foundation-phase seams that outlived their phase.
+- `Contracts\BuilderAdapterInterface`, which nothing implements or consumes.
+- `Seo\SeoSubject` beyond the four methods named above.
 - Test doubles under `McLogiora\Tests\Support`.
 - The database schema and table names. Read through the API, not through SQL.
 - Suggestion provider credentials, transports, previews, and settings storage.
+
+The three interfaces a supported filter requires — `WidgetAdapterInterface`,
+`TranslationPayloadAdapterInterface`, and the `SeoSubject` methods above — are
+the exception. Implementing them is how those filters are used, so they are
+covered by the stability policy.
 
 ## Not yet built
 

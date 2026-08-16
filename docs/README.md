@@ -2,9 +2,9 @@
 
 This directory contains planning, architecture, and decision records for mcLogiora.
 
-Current phase: Phase 13 SEO, hreflang, canonical, and sitemap integration (v0.12.0). Next planned phase: Phase 14, editor translation UX.
+Current phase: Phase 17, Developer & Operations Layer, in progress. Phases 02 through 16 are complete; the last release is v0.15.0.
 
-Language management and relation records persist. Translation workflows cover posts, pages, public custom post types, public taxonomies, interface strings, media metadata, navigation menus, and supported widgets. Phase 12 decides which of them a given front-end request renders, and Phase 13 describes that decision to search engines through document language, hreflang, canonical URLs, and the WordPress sitemap. Editor translation UI, REST endpoints, AJAX handlers, and external providers remain future phases.
+Language management and relation records persist. Translation workflows cover posts, pages, public custom post types, public taxonomies, interface strings, media metadata, navigation menus, and supported widgets. Phase 12 decides which of them a given front-end request renders, Phase 13 describes that decision to search engines, Phases 14 and 15 provide the editor and builder surfaces, and Phase 16 adds review-only translation suggestions over bring-your-own provider credentials. Phase 17 is adding the developer and operations layer: the public read API and hook contracts exist, and REST endpoints, WP-CLI, import/export, and System Status remain future work.
 
 ## Product model
 
@@ -20,4 +20,4 @@ mcLogiora is permanently free and fully open source under a GPL-compatible licen
 | `development/` | Contributor workflow and code standards documentation |
 | `design/` | Design system authority status |
 
-The reconciled development roadmap, including verified phase history and planned Phases 10 through 18, lives in `../PLANNING.md` section 20.
+The reconciled development roadmap, including verified phase history and the remaining Phase 17 workstreams and Phase 18, lives in `../PLANNING.md` section 20. The published developer contract is `architecture/developer-api.md`.
