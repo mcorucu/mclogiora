@@ -57,6 +57,7 @@ if ( file_exists( MCLOGIORA_PATH . 'vendor/autoload.php' ) ) {
 	require_once MCLOGIORA_PATH . 'src/Autoload.php';
 }
 
+require_once MCLOGIORA_PATH . 'src/Api/functions.php';
 require_once MCLOGIORA_PATH . 'src/Switcher/template-tags.php';
 
 register_activation_hook( __FILE__, array( '\\McLogiora\\Core\\Activation', 'activate' ) );
