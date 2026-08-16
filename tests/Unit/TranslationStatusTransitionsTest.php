@@ -46,6 +46,19 @@ final class TranslationStatusTransitionsTest extends TestCase {
 			'needs update to needs review'  => array( TranslationStatus::NEEDS_UPDATE, TranslationStatus::NEEDS_REVIEW ),
 			'needs update to translated'    => array( TranslationStatus::NEEDS_UPDATE, TranslationStatus::TRANSLATED ),
 			'translated to needs review'    => array( TranslationStatus::TRANSLATED, TranslationStatus::NEEDS_REVIEW ),
+
+			/*
+			 * Phase 16. A machine suggestion may replace text in any state
+			 * that is still awaiting work, and leaving the state again is a
+			 * human decision -- including the one that matters most,
+			 * machine_suggested to translated, which is the review action.
+			 */
+			'draft to machine suggested'        => array( TranslationStatus::DRAFT, TranslationStatus::MACHINE_SUGGESTED ),
+			'needs review to machine suggested' => array( TranslationStatus::NEEDS_REVIEW, TranslationStatus::MACHINE_SUGGESTED ),
+			'needs update to machine suggested' => array( TranslationStatus::NEEDS_UPDATE, TranslationStatus::MACHINE_SUGGESTED ),
+			'machine suggested to needs review' => array( TranslationStatus::MACHINE_SUGGESTED, TranslationStatus::NEEDS_REVIEW ),
+			'machine suggested to translated'   => array( TranslationStatus::MACHINE_SUGGESTED, TranslationStatus::TRANSLATED ),
+			'machine suggested to draft'        => array( TranslationStatus::MACHINE_SUGGESTED, TranslationStatus::DRAFT ),
 		);
 	}
 
@@ -71,7 +84,17 @@ final class TranslationStatusTransitionsTest extends TestCase {
 		return array(
 			'cannot assign original'          => array( TranslationStatus::DRAFT, TranslationStatus::ORIGINAL, 'mclogiora_original_not_assignable' ),
 			'cannot assign missing'           => array( TranslationStatus::DRAFT, TranslationStatus::MISSING, 'mclogiora_missing_not_assignable' ),
-			'cannot assign machine suggested' => array( TranslationStatus::DRAFT, TranslationStatus::MACHINE_SUGGESTED, 'mclogiora_machine_status_reserved' ),
+			/*
+			 * Phase 10 forbade every route into machine_suggested while the
+			 * state was reserved. Phase 16 opens the three defensible entries
+			 * and keeps the rest closed, so what matters now is that a
+			 * finished translation cannot be overwritten by a machine, and
+			 * that the structural and administrative states stay unreachable.
+			 */
+			'translated cannot be machine suggested' => array( TranslationStatus::TRANSLATED, TranslationStatus::MACHINE_SUGGESTED, 'mclogiora_invalid_status_transition' ),
+			'disabled cannot be machine suggested' => array( TranslationStatus::DISABLED, TranslationStatus::MACHINE_SUGGESTED, 'mclogiora_invalid_status_transition' ),
+			'missing cannot be machine suggested' => array( TranslationStatus::MISSING, TranslationStatus::MACHINE_SUGGESTED, 'mclogiora_invalid_status_transition' ),
+			'original cannot be machine suggested' => array( TranslationStatus::ORIGINAL, TranslationStatus::MACHINE_SUGGESTED, 'mclogiora_original_status_immutable' ),
 			'original is immutable'           => array( TranslationStatus::ORIGINAL, TranslationStatus::TRANSLATED, 'mclogiora_original_status_immutable' ),
 			'unchanged status is rejected'    => array( TranslationStatus::DRAFT, TranslationStatus::DRAFT, 'mclogiora_status_unchanged' ),
 			'unknown current status'          => array( 'nonsense', TranslationStatus::TRANSLATED, 'mclogiora_unknown_current_status' ),

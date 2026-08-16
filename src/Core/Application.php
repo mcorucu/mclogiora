@@ -37,6 +37,8 @@ use McLogiora\Database\UuidGenerator;
 use McLogiora\Database\VersionChecker;
 use McLogiora\Editors\BlockEditorPanel;
 use McLogiora\Editors\ClassicEditorMetabox;
+use McLogiora\Editors\SuggestionEditorController;
+use McLogiora\Editors\SuggestionEditorState;
 use McLogiora\Editors\EditorDetector;
 use McLogiora\Editors\EditorFactory;
 use McLogiora\Editors\EditorManager;
@@ -88,6 +90,8 @@ use McLogiora\Workflows\TranslationStatusTransitions;
 use McLogiora\Workflows\TranslationWorkflowService;
 use McLogiora\Workflows\TranslationWorkflowValidator;
 use McLogiora\Admin\MediaTranslationFields;
+use McLogiora\Admin\SuggestionAdminController;
+use McLogiora\Admin\SuggestionAdminState;
 use McLogiora\Admin\StringActionController;
 use McLogiora\Admin\StringManager;
 use McLogiora\Admin\WidgetTranslationManager;
@@ -120,6 +124,21 @@ use McLogiora\Switcher\SwitcherModule;
 use McLogiora\Switcher\SwitcherRenderer;
 use McLogiora\Admin\InstallationFailureNotice;
 use McLogiora\Admin\RoutingSettingsScreen;
+use McLogiora\Admin\SuggestionSettingsScreen;
+use McLogiora\Suggestions\CredentialStore;
+use McLogiora\Suggestions\HttpTransport;
+use McLogiora\Suggestions\LlmInstructions;
+use McLogiora\Suggestions\ModelCache;
+use McLogiora\Suggestions\ProviderReadiness;
+use McLogiora\Suggestions\ProviderRegistry;
+use McLogiora\Suggestions\SuggestionPreviewStore;
+use McLogiora\Suggestions\SuggestionSettings;
+use McLogiora\Suggestions\TranslationSuggestionApplyService;
+use McLogiora\Suggestions\TranslationSuggestionService;
+use McLogiora\Suggestions\Providers\AnthropicProvider;
+use McLogiora\Suggestions\Providers\DeepLProvider;
+use McLogiora\Suggestions\Providers\GeminiProvider;
+use McLogiora\Suggestions\Providers\OpenAiProvider;
 use McLogiora\Seo\AlternateUrlService;
 use McLogiora\Seo\CanonicalService;
 use McLogiora\Seo\OpenGraphLocaleService;
@@ -227,12 +246,15 @@ final class Application {
 		$modules->add( new DocumentLanguageModule() );
 		$modules->add( $this->container->get( SwitcherModule::class ) );
 		$modules->add( new RoutingSettingsScreen() );
+		$modules->add( new SuggestionSettingsScreen() );
 		$modules->add( new SeoModule() );
 		$modules->add( new SitemapIntegration() );
 		$modules->add( new InstallationFailureNotice() );
 		$modules->add( new EditorManager() );
 		$modules->add( new BlockEditorPanel() );
 		$modules->add( new ClassicEditorMetabox() );
+		$modules->add( new SuggestionEditorController() );
+		$modules->add( new SuggestionAdminController() );
 		$modules->add( new CompatibilityDashboard() );
 		$modules->add( new AdminMenu() );
 		$modules->register();
@@ -804,6 +826,124 @@ final class Application {
 			RoutingSettings::class,
 			static function () {
 				return new RoutingSettings();
+			}
+		);
+
+		$this->container->set(
+			SuggestionSettings::class,
+			static function () {
+				return new SuggestionSettings();
+			}
+		);
+
+		$this->container->set(
+			CredentialStore::class,
+			static function () {
+				return new CredentialStore();
+			}
+		);
+
+		$this->container->set(
+			ModelCache::class,
+			static function () {
+				return new ModelCache();
+			}
+		);
+
+		$this->container->set(
+			LlmInstructions::class,
+			static function () {
+				return new LlmInstructions();
+			}
+		);
+
+		$this->container->set(
+			HttpTransport::class,
+			static function ( Container $container ) {
+				return new HttpTransport( $container->get( SuggestionSettings::class )->timeout() );
+			}
+		);
+
+		$this->container->set(
+			SuggestionAdminState::class,
+			static function ( Container $container ) {
+				return new SuggestionAdminState(
+					$container->get( SuggestionSettings::class ),
+					$container->get( ProviderRegistry::class ),
+					$container->get( ProviderReadiness::class ),
+					$container->get( CapabilityRegistry::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			SuggestionEditorState::class,
+			static function ( Container $container ) {
+				return new SuggestionEditorState(
+					$container->get( SuggestionSettings::class ),
+					$container->get( ProviderRegistry::class ),
+					$container->get( ProviderReadiness::class ),
+					$container->get( CapabilityRegistry::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			ProviderReadiness::class,
+			static function ( Container $container ) {
+				return new ProviderReadiness( $container->get( CredentialStore::class ) );
+			}
+		);
+
+		$this->container->set(
+			ProviderRegistry::class,
+			static function ( Container $container ) {
+				$registry    = new ProviderRegistry();
+				$transport   = $container->get( HttpTransport::class );
+				$credentials = $container->get( CredentialStore::class );
+				$prompts     = $container->get( LlmInstructions::class );
+
+				/*
+				 * Every provider is registered on every site and each reports
+				 * its own configured state. Registering is not enabling: none
+				 * of these touches the network until an owner supplies a
+				 * credential and explicitly asks for something.
+				 */
+				$registry->add( new OpenAiProvider( $transport, $credentials, $prompts ) );
+				$registry->add( new AnthropicProvider( $transport, $credentials, $prompts ) );
+				$registry->add( new GeminiProvider( $transport, $credentials, $prompts ) );
+				$registry->add( new DeepLProvider( $transport, $credentials ) );
+
+				return $registry;
+			}
+		);
+
+		$this->container->set(
+			SuggestionPreviewStore::class,
+			static function () {
+				return new SuggestionPreviewStore();
+			}
+		);
+
+		$this->container->set(
+			TranslationSuggestionService::class,
+			static function ( Container $container ) {
+				return new TranslationSuggestionService(
+					$container->get( SuggestionSettings::class ),
+					$container->get( ProviderRegistry::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			TranslationSuggestionApplyService::class,
+			static function ( Container $container ) {
+				return new TranslationSuggestionApplyService(
+					$container->get( SuggestionPreviewStore::class ),
+					$container->get( TranslationWorkflowService::class ),
+					$container->get( MediaTranslationService::class ),
+					$container->get( StringTranslationService::class )
+				);
 			}
 		);
 

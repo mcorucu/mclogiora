@@ -27,6 +27,8 @@ defined( 'ABSPATH' ) || exit;
 final class ClassicEditorMetabox implements ModuleInterface {
 	const SCREEN_ID = 'mclogiora-translations';
 
+	const SUGGESTIONS_HANDLE = 'mclogiora-classic-suggestions';
+
 	/**
 	 * Translation model.
 	 *
@@ -40,6 +42,13 @@ final class ClassicEditorMetabox implements ModuleInterface {
 	 * @var RuntimeReadiness|null
 	 */
 	private $readiness = null;
+
+	/**
+	 * Suggestion state provider.
+	 *
+	 * @var SuggestionEditorState|null
+	 */
+	private $suggestions = null;
 
 	/**
 	 * Create-translation forms waiting to be printed outside the post form.
@@ -61,7 +70,8 @@ final class ClassicEditorMetabox implements ModuleInterface {
 			return;
 		}
 
-		$this->model = $container->get( EditorTranslationModel::class );
+		$this->model       = $container->get( EditorTranslationModel::class );
+		$this->suggestions = $container->get( SuggestionEditorState::class );
 
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_box' ), 10, 2 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
@@ -120,6 +130,74 @@ final class ClassicEditorMetabox implements ModuleInterface {
 			array(),
 			MCLOGIORA_VERSION
 		);
+
+		$this->enqueue_suggestions();
+	}
+
+	/**
+	 * Loads the suggestion script for the post being edited.
+	 *
+	 * Enqueued only for a translation whose suggestion state is actually
+	 * available, so a source post, an unrelated post type or a site with the
+	 * feature switched off ships no script and no state at all.
+	 *
+	 * @return void
+	 */
+	private function enqueue_suggestions() {
+		if ( ! $this->suggestions instanceof SuggestionEditorState || null === $this->model ) {
+			return;
+		}
+
+		$post = get_post();
+
+		if ( ! $post instanceof \WP_Post ) {
+			return;
+		}
+
+		$model = $this->model->for_post( (int) $post->ID );
+
+		if ( null === $model || ! empty( $model['isSource'] ) ) {
+			return;
+		}
+
+		$state = $this->suggestions->for_post( (int) $post->ID );
+
+		if ( empty( $state['available'] ) ) {
+			/*
+			 * An unavailable feature is explained by markup the metabox already
+			 * rendered. Shipping the script as well would hand the browser an
+			 * action list for something it may not do.
+			 */
+			return;
+		}
+
+		$path = MCLOGIORA_PATH . 'assets/js/classic-suggestions.js';
+
+		wp_enqueue_script(
+			self::SUGGESTIONS_HANDLE,
+			MCLOGIORA_URL . 'assets/js/classic-suggestions.js',
+			array( 'wp-i18n' ),
+			file_exists( $path ) ? (string) filemtime( $path ) : MCLOGIORA_VERSION,
+			true
+		);
+
+		wp_set_script_translations( self::SUGGESTIONS_HANDLE, 'mclogiora', MCLOGIORA_PATH . 'languages' );
+
+		wp_add_inline_script(
+			self::SUGGESTIONS_HANDLE,
+			'window.mcLogioraClassicSuggestions = ' . wp_json_encode(
+				array(
+					'objectId'      => (int) $post->ID,
+					'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+					'fields'        => $state['fields'],
+					'actions'       => $state['actions'],
+					'nonce'         => $state['nonce'],
+					'providerLabel' => $state['providerLabel'],
+					'modelLabel'    => $state['modelLabel'],
+				)
+			) . ';',
+			'before'
+		);
 	}
 
 	/**
@@ -153,7 +231,102 @@ final class ClassicEditorMetabox implements ModuleInterface {
 			echo '<p class="mclogiora-editor__meta">' . esc_html__( 'You do not have permission to change translations.', 'mclogiora' ) . '</p>';
 		}
 
+		$this->render_suggestions( $model );
+
 		echo '</div>';
+	}
+
+	/**
+	 * Renders the Translation Suggestions section.
+	 *
+	 * Only title and excerpt are offered. A post body is serialised blocks or a
+	 * builder payload, and Phase 16 deliberately does not translate those, so no
+	 * control here implies that it does.
+	 *
+	 * The section is deliberately form-free. The Classic Editor wraps this whole
+	 * screen in `<form id="post">`, so anything that submits would save the post.
+	 * Every button is `type="button"` and every action is an AJAX call to the
+	 * endpoints the Block Editor already uses -- no nested form, and no path from
+	 * a suggestion click to an ordinary post update.
+	 *
+	 * @param array<string,mixed> $model Translation model.
+	 * @return void
+	 */
+	private function render_suggestions( array $model ) {
+		if ( ! $this->suggestions instanceof SuggestionEditorState || ! empty( $model['isSource'] ) ) {
+			return;
+		}
+
+		$state = $this->suggestions->for_post( (int) $model['objectId'] );
+
+		echo '<div class="mclogiora-editor__suggestions">';
+
+		printf( '<h3>%s</h3>', esc_html__( 'Translation Suggestions', 'mclogiora' ) );
+
+		if ( empty( $state['available'] ) ) {
+			printf( '<p class="mclogiora-editor__meta">%s</p>', esc_html( $state['reason'] ) );
+
+			if ( ! empty( $state['settingsUrl'] ) ) {
+				printf(
+					'<p><a href="%1$s">%2$s</a></p>',
+					esc_url( $state['settingsUrl'] ),
+					esc_html__( 'Translation Suggestions settings', 'mclogiora' )
+				);
+			}
+
+			echo '</div>';
+
+			return;
+		}
+
+		echo '<ul class="mclogiora-editor__list">';
+
+		$this->render_suggestion_field( 'title', __( 'Title', 'mclogiora' ), __( 'Generate Title suggestion', 'mclogiora' ) );
+		$this->render_suggestion_field( 'excerpt', __( 'Excerpt', 'mclogiora' ), __( 'Generate Excerpt suggestion', 'mclogiora' ) );
+
+		echo '</ul>';
+
+		echo '</div>';
+	}
+
+	/**
+	 * Renders the controls for one suggestible field.
+	 *
+	 * The visible label stays short while the accessible name carries the field,
+	 * because two buttons both announced as "Generate suggestion" tell a screen
+	 * reader user nothing about which field they are about to spend a request on.
+	 *
+	 * @param string $field Field name.
+	 * @param string $label Visible field label.
+	 * @param string $accessible_label Accessible name for the generate button.
+	 * @return void
+	 */
+	private function render_suggestion_field( $field, $label, $accessible_label ) {
+		printf(
+			'<li class="mclogiora-editor__row" data-mclogiora-field="%s">',
+			esc_attr( $field )
+		);
+
+		echo '<div class="mclogiora-editor__row-head">';
+
+		printf( '<strong>%s</strong>', esc_html( $label ) );
+
+		printf(
+			'<button type="button" class="button button-secondary" data-mclogiora-generate aria-label="%1$s">%2$s</button>',
+			esc_attr( $accessible_label ),
+			esc_html__( 'Generate suggestion', 'mclogiora' )
+		);
+
+		echo '</div>';
+
+		/*
+		 * The script owns everything below the button: busy text, errors and the
+		 * preview with its own Apply and Discard. Rendering an empty region here
+		 * keeps the server output the shape the script expects.
+		 */
+		echo '<div class="mclogiora-editor__feedback" data-mclogiora-feedback></div>';
+
+		echo '</li>';
 	}
 
 	/**
