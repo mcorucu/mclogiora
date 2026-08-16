@@ -21,8 +21,12 @@ use McLogiora\Relations\TranslationRelationServiceInterface;
 use McLogiora\Relations\TranslationStatus;
 use McLogiora\Suggestions\CredentialStore;
 use McLogiora\Suggestions\HttpTransport;
+use McLogiora\Suggestions\LlmInstructions;
 use McLogiora\Suggestions\ProviderRegistry;
 use McLogiora\Suggestions\Providers\DeepLProvider;
+use McLogiora\Suggestions\Providers\OpenAiProvider;
+use McLogiora\Suggestions\Providers\GeminiProvider;
+use McLogiora\Suggestions\Providers\AnthropicProvider;
 use McLogiora\Suggestions\SuggestionSettings;
 use McLogiora\Suggestions\SuggestionSurface;
 use McLogiora\Suggestions\TranslationSuggestionService;
@@ -126,9 +130,20 @@ final class TaxonomySuggestionIntegrationTest extends WP_Ajax_UnitTestCase {
 		$this->container->set(
 			ProviderRegistry::class,
 			function () {
-				$registry = new ProviderRegistry();
+				/*
+				 * Every provider is registered even though these tests only use
+				 * DeepL. The container is a process-wide singleton, so a
+				 * one-provider registry left behind here would follow the suite
+				 * into other tests and hide the screens that iterate providers.
+				 */
+				$registry    = new ProviderRegistry();
+				$credentials = new CredentialStore();
+				$prompts     = new LlmInstructions();
 
-				$registry->add( new DeepLProvider( $this->transport, new CredentialStore() ) );
+				$registry->add( new OpenAiProvider( $this->transport, $credentials, $prompts ) );
+				$registry->add( new AnthropicProvider( $this->transport, $credentials, $prompts ) );
+				$registry->add( new GeminiProvider( $this->transport, $credentials, $prompts ) );
+				$registry->add( new DeepLProvider( $this->transport, $credentials ) );
 
 				return $registry;
 			}
