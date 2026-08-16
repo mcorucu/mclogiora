@@ -44,11 +44,7 @@ use McLogiora\Editors\EditorFactory;
 use McLogiora\Editors\EditorManager;
 use McLogiora\Editors\EditorRegistry;
 use McLogiora\Editors\EditorTranslationModel;
-use McLogiora\Editors\Payload\AcfPayloadAdapter;
-use McLogiora\Editors\Payload\BeaverBuilderPayloadAdapter;
-use McLogiora\Editors\Payload\ElementorPayloadAdapter;
 use McLogiora\Editors\Payload\PayloadAdapterRegistry;
-use McLogiora\Editors\Payload\TranslationPayloadAdapterInterface;
 use McLogiora\Editors\TranslationStatusPresenter;
 use McLogiora\Health\DatabaseHealthCheck;
 use McLogiora\Health\SeoHealthCheck;
@@ -371,29 +367,7 @@ final class Application {
 		$this->container->set(
 			PayloadAdapterRegistry::class,
 			static function () {
-				$registry = new PayloadAdapterRegistry();
-
-				/*
-				 * Both adapters are registered unconditionally and each
-				 * reports its own availability, so a site without Elementor or
-				 * ACF loads them without touching either plugin's classes.
-				 * Phase 15 builders register here through the same filter.
-				 */
-				$registry->add( new ElementorPayloadAdapter() );
-				$registry->add( new BeaverBuilderPayloadAdapter() );
-				$registry->add( new AcfPayloadAdapter() );
-
-				$extra = apply_filters( 'mclogiora_register_payload_adapters', array(), $registry );
-
-				if ( is_array( $extra ) ) {
-					foreach ( $extra as $adapter ) {
-						if ( $adapter instanceof TranslationPayloadAdapterInterface ) {
-							$registry->add( $adapter );
-						}
-					}
-				}
-
-				return $registry;
+				return PayloadAdapterRegistry::with_core_adapters();
 			}
 		);
 
