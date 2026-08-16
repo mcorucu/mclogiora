@@ -38,6 +38,7 @@ use McLogiora\Database\VersionChecker;
 use McLogiora\Editors\BlockEditorPanel;
 use McLogiora\Editors\ClassicEditorMetabox;
 use McLogiora\Editors\SuggestionEditorController;
+use McLogiora\Editors\SuggestionEditorState;
 use McLogiora\Editors\EditorDetector;
 use McLogiora\Editors\EditorFactory;
 use McLogiora\Editors\EditorManager;
@@ -857,6 +858,18 @@ final class Application {
 			HttpTransport::class,
 			static function ( Container $container ) {
 				return new HttpTransport( $container->get( SuggestionSettings::class )->timeout() );
+			}
+		);
+
+		$this->container->set(
+			SuggestionEditorState::class,
+			static function ( Container $container ) {
+				return new SuggestionEditorState(
+					$container->get( SuggestionSettings::class ),
+					$container->get( ProviderRegistry::class ),
+					$container->get( ProviderReadiness::class ),
+					$container->get( CapabilityRegistry::class )
+				);
 			}
 		);
 
