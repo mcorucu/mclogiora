@@ -294,6 +294,21 @@ final class CachedTranslationRelationRepository implements TranslationRelationRe
 	}
 
 	/**
+	 * Returns active group keys in a stable order.
+	 *
+	 * Deliberately not cached. Its only caller walks every page exactly once
+	 * during an export, so a cache entry per page would be written and never
+	 * read again, and would go stale the moment a group is created.
+	 *
+	 * @param int $limit Maximum keys to return.
+	 * @param int $offset Number of keys to skip.
+	 * @return string[]
+	 */
+	public function active_group_keys( $limit, $offset = 0 ) {
+		return $this->repository->active_group_keys( $limit, $offset );
+	}
+
+	/**
 	 * Counts active translation groups.
 	 *
 	 * @return int

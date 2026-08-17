@@ -177,6 +177,21 @@ interface TranslationRelationRepositoryInterface {
 	public function all();
 
 	/**
+	 * Returns active group keys in a stable order, for exhaustive iteration.
+	 *
+	 * `all()` answers "show me some groups": it is capped and ordered by recent
+	 * activity, which is right for a dashboard and wrong for anything that must
+	 * see every group and see them in the same order twice. Export is that
+	 * caller, so it gets a paged reader ordered by the group key itself --
+	 * stable under concurrent edits in a way `updated_at` is not.
+	 *
+	 * @param int $limit Maximum keys to return.
+	 * @param int $offset Number of keys to skip.
+	 * @return string[]
+	 */
+	public function active_group_keys( $limit, $offset = 0 );
+
+	/**
 	 * Counts active translation groups.
 	 *
 	 * @return int

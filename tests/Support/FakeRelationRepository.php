@@ -400,6 +400,21 @@ final class FakeRelationRepository implements TranslationRelationRepositoryInter
 	/**
 	 * {@inheritDoc}
 	 *
+	 * @param int $limit Maximum keys to return.
+	 * @param int $offset Number of keys to skip.
+	 * @return string[]
+	 */
+	public function active_group_keys( $limit, $offset = 0 ) {
+		$keys = array_map( 'strval', array_keys( $this->groups ) );
+
+		sort( $keys, SORT_STRING );
+
+		return array_slice( $keys, max( 0, (int) $offset ), max( 1, (int) $limit ) );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
 	 * @return int
 	 */
 	public function count_groups() {

@@ -481,6 +481,25 @@ final class InMemoryTranslationRelationRepository implements TranslationRelation
 	}
 
 	/**
+	 * Returns group keys in a stable order.
+	 *
+	 * @param int $limit Maximum keys to return.
+	 * @param int $offset Number of keys to skip.
+	 * @return string[]
+	 */
+	public function active_group_keys( $limit, $offset = 0 ) {
+		$keys = array();
+
+		foreach ( $this->groups as $group ) {
+			$keys[] = $group->group_key();
+		}
+
+		sort( $keys, SORT_STRING );
+
+		return array_slice( $keys, max( 0, (int) $offset ), max( 1, (int) $limit ) );
+	}
+
+	/**
 	 * Counts active translation groups.
 	 *
 	 * @return int
