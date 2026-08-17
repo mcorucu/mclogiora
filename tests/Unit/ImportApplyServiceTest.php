@@ -168,6 +168,70 @@ final class ImportApplyServiceTest extends TestCase {
 	}
 
 	/**
+	 * Rolls back when final verification observes a wrong postcondition.
+	 *
+	 * @return void
+	 */
+	public function test_verifier_failure_rolls_back_after_real_operations() {
+		$relations = new FakeRelationRepository();
+		$objects   = new FakeObjectLocatorGateway();
+		$objects->add_post( 10, 'post', 'source' );
+		$objects->add_post( 20, 'post', 'translation' );
+		$real_executor = new ImportOperationExecutor(
+			new FakeLanguageService( $this->languages() ),
+			new TranslationRelationService( $relations, new MetadataNeedsUpdateDetector() )
+		);
+		$executor = new class( $real_executor, $relations ) implements ImportOperationExecutorInterface {
+			private $inner;
+			private $relations;
+			private $calls = 0;
+			public function __construct( ImportOperationExecutorInterface $inner, FakeRelationRepository $relations ) { $this->inner = $inner; $this->relations = $relations; }
+			public function execute( PlannedOperation $operation ) {
+				$result = $this->inner->execute( $operation );
+				++$this->calls;
+				if ( 2 === $this->calls ) {
+					$this->relations->archive_group( '11111111-1111-4111-8111-111111111111' );
+				}
+				return $result;
+			}
+		};
+		$service = $this->service( new FakeLanguageService( $this->languages() ), $relations, $objects, $executor );
+
+		$result = $service->apply( $this->plan() );
+
+		$this->assertFalse( $result->is_success() );
+		$this->assertTrue( $result->rolled_back() );
+		$this->assertSame( 'import_apply_verification_failed', $result->issues()[0]->code() );
+		$this->assertNull( $relations->find_group( '11111111-1111-4111-8111-111111111111' ) );
+	}
+
+	/**
+	 * Exercises the commit-failure rollback branch.
+	 *
+	 * @return void
+	 */
+	public function test_commit_failure_requests_rollback() {
+		$relations = new FakeRelationRepository();
+		$objects   = new FakeObjectLocatorGateway();
+		$objects->add_post( 10, 'post', 'source' );
+		$objects->add_post( 20, 'post', 'translation' );
+		$transaction = new class implements TransactionInterface {
+			public $rollback_called = false;
+			public function begin() { return true; }
+			public function commit() { return false; }
+			public function rollback() { $this->rollback_called = true; return true; }
+		};
+		$service = $this->service( new FakeLanguageService( $this->languages() ), $relations, $objects, null, $transaction );
+
+		$result = $service->apply( $this->plan() );
+
+		$this->assertFalse( $result->is_success() );
+		$this->assertTrue( $result->rolled_back() );
+		$this->assertSame( 'import_transaction_commit_failed', $result->issues()[0]->code() );
+		$this->assertTrue( $transaction->rollback_called );
+	}
+
+	/**
 	 * A re-apply of the old plan is stale while a fresh dry run is all skips.
 	 *
 	 * @return void
@@ -198,8 +262,8 @@ final class ImportApplyServiceTest extends TestCase {
 		$this->assertSame( 2, $fresh_result->skipped_operations() );
 	}
 
-	private function service( $languages, $relations, $objects, $executor = null ) {
-		$transaction = new class( $relations ) implements TransactionInterface {
+	private function service( $languages, $relations, $objects, $executor = null, $transaction = null ) {
+		$transaction = $transaction ? $transaction : new class( $relations ) implements TransactionInterface {
 			private $relations;
 			public $started = false;
 			public function __construct( FakeRelationRepository $relations ) { $this->relations = $relations; }
