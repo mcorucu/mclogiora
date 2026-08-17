@@ -594,22 +594,35 @@ something REST adds.
 
 ### `POST /mclogiora/v1/translations`
 
-Creates a translation of an existing post. **This is the only route in the
-namespace that brings a WordPress object into existence.**
+Creates a translation of an existing post or term. **This is the only route in
+the namespace that brings a WordPress object into existence.**
 
 | Parameter | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `object_type` | string | yes | `post` only — term creation is not exposed |
-| `source_id` | integer | yes | The post to translate |
+| `object_type` | string | yes | `post` or `term` |
+| `source_id` | integer | yes | The object to translate |
 | `language` | string | yes | Language the new translation represents |
+| `taxonomy` | string | terms | The source term's taxonomy |
+| `translated_name` | string | terms | Name for the new term |
+| `translated_description` | string | no | Description for the new term. Empty by default |
 
 There is deliberately no `post_title`, `post_content`, `post_status`,
-`post_author`, `post_parent`, `post_name`, `meta_input`, `tax_input` or
-`featured_media`. This route is not a `wp_insert_post` proxy with a translation
-record attached; the workflow owns every creation default.
+`post_author`, `post_parent`, `post_name`, `meta_input`, `tax_input`,
+`featured_media`, `slug`, `parent`, `term_id` or term meta. This route is not a
+`wp_insert_post` or `wp_insert_term` proxy with a translation record attached;
+the workflow owns every creation default.
 
-**Permission:** requires the capability to manage translations, plus `edit_post`
-on the source and `edit_posts` for its type, both enforced by the workflow.
+**Permission:** requires the capability to manage translations. The workflow
+additionally requires `edit_post` on the source and `edit_posts` for its type
+when translating a post, and `manage_categories` when translating a term.
+
+> **Creation never adopts an object that already exists.** A term with the same
+> name, or one already holding the slug the workflow wanted, is never handed
+> back as the translation — a new term is created instead and the existing one
+> is left untouched. To make an object that already exists the translation, use
+> `POST /relations`. The caller has to choose that deliberately.
+
+#### Posts
 
 The new post is created with:
 
@@ -620,6 +633,33 @@ The new post is created with:
 | `post_title`, `post_content`, `post_excerpt`, `menu_order` | copied from the source |
 | `post_author` | the source's author, or the current user |
 | `post_parent`, `post_name`, meta, terms | not set |
+
+#### Terms
+
+The new term is created with:
+
+| Field | Value |
+| --- | --- |
+| `name` | your `translated_name`, trimmed |
+| `description` | your `translated_description`, or empty — never copied from the source |
+| `taxonomy` | the source's taxonomy |
+| `slug` | `sanitize_title( "{name}-{language}" )` — see below |
+| `parent` | the translated parent, or `0` — see below |
+
+**Slug.** The workflow derives a provisional, language-scoped slug rather than
+letting WordPress derive one from the name alone. That stops a translation
+colliding with its source when both names reduce to the same slug, and it is
+recognisable so the slug manager can replace it later. **It is not a translated
+slug and should not be treated as one.** If the derived slug is already taken,
+WordPress makes it unique by suffixing; it never reuses the term already holding
+it.
+
+**Parent.** `0` when the source has no parent, and `0` when the source's parent
+has no translation in the same language. Only when the source's parent *is*
+already translated into the target language does the new term get that
+translated parent. mcLogiora never builds a mixed-language hierarchy: a flat
+translation is better than one hanging off a parent in another language. For
+non-hierarchical taxonomies the parent is always `0`.
 
 Relation status is `draft`.
 
@@ -636,15 +676,15 @@ Repeating an identical request returns 409 `mclogiora_translation_exists` and
 **creates no second post**. The language-slot check runs before the insert, so a
 refused request costs nothing rather than creating a post that is then removed.
 
-**Rollback.** If the relation write or the builder-payload step fails after the
-post exists, the workflow deletes the post it just created and leaves no orphan
-draft behind. That guarantee lives in the workflow, not in REST, and is covered
-by a regression test that injects a failing payload adapter through
-`mclogiora_register_payload_adapters`. The translation group itself survives
-holding only its source — the same state a group reaches when its last
-translation is unlinked.
+**Rollback.** If the relation write fails after the object exists — or, for
+posts, the builder-payload step — the workflow deletes the object it just
+created and leaves no orphan behind. That guarantee lives in the workflow, not
+in REST, and both paths have regression tests against real WordPress. The
+translation group itself survives holding only its source, the same state a
+group reaches when its last translation is unlinked.
 
-Term creation is not exposed yet.
+Repeating an identical term request behaves exactly as for posts: 409
+`mclogiora_translation_exists`, and no term is created.
 
 ### `PUT|PATCH /mclogiora/v1/translations`
 
@@ -691,10 +731,11 @@ post status, modified time or revision, on either side of the relation, and it
 contacts no translation provider — moving a status to `machine_suggested` does
 not ask anyone to translate anything.
 
-#### Not yet writable
+#### Every domain mutation is now reachable
 
-Creating a translated **term** is supported by the domain and not exposed over
-REST. It needs its own qualification.
+The seven operations the translation domain supports — create, link and unlink
+for posts and for terms, plus the status change — all have a route. No
+translation mutation remains unexposed.
 
 ### Errors
 
@@ -742,6 +783,15 @@ Domain refusals from the membership routes:
 | `mclogiora_taxonomy_mismatch` | 409 | A translated term must share its source's taxonomy |
 | `mclogiora_same_language` | 409 | Target language equals the source language |
 | `mclogiora_relation_detach_original` | 409 | The source item of a group cannot be detached |
+
+Domain refusals specific to term creation:
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| `mclogiora_rest_missing_taxonomy` | 400 | No taxonomy named for a term |
+| `mclogiora_missing_translated_name` | 409 | The name was empty or only whitespace |
+| `mclogiora_taxonomy_not_translatable` | 409 | That taxonomy is not available for translation |
+| `mclogiora_source_not_found` | 404 | No such term in the taxonomy you named |
 
 The 403s are worth noting: they arrive from the workflow *after* the permission
 callback has already passed. Whether you may edit one particular post is not

@@ -711,7 +711,7 @@ Phase 17: Developer & Operations Layer — in progress
 | | Workstream | Delivers | Status |
 | --- | --- | --- | --- |
 | A | Developer Extension API | Public read functions, then a reviewed hook contract | Complete |
-| B | REST API | `/mclogiora/v1/…` under permission callbacks | Slices 1 (reads), 2 (status writes), 3 (relation membership) and 4A (content creation) complete; taxonomy `create_translation` still unexposed |
+| B | REST API | `/mclogiora/v1/…` under permission callbacks | Complete for the translation domain (slices 1–4B). `/import`, `/export` and `/status` belong to workstreams D and E; `/strings`, `/suggestions` and `/switcher` are reassessed below |
 | C | WP-CLI | `wp mclogiora …`, wrapping the workflow services | Not started |
 | D | Import / Export | Portable packages with a dry run before any write | Not started |
 | E | Diagnostics | System Status screen and Site Health integration | Not started |
@@ -730,8 +730,21 @@ Phase 17: Developer & Operations Layer — in progress
 - Workstream B slice 4A exposed content creation over `POST /translations`, the only route in the namespace that brings a WordPress object into existence. The new post is always a draft, carries the source's type and text, and is never published or machine-translated. The route accepts three fields and no WordPress post field at all, so it cannot become a `wp_insert_post` proxy wearing a translation label.
 - This forced one correction: `/translations` had been registered `EDITABLE`, so `POST` meant "change a status". On a collection `POST` means create, and the status change narrowed to `PUT|PATCH`. Nothing was released, so this is a design correction before release rather than a break.
 - The workflow's post-create rollback had existed since Phase 14 with no test. Slice 4A added the domain regression, injecting the failure through the supported `mclogiora_register_payload_adapters` filter. The guarantee holds: the draft is removed and no relation record outlives the object it pointed at. The group survives holding only its source, which is the same state an unlinked group reaches and is recorded as existing behaviour.
-- One domain mutation remains unexposed: taxonomy `create_translation`.
-- Next slice: workstream B slice 4B, taxonomy `create_translation` over REST, or workstream C once REST is judged sufficient.
+- Workstream B slice 4B exposed taxonomy creation through the same `POST /translations` route with `object_type=term`. Qualifying it against real WordPress corrected two assumptions: the workflow's provisional language-scoped slug means `wp_insert_term` does not treat a matching name as a duplicate, and a taken slug is suffixed rather than refused. Both cases therefore succeed — which makes the adoption boundary the thing that matters, and it holds: an existing term is never handed back as the translation, and there is no fallback to `link_existing`.
+- The parent rule is an invariant rather than a default: a translated term takes its parent only when the source's parent is already translated into the same language, and `0` otherwise. mcLogiora builds a flat hierarchy before a mixed-language one.
+- All seven translation-domain mutations are now reachable over REST.
+
+**REST scope reassessment.** Section 14 sketched nine route families. Three are built (`/languages`, `/relations`, `/translations`). The remaining six are not workstream B work:
+
+| Sketched route | Disposition |
+| --- | --- |
+| `/import`, `/export` | Workstream D owns these, together with the dry-run requirement in section 17. Not REST-first: the packages and validation come before any transport. |
+| `/status` | Workstream E owns this, alongside the System Status screen and Site Health integration. |
+| `/strings` | No REST need identified. String translation is an admin-screen workflow with its own AJAX surface; a public REST projection would need the same per-object authorisation analysis the relation routes deferred, with no caller asking for it. Revisit only if a concrete consumer appears. |
+| `/suggestions` | Deliberately not built. ADR 0018 requires an explicit human action per suggestion and forbids background sending of site content; the existing admin AJAX surface already enforces that. A REST endpoint would make bulk machine translation trivially scriptable, which is the outcome Phase 16 was designed to prevent. |
+| `/switcher` | Superseded. Section 14 wanted a public cacheable switcher endpoint; `GET /languages` already serves that data publicly, including each language's home URL, and the switcher itself renders server-side. |
+
+- Workstream B is therefore complete unless a concrete consumer justifies `/strings`. Next: workstream C (WP-CLI), D (import/export) or E (diagnostics).
 
 Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
 
