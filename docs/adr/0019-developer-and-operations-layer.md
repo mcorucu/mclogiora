@@ -5,8 +5,9 @@
 Accepted for the layer's shape. Partially implemented: Workstream A is built —
 slice 1 the public read API, slice 2 the hook contract review. Workstream B is
 under way: slice 1 the read surface, slice 2 translation status transitions,
-slice 3 relation membership for posts and terms. Only `create_translation`
-remains unexposed. Workstreams C through E are not started.
+slice 3 relation membership for posts and terms, slice 4A content creation. Only
+taxonomy `create_translation` remains unexposed. Workstreams C through E are not
+started.
 
 ## Context
 
@@ -362,6 +363,56 @@ the correct answer and not one a permission callback could have given.
 It is the one remaining mutation, and the only one that creates a real
 WordPress object. Everything shipped so far can be described by what it does not
 touch; that one cannot, and it deserves the slice it did not get here.
+
+#### Content creation is its own risk slice
+
+`create_translation` was held back from slices 2 and 3 and given its own,
+covering posts only. Every earlier REST write could be described by what it does
+not touch; this one creates a WordPress post, so it has to be described by what
+it does exactly. Terms wait for a further slice rather than riding along on a
+shared method name.
+
+The route is `POST /translations`, and that forced a correction. Slice 2 had
+registered `EDITABLE` there, so `POST` meant "change a status". On a collection
+`POST` means create, and one verb meaning both would have been resolved by
+inspecting which parameters happened to arrive — a design that fails quietly.
+The status change narrowed to `PUT|PATCH`. Nothing was released, so this is a
+correction before release rather than a break, and the resource model is now
+consistent: `POST /relations` adds membership for an object that exists,
+`POST /translations` creates the object.
+
+The route accepts three fields and no WordPress post field at all. Title,
+content, status, author, parent, slug, meta and terms are the workflow's to
+decide. A route that accepted them would be a content-creation endpoint wearing
+a translation label, and the draft-only guarantee below would be one parameter
+away from being untrue.
+
+Two properties are asserted rather than assumed. The new post is always a
+`draft`: a translation nobody has read must not go live because a client asked
+for one. And a repeat creates nothing — the language-slot check runs before the
+insert, so a refused request costs no post rather than creating one that is then
+rolled back.
+
+#### The rollback existed and was untested
+
+The workflow has compensated for post-create failures since Phase 14, with two
+paths and a comment explaining each. Neither had a test. That is the state in
+which a guarantee quietly stops being true, so this slice adds the regression at
+the domain layer where the guarantee lives, injecting the failure through
+`mclogiora_register_payload_adapters` — the plugin's own supported extension
+point — so nothing is stubbed and no production code is altered to make the test
+possible. A site whose builder adapter fails is exactly the modelled situation.
+
+The test found the guarantee holds: the draft is removed and no relation record
+outlives the object it pointed at. It also clarified the boundary. The
+translation *group* survives holding only its source, because
+`resolve_or_create_group()` runs before the insert and the slot-free check needs
+it. That is the same state a group reaches when its last translation is
+unlinked, so it is recorded as the domain's behaviour rather than treated as a
+leak.
+
+REST contains no compensation code. A second implementation would eventually
+disagree with the first about what cleaning up means.
 
 #### Declared arguments only constrain if a validate_callback says so
 

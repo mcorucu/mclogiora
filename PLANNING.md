@@ -711,7 +711,7 @@ Phase 17: Developer & Operations Layer — in progress
 | | Workstream | Delivers | Status |
 | --- | --- | --- | --- |
 | A | Developer Extension API | Public read functions, then a reviewed hook contract | Complete |
-| B | REST API | `/mclogiora/v1/…` under permission callbacks | Slices 1 (reads), 2 (status writes) and 3 (relation membership) complete; `create_translation` still unexposed |
+| B | REST API | `/mclogiora/v1/…` under permission callbacks | Slices 1 (reads), 2 (status writes), 3 (relation membership) and 4A (content creation) complete; taxonomy `create_translation` still unexposed |
 | C | WP-CLI | `wp mclogiora …`, wrapping the workflow services | Not started |
 | D | Import / Export | Portable packages with a dry run before any write | Not started |
 | E | Diagnostics | System Status screen and Site Health integration | Not started |
@@ -727,8 +727,11 @@ Phase 17: Developer & Operations Layer — in progress
 - Writes require no additional mcLogiora nonce. WordPress already governs REST authentication, and layering an admin-form nonce on top would break Application Password clients while adding nothing.
 - Workstream B slice 3 exposed relation membership over `POST /relations` and `DELETE /relations`, covering `link_existing` and `unlink` for both posts and terms. The `DELETE` removes membership, never the WordPress object: the post or term survives with every field byte-identical, which is asserted by full fingerprint comparison rather than argued. Posts and terms share the transport but dispatch to their own workflow, because the checks that differ — post type against post type, taxonomy against taxonomy — are what stop a category becoming the translation of a page.
 - These routes surfaced that the workflows apply per-object checks (`edit_post` on source and target, `manage_categories` for terms) after the general capability passes. REST maps those to 403 and adds nothing of its own.
-- One domain mutation remains unexposed: `create_translation` for posts and terms. It is the only one that creates a real WordPress object.
-- Next slice: workstream B slice 4, `create_translation` over REST, or workstream C once REST is judged sufficient.
+- Workstream B slice 4A exposed content creation over `POST /translations`, the only route in the namespace that brings a WordPress object into existence. The new post is always a draft, carries the source's type and text, and is never published or machine-translated. The route accepts three fields and no WordPress post field at all, so it cannot become a `wp_insert_post` proxy wearing a translation label.
+- This forced one correction: `/translations` had been registered `EDITABLE`, so `POST` meant "change a status". On a collection `POST` means create, and the status change narrowed to `PUT|PATCH`. Nothing was released, so this is a design correction before release rather than a break.
+- The workflow's post-create rollback had existed since Phase 14 with no test. Slice 4A added the domain regression, injecting the failure through the supported `mclogiora_register_payload_adapters` filter. The guarantee holds: the draft is removed and no relation record outlives the object it pointed at. The group survives holding only its source, which is the same state an unlinked group reaches and is recorded as existing behaviour.
+- One domain mutation remains unexposed: taxonomy `create_translation`.
+- Next slice: workstream B slice 4B, taxonomy `create_translation` over REST, or workstream C once REST is judged sufficient.
 
 Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
 

@@ -402,9 +402,10 @@ covered by the stability policy; the rest of `SeoSubject` is not.
 ## REST API
 
 Namespace `mclogiora/v1`. Reads on every resource, plus writes for translation
-relation membership and translation status. `/languages` is read-only, and the
-only `DELETE` in the namespace removes a relation membership — never a post or
-a term.
+creation, relation membership and translation status. `/languages` is read-only.
+Exactly one route creates a WordPress object (`POST /translations`), and the
+only `DELETE` in the namespace removes a relation membership — never a post or a
+term.
 
 Every read response is projected from the same readers documented above, and the
 write returns the same projection, so HTTP and PHP always answer the same
@@ -591,11 +592,67 @@ The group itself survives losing its last translation, keeping its key and its
 source. No group cleanup happens; that is the domain's existing behaviour, not
 something REST adds.
 
-### `POST|PUT|PATCH /mclogiora/v1/translations`
+### `POST /mclogiora/v1/translations`
 
-Moves an existing translation to a new status. All three verbs do the same
-thing; `EDITABLE` is what core's own controllers register for a partial update,
-and it lets a client that can only `POST` call it.
+Creates a translation of an existing post. **This is the only route in the
+namespace that brings a WordPress object into existence.**
+
+| Parameter | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `object_type` | string | yes | `post` only — term creation is not exposed |
+| `source_id` | integer | yes | The post to translate |
+| `language` | string | yes | Language the new translation represents |
+
+There is deliberately no `post_title`, `post_content`, `post_status`,
+`post_author`, `post_parent`, `post_name`, `meta_input`, `tax_input` or
+`featured_media`. This route is not a `wp_insert_post` proxy with a translation
+record attached; the workflow owns every creation default.
+
+**Permission:** requires the capability to manage translations, plus `edit_post`
+on the source and `edit_posts` for its type, both enforced by the workflow.
+
+The new post is created with:
+
+| Field | Value |
+| --- | --- |
+| `post_status` | **always `draft`** |
+| `post_type` | the source's type |
+| `post_title`, `post_content`, `post_excerpt`, `menu_order` | copied from the source |
+| `post_author` | the source's author, or the current user |
+| `post_parent`, `post_name`, meta, terms | not set |
+
+Relation status is `draft`.
+
+> **Nothing is ever published.** A translation nobody has read does not go live
+> because a client asked for one. The draft is a starting point for a person.
+
+> **Nothing is machine-translated.** The draft begins as a copy of the source's
+> text. No provider is contacted, by this route or any other.
+
+Returns the same group projection as `GET /relations`; the new post is at
+`translations[<language>].object_id`.
+
+Repeating an identical request returns 409 `mclogiora_translation_exists` and
+**creates no second post**. The language-slot check runs before the insert, so a
+refused request costs nothing rather than creating a post that is then removed.
+
+**Rollback.** If the relation write or the builder-payload step fails after the
+post exists, the workflow deletes the post it just created and leaves no orphan
+draft behind. That guarantee lives in the workflow, not in REST, and is covered
+by a regression test that injects a failing payload adapter through
+`mclogiora_register_payload_adapters`. The translation group itself survives
+holding only its source — the same state a group reaches when its last
+translation is unlinked.
+
+Term creation is not exposed yet.
+
+### `PUT|PATCH /mclogiora/v1/translations`
+
+Moves an existing translation to a new status. Both verbs do the same thing.
+
+`POST` is **not** accepted here: on a collection it means create, and one verb
+meaning both "make a new draft" and "change a status" would be resolved by
+guessing from which parameters arrived.
 
 | Parameter | Type | Required | Notes |
 | --- | --- | --- | --- |
@@ -636,9 +693,8 @@ not ask anyone to translate anything.
 
 #### Not yet writable
 
-Creating a translation — which creates a real WordPress post or term — is
-supported by the domain for both posts and terms and is not exposed over REST.
-It needs its own security argument and its own qualification.
+Creating a translated **term** is supported by the domain and not exposed over
+REST. It needs its own qualification.
 
 ### Errors
 
