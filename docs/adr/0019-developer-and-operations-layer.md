@@ -16,8 +16,8 @@ and final qualification. The authoritative planning audit requires no operator
 transport for D closure. Workstream E is complete: the shared read-only
 diagnostics projection, System Status admin screen, native Site Health debug
 information, actionable Site Health tests, zero-network policy, and no-REST-
-status decision are recorded in ADR 0021. Phase 17 closure remains a separate
-session.
+status decision are recorded in ADR 0021. Phase 17 is complete; its merged-main
+baseline is recorded by the closure report.
 
 ## Context
 
@@ -579,7 +579,8 @@ argument now names its callback explicitly.
 
 ## Deliberately not decided here
 
-- Which release version carries Phase 17. The sources use `@since x.x.x`.
+- Phase 17 is carried by release `0.16.0`; `Tested up to` remains 7.0 until the
+  separate WordPress 7.1 final compatibility gate passes.
 - Whether third parties may register suggestion providers. That question belongs
   with workstream A's hook review, and ADR 0018's constraints — explicit
   configuration, no arbitrary endpoint — bind whatever it concludes.

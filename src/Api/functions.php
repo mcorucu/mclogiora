@@ -24,7 +24,7 @@ if ( ! function_exists( 'mclogiora_get_languages' ) ) {
 	 *         echo esc_html( $language['native_name'] );
 	 *     }
 	 *
-	 * @since x.x.x
+	 * @since 0.16.0
 	 *
 	 * @param array<string,mixed> $args Optional. `status` accepts `active`
 	 *                                  (default) or `all`.
@@ -41,7 +41,7 @@ if ( ! function_exists( 'mclogiora_get_default_language' ) ) {
 	/**
 	 * Returns the site default language.
 	 *
-	 * @since x.x.x
+	 * @since 0.16.0
 	 *
 	 * @return array<string,mixed>|null Language record, or null when none is
 	 *                                  configured.
@@ -58,7 +58,7 @@ if ( ! function_exists( 'mclogiora_get_current_language' ) ) {
 	 * Falls back to the site default on a configured site, so this is null only
 	 * when mcLogiora has no languages at all.
 	 *
-	 * @since x.x.x
+	 * @since 0.16.0
 	 *
 	 * @return array<string,mixed>|null Language record, or null.
 	 */
@@ -76,7 +76,7 @@ if ( ! function_exists( 'mclogiora_get_translation' ) ) {
 	 * The return value is a relation record, not permission to display that
 	 * object. Apply your own status and capability checks before rendering it.
 	 *
-	 * @since x.x.x
+	 * @since 0.16.0
 	 *
 	 * @param int    $object_id Object identifier.
 	 * @param string $object_type Relation object type, such as `post` or `term`.
@@ -95,7 +95,7 @@ if ( ! function_exists( 'mclogiora_get_translation_group' ) ) {
 	 * The returned array has `group_key`, `object_type`, `source` and
 	 * `translations`, the last keyed by language code.
 	 *
-	 * @since x.x.x
+	 * @since 0.16.0
 	 *
 	 * @param int    $object_id Object identifier.
 	 * @param string $object_type Relation object type.
@@ -120,7 +120,7 @@ if ( ! function_exists( 'mclogiora_get_language_url' ) ) {
 	 * Null means the translation does not exist. A plausible-looking URL is
 	 * never invented for missing content.
 	 *
-	 * @since x.x.x
+	 * @since 0.16.0
 	 *
 	 * @param string   $language Target language code.
 	 * @param int|null $object_id Optional. Object identifier.
