@@ -9,7 +9,11 @@ transitions, slice 3 relation membership, slice 4A content creation, slice 4B
 taxonomy creation. All seven domain mutations are reachable over HTTP.
 Workstream C is complete: slice 1 the read-only commands, slice 2 the relation
 and status mutations, slice 3 creation. Every translation-domain operation is
-reachable from both HTTP and the shell. Workstreams D and E are not started.
+reachable from both HTTP and the shell. Workstream D is complete: slices 1–3
+deliver the portable package, export, parse/validate/dry-run, immutable-plan
+apply, stale protection, atomicity, rollback, persistent-cache-safe invalidation
+and final qualification. The authoritative planning audit requires no operator
+transport for D closure. Workstream E is not started.
 
 ## Context
 

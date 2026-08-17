@@ -3,10 +3,11 @@
 This document describes the portable package mcLogiora writes and reads, and the
 import path that plans and applies one through a reviewed immutable plan.
 
-Status as of Phase 17, workstream D, slice 2: a site can **produce** a package,
+Status as of Phase 17, workstream D, slice 3: a site can **produce** a package,
 **read** one, **validate** one against itself, **plan** what importing it would
 do, and apply that immutable plan through a transport-neutral application
-service. No REST, CLI or admin transport is included.
+service. No REST, CLI or admin transport is required by the authoritative
+Workstream D scope.
 
 ## 1. What a package is
 
@@ -499,15 +500,30 @@ language fields, preserved group UUID and source, exact linked
 object/language/status, skip equivalence and locator identity. A verification
 mismatch rolls back just like a write failure.
 
-## 11. What does not exist yet
+### Rollback cache coherence
+
+After rollback, `ImportRollbackCacheInvalidator` deletes the language-list
+cache, the relation-group list cache, and each per-group cache key carried by
+the plan. Deletion goes through `CacheInterface`, so the configured WordPress
+object-cache backend removes persistent entries as well as in-process values.
+The apply path does not use global `wp_cache_flush()` and does not disturb
+unrelated cache families. Post/term locator queries disable cache priming, and
+relation item lookup has no separate cache, so these are the complete affected
+families for format version 1 apply.
+
+## 11. Operator transport decision and closure
 
 - No REST route, no WP-CLI command, no admin screen. The package layer is
   transport-neutral on purpose; the services are registered in the container and
   hooked to nothing, so a site that never imports anything runs no extra code.
 - No remote or scheduled imports, and no upload handling.
 
-Workstream D slice 3 owns any future operator transport and closure. It must
-consume this service rather than add package interpretation of its own.
+The authoritative planning audit found no operator transport required before
+Workstream D closure, so no transport was invented for completeness. Workstream
+D is complete for the package, export, parse, validate, dry-run, apply,
+stale-protection, atomicity, rollback, verification and cache-coherence
+contract. A future transport, if a later requirement creates one, must consume
+these services rather than add package interpretation of its own.
 
 ## 12. Classes
 
@@ -523,6 +539,7 @@ consume this service rather than add package interpretation of its own.
 | `LocatorResolver`, `LocatorResolution` | Locator to zero, one or several objects |
 | `ImportPlanner`, `ImportPlan`, `PlannedOperation`, `PlanIssue` | The dry run, and the plan a later apply executes |
 | `ImportPlanPreconditionChecker` | Full pre-write stale-plan gate |
+| `ImportRollbackCacheInvalidator` | Targeted persistent-cache-safe rollback invalidation |
 | `ImportOperationExecutor`, `ImportApplyService`, `ImportApplyResult` | Ordered domain-backed apply and structured outcome |
 | `ImportPlanVerifier` | Exact postcondition verification before commit |
 | `TransactionInterface`, `DatabaseTransaction` | Injectable transaction boundary for plugin-owned tables |

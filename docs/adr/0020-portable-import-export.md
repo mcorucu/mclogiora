@@ -3,9 +3,10 @@
 ## Status
 
 Accepted for the package contract and the read/apply side. Implemented in
-Phase 17, workstream D, slices 1–2: package format, export, parsing,
+Phase 17, workstream D, slices 1–3: package format, export, parsing,
 validation, dry-run planning, immutable-plan apply, stale protection, atomicity,
-rollback and final verification. No REST, CLI or admin transport is included.
+rollback, persistent-cache-safe invalidation and final verification. The
+authoritative plan requires no REST, CLI or admin transport for closure.
 
 ADR 0019 remains the umbrella for the Phase 17 developer and operations layer
 and names workstream D; this ADR records the decisions that layer could not
@@ -220,9 +221,21 @@ scope nobody reviewed.
 
 The exporter, parser, validator, planner and apply service are application
 services registered in the container and hooked to nothing. No REST route, no
-WP-CLI command, no admin screen, no upload handler. A site that never imports
-anything runs no extra code, and a future transport will consume this service
-instead of growing package interpretation inside a controller.
+WP-CLI command, no admin screen, no upload handler is required by the
+authoritative Workstream D scope. A site that never imports anything runs no
+extra code. Any future transport is a separate decision and must consume this
+service instead of growing package interpretation inside a controller.
+
+### Rollback cache coherence
+
+Rollback deletes `languages_all`, `translation_groups_all` and the stable
+per-group cache keys named by the plan through `CacheInterface`. The WordPress
+implementation delegates to `wp_cache_delete()` in the mcLogiora cache group,
+so persistent object-cache entries are removed as well as current-process
+values. Global `wp_cache_flush()` is deliberately not used: unrelated cache
+families must survive an import rollback. The locator gateway disables
+post/term cache priming and relation item lookup has no separate cache, so the
+targeted language and relation families cover all uncommitted apply state.
 
 ## Consequences
 
