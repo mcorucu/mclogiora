@@ -158,8 +158,9 @@ final class CachedTranslationRelationRepository implements TranslationRelationRe
 	 * @return TranslationItem|\WP_Error
 	 */
 	public function update_item_status( $object_type, $object_id, $language_code, $status ) {
-		$result = $this->repository->update_item_status( $object_type, $object_id, $language_code, $status );
-		$this->invalidate_after_write( $result );
+		$group_key = $this->group_key_for_item( $object_type, $object_id, $language_code );
+		$result    = $this->repository->update_item_status( $object_type, $object_id, $language_code, $status );
+		$this->invalidate_after_write( $result, $group_key );
 
 		return $result;
 	}
@@ -174,8 +175,9 @@ final class CachedTranslationRelationRepository implements TranslationRelationRe
 	 * @return TranslationItem|\WP_Error
 	 */
 	public function update_item_language( $object_type, $object_id, $language_code, $new_language_code ) {
-		$result = $this->repository->update_item_language( $object_type, $object_id, $language_code, $new_language_code );
-		$this->invalidate_after_write( $result );
+		$group_key = $this->group_key_for_item( $object_type, $object_id, $language_code );
+		$result    = $this->repository->update_item_language( $object_type, $object_id, $language_code, $new_language_code );
+		$this->invalidate_after_write( $result, $group_key );
 
 		return $result;
 	}
@@ -187,8 +189,9 @@ final class CachedTranslationRelationRepository implements TranslationRelationRe
 	 * @return TranslationItem|\WP_Error
 	 */
 	public function update_item_source_metadata( TranslationItem $item ) {
-		$result = $this->repository->update_item_source_metadata( $item );
-		$this->invalidate_after_write( $result );
+		$group_key = $this->group_key_for_item( $item->object_type(), $item->object_id(), $item->language_code() );
+		$result    = $this->repository->update_item_source_metadata( $item );
+		$this->invalidate_after_write( $result, $group_key );
 
 		return $result;
 	}
@@ -259,8 +262,9 @@ final class CachedTranslationRelationRepository implements TranslationRelationRe
 	 * @return bool|\WP_Error
 	 */
 	public function detach_item( $object_type, $object_id, $language_code ) {
-		$result = $this->repository->detach_item( $object_type, $object_id, $language_code );
-		$this->invalidate_after_write( $result );
+		$group_key = $this->group_key_for_item( $object_type, $object_id, $language_code );
+		$result    = $this->repository->detach_item( $object_type, $object_id, $language_code );
+		$this->invalidate_after_write( $result, $group_key );
 
 		return $result;
 	}
@@ -347,6 +351,49 @@ final class CachedTranslationRelationRepository implements TranslationRelationRe
 		if ( $result instanceof TranslationGroup ) {
 			$this->cache->delete( $this->group_cache_key( $result->group_key() ) );
 		}
+	}
+
+	/**
+	 * Finds the group containing an item before an item mutation.
+	 *
+	 * Item writes return the item rather than its group key, while the group
+	 * cache is keyed by that UUID. Enumerating the existing stable group-key
+	 * reader keeps this lookup inside the repository boundary and works with a
+	 * persistent object cache without relying on process-local state.
+	 *
+	 * @param string $object_type Object type.
+	 * @param string $object_id Object ID.
+	 * @param string $language_code Language code.
+	 * @return string
+	 */
+	private function group_key_for_item( $object_type, $object_id, $language_code ) {
+		$item = $this->repository->find_item( $object_type, $object_id, $language_code );
+
+		if ( ! $item instanceof TranslationItem ) {
+			return '';
+		}
+
+		$limit     = 100;
+		$offset    = 0;
+		$keys      = array();
+		$key_count = 0;
+
+		do {
+			$keys = $this->repository->active_group_keys( $limit, $offset );
+
+			foreach ( $keys as $group_key ) {
+				$group = $this->repository->find_group( $group_key );
+
+				if ( $group instanceof TranslationGroup && $group->contains( $item ) ) {
+					return $group->group_key();
+				}
+			}
+
+			$offset   += count( $keys );
+			$key_count = count( $keys );
+		} while ( $key_count === $limit );
+
+		return '';
 	}
 
 	/**
