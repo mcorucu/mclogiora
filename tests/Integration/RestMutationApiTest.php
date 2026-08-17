@@ -224,9 +224,16 @@ final class RestMutationApiTest extends WP_UnitTestCase {
 
 			$found = true;
 
-			foreach ( array( 'POST', 'PUT', 'PATCH' ) as $verb ) {
+			/*
+			 * PUT and PATCH only. This handler was registered EDITABLE while
+			 * the status change was the sole write on this route; Slice 4A
+			 * gave POST to creation, because POST on a collection creates.
+			 */
+			foreach ( array( 'PUT', 'PATCH' ) as $verb ) {
 				$this->assertArrayHasKey( $verb, $handler['methods'] );
 			}
+
+			$this->assertArrayNotHasKey( 'POST', $handler['methods'], 'POST on this route creates a translation.' );
 
 			foreach ( array( 'object_type', 'object_id', 'language', 'status' ) as $arg ) {
 				$this->assertArrayHasKey( $arg, $handler['args'] );
@@ -294,18 +301,32 @@ final class RestMutationApiTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Asserts all three write verbs perform the same update.
+	 * Asserts both update verbs perform the same update, and POST does not.
+	 *
+	 * POST on this route creates a translation rather than updating one, so a
+	 * status change sent as POST is refused for missing the creation
+	 * arguments instead of quietly doing something else.
 	 *
 	 * @return void
 	 */
-	public function test_post_put_and_patch_all_perform_the_update() {
-		foreach ( array( 'POST', 'PUT', 'PATCH' ) as $verb ) {
+	public function test_put_and_patch_perform_the_update_and_post_does_not() {
+		foreach ( array( 'PUT', 'PATCH' ) as $verb ) {
 			$pair     = $this->translated_post();
 			$response = $this->write( $pair['target'], 'tr', TranslationStatus::NEEDS_REVIEW, array(), $verb );
 
 			$this->assertSame( 200, $response->get_status(), $verb . ' must be served.' );
 			$this->assertSame( TranslationStatus::NEEDS_REVIEW, $response->get_data()['translation']['status'] );
 		}
+
+		$pair = $this->translated_post();
+		$post = $this->write( $pair['target'], 'tr', TranslationStatus::NEEDS_REVIEW, array(), 'POST' );
+
+		$this->assertSame( 400, $post->get_status(), 'POST here means create, and a status change is not one.' );
+
+		$item = $this->container->get( TranslationRelationRepositoryInterface::class )
+			->find_item( ContentType::POST, (string) $pair['target'], 'tr' );
+
+		$this->assertSame( TranslationStatus::DRAFT, $item->status(), 'The refused POST must change nothing.' );
 	}
 
 	/**
