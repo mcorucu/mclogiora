@@ -13,7 +13,11 @@ reachable from both HTTP and the shell. Workstream D is complete: slices 1–3
 deliver the portable package, export, parse/validate/dry-run, immutable-plan
 apply, stale protection, atomicity, rollback, persistent-cache-safe invalidation
 and final qualification. The authoritative planning audit requires no operator
-transport for D closure. Workstream E is not started.
+transport for D closure. Workstream E is complete: the shared read-only
+diagnostics projection, System Status admin screen, native Site Health debug
+information, actionable Site Health tests, zero-network policy, and no-REST-
+status decision are recorded in ADR 0021. Phase 17 closure remains a separate
+session.
 
 ## Context
 
