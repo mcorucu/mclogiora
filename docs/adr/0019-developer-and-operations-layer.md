@@ -4,9 +4,9 @@
 
 Accepted for the layer's shape. Partially implemented: Workstream A is built —
 slice 1 the public read API, slice 2 the hook contract review. Workstream B is
-under way: slice 1 the read surface, slice 2 the first mutation family
-(translation status transitions). Six further domain mutations remain unexposed.
-Workstreams C through E are not started.
+under way: slice 1 the read surface, slice 2 translation status transitions,
+slice 3 relation membership for posts and terms. Only `create_translation`
+remains unexposed. Workstreams C through E are not started.
 
 ## Context
 
@@ -312,6 +312,56 @@ needs `X-WP-Nonce`, enforced by WordPress before any route runs. Adding an
 admin-form nonce because the admin UI uses one would have copied a transport's
 security into a transport that already has its own, and would have made
 Application Password clients unable to call the route.
+
+#### Membership is a resource; the post is not
+
+Slice 3 adds `POST` and `DELETE` on `/relations` for the domain's four
+link-and-unlink operations, two for posts and two for terms.
+
+The route choice carries the whole argument. `DELETE /relations` deletes a
+*membership*. Had these operations been hung off a content path, the same verb
+would have read as "delete this post", and the gap between what a verb appears
+to mean and what it does is precisely where someone loses content. Under
+`/relations` the resource is unambiguous, and the response says `detached` rather
+than anything resembling `deleted`. Deleting content stays WordPress's own job
+and is not reachable from this namespace at all.
+
+That distinction is asserted, not merely documented: an unlink is followed by a
+full post fingerprint comparison — type, title, excerpt, content, slug, status,
+parent, author, both dates — plus revision count and a total post count, and
+the same for terms across name, description, slug, parent and taxonomy. A link
+is held to the same standard in the other direction: it creates nothing and
+edits nothing.
+
+#### One transport, two domain paths
+
+Posts and terms share the route and the argument shape but not a code path. The
+controller branches once on `object_type` and calls
+`ContentTranslationWorkflow` or `TaxonomyTranslationWorkflow`. Collapsing them
+into a single generic relation write would have been less code and would have
+discarded exactly the checks that differ: post type against post type, taxonomy
+against taxonomy. Those are what stop a category becoming the translation of a
+page.
+
+The object-type enum on these routes is `post` and `term` only. That is not REST
+narrowing the domain's vocabulary; it is REST declaring which of the domain's
+operations exist. The other five relation content types have no link workflow to
+call.
+
+#### Object permission is not the capability check
+
+These operations surfaced something the status slice did not: the workflows
+apply per-object checks — `edit_post` on both the source and the target, and
+`manage_categories` for terms — after the general capability has passed. REST
+maps those refusals to 403 and adds nothing of its own. A caller who may manage
+translations in general can still be refused for one particular post, which is
+the correct answer and not one a permission callback could have given.
+
+#### create_translation stays deferred
+
+It is the one remaining mutation, and the only one that creates a real
+WordPress object. Everything shipped so far can be described by what it does not
+touch; that one cannot, and it deserves the slice it did not get here.
 
 #### Declared arguments only constrain if a validate_callback says so
 
