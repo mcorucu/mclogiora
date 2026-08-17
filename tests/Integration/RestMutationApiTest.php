@@ -151,15 +151,16 @@ final class RestMutationApiTest extends WP_UnitTestCase {
 	 * ----------------------------------------------------------------- */
 
 	/**
-	 * Asserts the write verbs land only on the translations route.
+	 * Asserts the status write lives on the translations route and nowhere else.
 	 *
-	 * This is the slice boundary made mechanical. Languages and relations stay
-	 * read-only, and nothing in the namespace accepts DELETE.
+	 * Scoped to the editable verbs this slice owns. Relation membership arrived
+	 * later on /relations with its own verbs, and the namespace-wide write
+	 * surface is audited by RestRelationLifecycleTest.
 	 *
 	 * @return void
 	 */
-	public function test_write_methods_exist_only_on_the_translations_route() {
-		$writable = array();
+	public function test_the_editable_verbs_live_only_on_the_translations_route() {
+		$editable = array();
 
 		foreach ( $this->server->get_routes() as $path => $handlers ) {
 			if ( 0 !== strpos( $path, self::NS . '/' ) ) {
@@ -171,22 +172,40 @@ final class RestMutationApiTest extends WP_UnitTestCase {
 					continue;
 				}
 
-				$this->assertArrayNotHasKey( 'DELETE', $handler['methods'], $path . ' must not accept DELETE.' );
-
 				$this->assertTrue(
 					isset( $handler['permission_callback'] ) && is_callable( $handler['permission_callback'] ),
 					$path . ' must declare a callable permission_callback.'
 				);
 
-				foreach ( array( 'POST', 'PUT', 'PATCH' ) as $verb ) {
+				foreach ( array( 'PUT', 'PATCH' ) as $verb ) {
 					if ( isset( $handler['methods'][ $verb ] ) ) {
-						$writable[ $path ] = true;
+						$editable[ $path ] = true;
 					}
 				}
 			}
 		}
 
-		$this->assertSame( array( self::NS . '/translations' => true ), $writable );
+		$this->assertSame( array( self::NS . '/translations' => true ), $editable );
+		$this->assertArrayNotHasKey(
+			'DELETE',
+			$this->translations_write_handler()['methods'],
+			'The translations route must not accept DELETE.'
+		);
+	}
+
+	/**
+	 * Returns the editable handler registered for the translations route.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private function translations_write_handler() {
+		foreach ( $this->server->get_routes()[ self::NS . '/translations' ] as $handler ) {
+			if ( ! empty( $handler['methods']['PATCH'] ) ) {
+				return $handler;
+			}
+		}
+
+		$this->fail( 'The translations route must serve PATCH.' );
 	}
 
 	/**
