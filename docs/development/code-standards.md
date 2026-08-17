@@ -77,7 +77,7 @@ Before or during Phase 10, replace the file-scoped exclusions with something tha
 
 ## PHPCS warnings
 
-Errors fail the build; warnings are reported but do not (`ignore_warnings_on_exit`). Six warnings are currently outstanding, all of them reserved-keyword parameter names in value-object constructors:
+Errors fail the build; warnings are reported but do not (`ignore_warnings_on_exit`). Seven warnings are currently outstanding, all of them reserved-keyword parameter names in value-object constructors or internal service methods:
 
 | File | Parameter |
 | --- | --- |
@@ -86,6 +86,7 @@ Errors fail the build; warnings are reported but do not (`ignore_warnings_on_exi
 | `src/Content/TranslatableContentType.php` | `$public` |
 | `src/Taxonomies/TranslatableTaxonomy.php` | `$public` |
 | `src/Languages/Language.php` | `$default` |
+| `src/Admin/StringManager.php` | `$string` |
 
 Renaming them would change public method signatures, which is an API change rather than a standards fix, so they were left alone. They are safe to fix in any phase that already touches those signatures.
 
