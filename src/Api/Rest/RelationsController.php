@@ -14,7 +14,6 @@ use McLogiora\Relations\TranslationStatus;
 use McLogiora\Workflows\TranslationWorkflowService;
 use WP_REST_Request;
 use WP_REST_Response;
-use WP_REST_Server;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -139,13 +138,27 @@ final class RelationsController {
 				array(
 
 					/*
-					 * EDITABLE, matching what core's own controllers register
-					 * for a partial update. It covers POST, PUT and PATCH, so a
-					 * client that can only POST -- which includes WordPress's
-					 * own apiFetch with a method override -- can still call it.
-					 * DELETE is registered nowhere in this namespace.
+					 * POST on a collection creates. This route creates a real
+					 * WordPress post, which is why it is not folded into the
+					 * status handler below: one verb meaning both "make a new
+					 * draft" and "change a status" would be decided by which
+					 * parameters happened to be present.
 					 */
-					'methods'             => WP_REST_Server::EDITABLE,
+					'methods'             => 'POST',
+					'callback'            => array( $this, 'create_translation' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
+					'args'                => array_merge( $this->create_args(), $language_arg ),
+				),
+				array(
+
+					/*
+					 * PUT and PATCH only. This was registered EDITABLE while
+					 * the status change was the sole write here; POST now
+					 * belongs to creation, and a partial update is what PATCH
+					 * is for. PUT is kept because core's own controllers accept
+					 * it for updates and clients expect it.
+					 */
+					'methods'             => 'PUT, PATCH',
 					'callback'            => array( $this, 'update_translation_status' ),
 					'permission_callback' => array( $this, 'permissions_check' ),
 					'args'                => array_merge(
@@ -380,6 +393,63 @@ final class RelationsController {
 	}
 
 	/**
+	 * Creates a translation of an existing post.
+	 *
+	 * This is the only route in the namespace that brings a WordPress object
+	 * into existence, and the handler is deliberately the thinnest of the lot
+	 * because of it. Every creation default belongs to the workflow: the new
+	 * post is a draft, it carries the source's type, title, content, excerpt,
+	 * menu order and author, and it gets no slug, no parent, no meta and no
+	 * terms. REST supplies none of those and accepts none of them, so this
+	 * route can never become a `wp_insert_post` proxy with a translation
+	 * record attached.
+	 *
+	 * Nothing here is translated. The draft starts as a copy of the source's
+	 * text for a person to work on; no provider is contacted.
+	 *
+	 * Rollback is the workflow's. If the relation write or the builder payload
+	 * step fails after the post exists, the workflow removes the post it just
+	 * created. There is deliberately no compensation code in this controller —
+	 * a second implementation would eventually disagree with the first about
+	 * what "clean up" means.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|\WP_Error
+	 */
+	public function create_translation( WP_REST_Request $request ) {
+		if ( ! $this->workflows instanceof TranslationWorkflowService ) {
+			return RestErrors::relation_not_found();
+		}
+
+		$object_type = (string) $request->get_param( 'object_type' );
+
+		if ( ContentType::POST !== $object_type ) {
+			return RestErrors::invalid_object_type( array( ContentType::POST ) );
+		}
+
+		$language = (string) $request->get_param( 'language' );
+
+		if ( ! $this->is_configured_language( $language ) ) {
+			return RestErrors::unknown_language();
+		}
+
+		$source_id = (int) $request->get_param( 'source_id' );
+		$result    = $this->workflows->content()->create_translation( $source_id, $language );
+
+		if ( is_wp_error( $result ) ) {
+			return RestErrors::from_workflow( $result );
+		}
+
+		$group = $this->api->translation_group( $source_id, ContentType::POST );
+
+		if ( null === $group ) {
+			return RestErrors::relation_not_found();
+		}
+
+		return rest_ensure_response( $this->project_group( $group, '' ) );
+	}
+
+	/**
 	 * Moves a translation to a new status.
 	 *
 	 * The whole handler is a mapping: HTTP arguments in, one workflow call,
@@ -573,6 +643,41 @@ final class RelationsController {
 		unset( $args['taxonomy'] );
 
 		return $args;
+	}
+
+	/**
+	 * Returns the arguments for creating a translation.
+	 *
+	 * Deliberately three fields. Every WordPress post field a caller might
+	 * want to set is absent, because the workflow decides them and a route
+	 * that accepted them would be a content-creation endpoint wearing a
+	 * translation label.
+	 *
+	 * The object type enum holds `post` alone: taxonomy creation is a separate
+	 * slice, and listing a type this route cannot serve would be a promise the
+	 * handler breaks.
+	 *
+	 * @return array<string,array<string,mixed>>
+	 */
+	private function create_args() {
+		return array(
+			'object_type' => array(
+				'description'       => __( 'Type of the object to translate. Only posts are supported.', 'mclogiora' ),
+				'type'              => 'string',
+				'required'          => true,
+				'enum'              => array( ContentType::POST ),
+				'validate_callback' => 'rest_validate_request_arg',
+				'sanitize_callback' => 'sanitize_key',
+			),
+			'source_id'   => array(
+				'description'       => __( 'Identifier of the post to create a translation of.', 'mclogiora' ),
+				'type'              => 'integer',
+				'required'          => true,
+				'minimum'           => 1,
+				'validate_callback' => array( $this, 'validate_object_id' ),
+				'sanitize_callback' => 'absint',
+			),
+		);
 	}
 
 	/**
