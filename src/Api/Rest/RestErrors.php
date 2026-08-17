@@ -28,6 +28,7 @@ final class RestErrors {
 	const UNKNOWN_LANGUAGE    = 'mclogiora_rest_unknown_language';
 	const RELATION_NOT_FOUND  = 'mclogiora_rest_relation_not_found';
 	const TRANSLATION_MISSING = 'mclogiora_rest_translation_not_found';
+	const MISSING_TAXONOMY    = 'mclogiora_rest_missing_taxonomy';
 
 	/**
 	 * Returns the permission error for the current visitor.
@@ -62,6 +63,22 @@ final class RestErrors {
 				'status'  => 400,
 				'allowed' => array_values( $allowed ),
 			)
+		);
+	}
+
+	/**
+	 * Returns the missing-taxonomy error.
+	 *
+	 * Linking terms needs one: the taxonomy is part of a term's identity, and
+	 * the workflow resolves both source and target within it.
+	 *
+	 * @return WP_Error
+	 */
+	public static function missing_taxonomy() {
+		return new WP_Error(
+			self::MISSING_TAXONOMY,
+			__( 'A taxonomy is required when linking terms.', 'mclogiora' ),
+			array( 'status' => 400 )
 		);
 	}
 
@@ -130,21 +147,47 @@ final class RestErrors {
 		$code = $error->get_error_code();
 
 		$statuses = array(
-			'mclogiora_cannot_manage_translations' => is_user_logged_in() ? 403 : 401,
-			'mclogiora_translation_item_not_found' => 404,
-			'mclogiora_relation_item_not_found'    => 404,
+
+			/*
+			 * The request is wrong whatever state the site is in: malformed
+			 * identifiers, or a value that could never be assigned to anything.
+			 */
 			'mclogiora_unknown_target_status'      => 400,
 			'mclogiora_original_not_assignable'    => 400,
 			'mclogiora_missing_not_assignable'     => 400,
 			'mclogiora_relation_status_invalid'    => 400,
+			'mclogiora_cannot_link_to_self'        => 400,
+			'mclogiora_invalid_source_id'          => 400,
+			'mclogiora_invalid_target_id'          => 400,
+			'mclogiora_missing_target_language'    => 400,
+			'mclogiora_unknown_target_language'    => 400,
+			'mclogiora_unknown_post_type'          => 400,
+
+			/*
+			 * Object-specific permission, surfacing from the workflow after the
+			 * general capability already passed. The permission callback cannot
+			 * catch these: whether a caller may edit one particular post is not
+			 * knowable until the workflow has resolved which post that is.
+			 */
+			'mclogiora_cannot_manage_translations' => is_user_logged_in() ? 403 : 401,
+			'mclogiora_cannot_edit_source'         => 403,
+			'mclogiora_cannot_edit_target'         => 403,
+			'mclogiora_cannot_edit_terms'          => 403,
+			'mclogiora_cannot_create_translation'  => 403,
+
+			/* A named object is not there. */
+			'mclogiora_translation_item_not_found' => 404,
+			'mclogiora_relation_item_not_found'    => 404,
+			'mclogiora_source_not_found'           => 404,
+			'mclogiora_target_not_found'           => 404,
 		);
 
 		/*
-		 * Anything not named above is a conflict with stored state:
-		 * status_unchanged, invalid_status_transition,
-		 * original_status_immutable, unknown_current_status, and the
-		 * repository's original-status locks. Defaulting to 409 rather than 500
-		 * is deliberate -- these are refusals, not failures.
+		 * Anything not named above conflicts with the current state of real
+		 * objects: a slot already filled, an object already in a group, two
+		 * objects whose types do not match, a status the item cannot leave, a
+		 * source item that cannot be detached. Defaulting to 409 rather than
+		 * 500 is deliberate -- these are refusals, not failures.
 		 */
 		$status = isset( $statuses[ $code ] ) ? $statuses[ $code ] : 409;
 
