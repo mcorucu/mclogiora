@@ -162,17 +162,15 @@ final class RestReadApiTest extends WP_UnitTestCase {
 	/**
 	 * Asserts every mcLogiora route is GET-only and carries a permission check.
 	 *
-	 * A write handler added to a read resource by accident fails here rather
-	 * than in review. The translations route is exempt from the write check and
-	 * only from that check: it deliberately carries the status mutation, whose
-	 * verbs RestMutationApiTest audits across the whole namespace. Its GET
-	 * handler is still swept here like any other.
+	 * A write verb added to a read handler by accident fails here rather than in
+	 * review. Which routes are allowed to carry a write handler at all is a
+	 * separate question, audited across the whole namespace by
+	 * RestRelationLifecycleTest.
 	 *
 	 * @return void
 	 */
 	public function test_every_read_route_is_read_only_with_an_explicit_permission_callback() {
-		$writable = self::NS . '/translations';
-		$checked  = 0;
+		$checked = 0;
 
 		foreach ( $this->server->get_routes() as $path => $handlers ) {
 			/*
@@ -194,8 +192,6 @@ final class RestReadApiTest extends WP_UnitTestCase {
 				);
 
 				if ( empty( $handler['methods']['GET'] ) ) {
-					$this->assertSame( $writable, $path, 'Only the translations route may carry a non-GET handler.' );
-
 					continue;
 				}
 
