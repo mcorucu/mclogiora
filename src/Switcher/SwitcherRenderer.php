@@ -12,11 +12,9 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Renders the switcher view model as accessible HTML.
  *
- * Every mode produces real links or a real form control, never a div with a
- * click handler, so keyboard and screen-reader users get working navigation
- * without any JavaScript. The dropdown is a `<select>` inside a `<form>` with
- * a submit button, which works with JavaScript disabled and is enhanced by it
- * rather than dependent on it.
+ * Every mode produces real links or a real form control, never a div with an
+ * inline click handler. The dropdown is enhanced by a small external script;
+ * its noscript fallback keeps real language links available without it.
  */
 final class SwitcherRenderer {
 	/**
@@ -141,9 +139,9 @@ final class SwitcherRenderer {
 		$id      = 'mclogiora-switcher-' . wp_rand( 1000, 9999 );
 		$classes = $this->wrapper_classes( $options );
 
-		$html  = '<form class="' . esc_attr( $classes ) . '" method="get" action="' . esc_url( home_url( '/' ) ) . '">';
+		$html  = '<div class="' . esc_attr( $classes ) . '">';
 		$html .= '<label class="screen-reader-text" for="' . esc_attr( $id ) . '">' . esc_html__( 'Choose a language', 'mclogiora' ) . '</label>';
-		$html .= '<select class="mclogiora-switcher__select" id="' . esc_attr( $id ) . '" name="mclogiora_switch_to" onchange="if(this.value){window.location.href=this.value;}">';
+		$html .= '<select class="mclogiora-switcher__select" id="' . esc_attr( $id ) . '" data-mclogiora-switcher="1">';
 
 		foreach ( $items as $item ) {
 			if ( ! $item['available'] || null === $item['url'] ) {
@@ -160,8 +158,14 @@ final class SwitcherRenderer {
 		}
 
 		$html .= '</select>';
-		$html .= '<noscript><button type="submit" class="mclogiora-switcher__submit">' . esc_html__( 'Go', 'mclogiora' ) . '</button></noscript>';
-		$html .= '</form>';
+		$html .= '<noscript><ul class="mclogiora-switcher__fallback">';
+
+		foreach ( $items as $item ) {
+			$html .= $this->render_item( $item, $options );
+		}
+
+		$html .= '</ul></noscript>';
+		$html .= '</div>';
 
 		return $html;
 	}

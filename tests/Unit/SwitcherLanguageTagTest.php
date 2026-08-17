@@ -124,4 +124,19 @@ final class SwitcherLanguageTagTest extends TestCase {
 			}
 		}
 	}
+
+	/**
+	 * Asserts dropdown navigation has no inline event handler and retains a
+	 * real-link fallback when JavaScript is unavailable.
+	 *
+	 * @return void
+	 */
+	public function test_dropdown_uses_external_enhancement_and_no_script_links() {
+		$html = $this->render( SwitcherStyle::DROPDOWN );
+
+		$this->assertStringNotContainsString( 'onchange=', $html );
+		$this->assertStringContainsString( 'data-mclogiora-switcher="1"', $html );
+		$this->assertStringContainsString( 'mclogiora-switcher__fallback', $html );
+		$this->assertStringContainsString( 'href="https://example.test/tr/', $html );
+	}
 }
