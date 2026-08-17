@@ -234,12 +234,151 @@ final class CliReadContractTest extends WP_UnitTestCase {
 		sort( $translation );
 
 		$this->assertSame( array( 'get', 'link', 'unlink' ), $relation );
-		$this->assertSame( array( 'get', 'status' ), $translation );
+		$this->assertSame( array( 'create', 'get', 'status' ), $translation );
 		$this->assertSame( array( 'list_' ), $language );
 
-		foreach ( array( 'create', 'create_translation', 'new', 'add', 'delete' ) as $absent ) {
-			$this->assertNotContains( $absent, $relation, 'relation ' . $absent . ' belongs to a later slice.' );
-			$this->assertNotContains( $absent, $translation, 'translation ' . $absent . ' belongs to a later slice.' );
+		/*
+		 * Creation lives on `translation` alone. A `relation create` would be
+		 * ambiguous next to `relation link`, which is the command for attaching
+		 * something that already exists.
+		 */
+		foreach ( array( 'create', 'new', 'add', 'delete' ) as $absent ) {
+			$this->assertNotContains( $absent, $relation, 'relation ' . $absent . ' must not exist.' );
+		}
+
+		foreach ( array( 'new', 'add', 'delete', 'import', 'export', 'diagnostics' ) as $absent ) {
+			$this->assertNotContains( $absent, $translation, 'translation ' . $absent . ' is out of scope.' );
+		}
+	}
+
+	/**
+	 * Asserts the creation command accepts only the domain's own inputs.
+	 *
+	 * A --title, --status or --slug flag would make this a clone command
+	 * wearing a translation label, and the draft-only guarantee would be one
+	 * parameter away from untrue.
+	 *
+	 * @return void
+	 */
+	public function test_the_creation_command_exposes_no_wordpress_fields() {
+		$doc = ( new ReflectionClass( TranslationCommand::class ) )->getMethod( 'create' )->getDocComment();
+
+		$this->assertIsString( $doc );
+
+		foreach (
+			array(
+				'--title',
+				'--content',
+				'--excerpt',
+				'--status',
+				'--author',
+				'--parent',
+				'--slug',
+				'--meta',
+				'--post-status',
+			) as $forbidden
+		) {
+			$this->assertStringNotContainsString( $forbidden, $doc, $forbidden . ' must not be a creation option.' );
+		}
+
+		foreach ( array( '--taxonomy', '--name', '--description' ) as $expected ) {
+			$this->assertStringContainsString( $expected, $doc, $expected . ' is a real workflow input for terms.' );
+		}
+
+		$this->assertStringContainsString( 'relation link', $doc, 'Help must point at the command for existing objects.' );
+		$this->assertStringNotContainsString( 'edit_link', $doc );
+	}
+
+	/**
+	 * Asserts creation is delegated, with no compensation logic in the CLI.
+	 *
+	 * Rollback is the workflows', and both paths already have real-WordPress
+	 * regressions. A second implementation here would eventually disagree with
+	 * the first about what cleaning up means.
+	 *
+	 * @return void
+	 */
+	public function test_the_cli_contains_no_rollback_logic() {
+		$files = glob( dirname( __DIR__, 2 ) . '/src/Cli/*.php' );
+
+		$this->assertNotEmpty( $files );
+
+		foreach ( $files as $file ) {
+			$code = $this->strip_comments( (string) file_get_contents( $file ) );
+
+			foreach ( array( 'wp_delete_post', 'wp_delete_term', 'wp_insert_post', 'wp_insert_term', 'wpdb' ) as $forbidden ) {
+				$this->assertStringNotContainsString(
+					$forbidden,
+					$code,
+					basename( $file ) . ' must not touch WordPress objects directly.'
+				);
+			}
+		}
+	}
+
+	/**
+	 * Returns PHP source with its comments removed.
+	 *
+	 * The guarantee is about what the code does, and a docblock explaining that
+	 * the CLI never touches `$wpdb` should not fail a search for `$wpdb`.
+	 *
+	 * @param string $source PHP source.
+	 * @return string
+	 */
+	private function strip_comments( $source ) {
+		$code = '';
+
+		foreach ( token_get_all( $source ) as $token ) {
+			if ( is_array( $token ) && in_array( $token[0], array( T_COMMENT, T_DOC_COMMENT ), true ) ) {
+				continue;
+			}
+
+			$code .= is_array( $token ) ? $token[1] : $token;
+		}
+
+		return $code;
+	}
+
+	/**
+	 * Asserts a creation refusal reaches the caller with its domain code.
+	 *
+	 * @return void
+	 */
+	public function test_creation_refusals_keep_their_domain_code() {
+		$workflows = $this->container->get( TranslationWorkflowService::class );
+		$source    = self::factory()->post->create( array( 'post_status' => 'publish' ) );
+
+		$same = $workflows->content()->create_translation( $source, 'en' );
+
+		$this->assertWPError( $same );
+		$this->assertSame( 'mclogiora_same_language', $same->get_error_code() );
+
+		$blank = $workflows->taxonomy()->create_translation( 1, 'category', 'tr', '   ' );
+
+		$this->assertWPError( $blank );
+		$this->assertSame( 'mclogiora_missing_translated_name', $blank->get_error_code() );
+	}
+
+	/**
+	 * Asserts an unauthenticated creation is refused by the workflow.
+	 *
+	 * @return void
+	 */
+	public function test_an_unauthenticated_creation_is_refused() {
+		$source = self::factory()->post->create( array( 'post_status' => 'publish' ) );
+
+		wp_set_current_user( 0 );
+
+		$workflows = $this->container->get( TranslationWorkflowService::class );
+
+		foreach (
+			array(
+				$workflows->content()->create_translation( $source, 'tr' ),
+				$workflows->taxonomy()->create_translation( 1, 'category', 'tr', 'Adi' ),
+			) as $result
+		) {
+			$this->assertWPError( $result );
+			$this->assertSame( 'mclogiora_cannot_manage_translations', $result->get_error_code() );
 		}
 	}
 
