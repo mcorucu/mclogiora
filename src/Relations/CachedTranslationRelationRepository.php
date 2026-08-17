@@ -417,6 +417,16 @@ final class CachedTranslationRelationRepository implements TranslationRelationRe
 	 * @return string
 	 */
 	private function group_cache_key( $group_key ) {
+		return self::cache_key_for_group( $group_key );
+	}
+
+	/**
+	 * Returns the stable cache key for one translation group.
+	 *
+	 * @param string $group_key Group key.
+	 * @return string
+	 */
+	public static function cache_key_for_group( $group_key ) {
 		return 'translation_group_' . md5( (string) $group_key );
 	}
 }

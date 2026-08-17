@@ -258,7 +258,8 @@ final class ImportApplyIntegrationTest extends WP_UnitTestCase {
 			$this->container->get( \McLogiora\ImportExport\ImportPlanPreconditionChecker::class ),
 			$executor,
 			$this->container->get( \McLogiora\ImportExport\ImportPlanVerifier::class ),
-			$this->container->get( TransactionInterface::class )
+			$this->container->get( TransactionInterface::class ),
+			$this->container->get( \McLogiora\ImportExport\ImportRollbackCacheInvalidator::class )
 		) )->apply( $plan );
 	}
 

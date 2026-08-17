@@ -59,6 +59,7 @@ use McLogiora\ImportExport\ImportOperationExecutor;
 use McLogiora\ImportExport\ImportOperationExecutorInterface;
 use McLogiora\ImportExport\ImportPlanPreconditionChecker;
 use McLogiora\ImportExport\ImportPlanVerifier;
+use McLogiora\ImportExport\ImportRollbackCacheInvalidator;
 use McLogiora\ImportExport\ObjectLocatorGatewayInterface;
 use McLogiora\ImportExport\PackageEncoder;
 use McLogiora\ImportExport\PackageExporter;
@@ -1165,8 +1166,16 @@ final class Application {
 					$container->get( ImportPlanPreconditionChecker::class ),
 					$container->get( ImportOperationExecutorInterface::class ),
 					$container->get( ImportPlanVerifier::class ),
-					$container->get( TransactionInterface::class )
+					$container->get( TransactionInterface::class ),
+					$container->get( ImportRollbackCacheInvalidator::class )
 				);
+			}
+		);
+
+		$this->container->set(
+			ImportRollbackCacheInvalidator::class,
+			static function ( Container $container ) {
+				return new ImportRollbackCacheInvalidator( $container->get( CacheInterface::class ) );
 			}
 		);
 	}
