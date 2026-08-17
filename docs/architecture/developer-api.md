@@ -391,7 +391,6 @@ Named here so the boundary is explicit:
 - `Api\PublicApi` itself. The supported entry points are the functions.
 - The `*_placeholder` methods on `TranslationRelationServiceInterface`. They are
   foundation-phase seams that outlived their phase.
-- `Contracts\BuilderAdapterInterface`, which nothing implements or consumes.
 - `Seo\SeoSubject` beyond the four methods named above.
 - Test doubles under `McLogiora\Tests\Support`.
 - The database schema and table names. Read through the API, not through SQL.

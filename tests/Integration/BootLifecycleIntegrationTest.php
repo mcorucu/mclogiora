@@ -17,9 +17,14 @@ use McLogiora\Core\InstallationFailure;
 use McLogiora\Core\RuntimeReadiness;
 use McLogiora\Database\Installer;
 use McLogiora\Database\InstallerFactory;
+use McLogiora\Languages\Language;
+use McLogiora\Languages\LanguageRepositoryInterface;
+use McLogiora\Languages\LanguageStatus;
 use McLogiora\Languages\LanguageManager;
 use McLogiora\Relations\TranslationManager;
 use McLogiora\Setup\SetupWizard;
+use McLogiora\Strings\StringRepositoryInterface;
+use McLogiora\Strings\StringSource;
 use WP_UnitTestCase;
 
 /**
@@ -160,6 +165,41 @@ final class BootLifecycleIntegrationTest extends WP_UnitTestCase {
 		remove_filter( 'gettext', $probe, 1 );
 
 		$this->assertGreaterThan( 0, $calls, 'Titles must be translated when they are finally asked for.' );
+	}
+
+	/**
+	 * Asserts the String Translation language filter has a no-JavaScript path.
+	 *
+	 * @return void
+	 */
+	public function test_string_translation_filter_uses_external_behavior_and_visible_submit() {
+		$languages = $this->container->get( LanguageRepositoryInterface::class );
+		$languages->create( new Language( 'en', 'en_US', 'English', 'English', 'ltr', LanguageStatus::ACTIVE, 0, false ) );
+		$languages->set_default( 'en' );
+		$this->container->get( StringRepositoryInterface::class )->register(
+			new StringSource( 0, 'Hello', 'test', '', 'manual' )
+		);
+
+		$manager = new StringManager();
+		$manager->register( $this->container );
+
+		$screen = null;
+		foreach ( $this->container->get( AdminScreenRegistry::class )->all() as $candidate ) {
+			if ( StringManager::PAGE_SLUG === $candidate->slug() ) {
+				$screen = $candidate;
+				break;
+			}
+		}
+
+		$this->assertNotNull( $screen );
+
+		ob_start();
+		call_user_func( $screen->callback() );
+		$markup = ob_get_clean();
+
+		$this->assertStringNotContainsString( 'onchange=', $markup );
+		$this->assertStringContainsString( 'data-mclogiora-submit-on-change="1"', $markup );
+		$this->assertStringContainsString( '<button type="submit" class="button">Filter</button>', $markup );
 	}
 
 	/**

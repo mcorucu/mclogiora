@@ -345,8 +345,7 @@
 .mclogiora-button {
 	border-radius: 16px !important;
 	min-height: 56px !important;
-	padding-left: 24px !important;
-	padding-right: 24px !important;
+	padding-inline: 24px !important;
 }
 
 .mclogiora-table-card {

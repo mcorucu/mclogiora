@@ -2,7 +2,7 @@
 
 This directory contains planning, architecture, and decision records for mcLogiora.
 
-Current phase: Phase 17, Developer & Operations Layer, complete. Phases 02 through 17 are complete; the release carrying Phase 17 is v0.16.0. Phase 18 is not started.
+Current phase: Phase 18, Slice 2, Performance, Accessibility, RTL & WordPress.org Compliance Hardening, complete. Phases 02 through 17 are complete; the version line remains v0.16.0. The final release gates remain open.
 
 Language management and relation records persist. Translation workflows cover posts, pages, public custom post types, public taxonomies, interface strings, media metadata, navigation menus, and supported widgets. Phase 12 decides which of them a given front-end request renders, Phase 13 describes that decision to search engines, Phases 14 and 15 provide the editor and builder surfaces, and Phase 16 adds review-only translation suggestions over bring-your-own provider credentials. Phase 17 adds the developer and operations layer: the public read API, hook contracts, REST endpoints, WP-CLI, import/export, and read-only System Status/Site Health diagnostics.
 

@@ -124,6 +124,11 @@ final class SwitcherModule implements ModuleInterface {
 			return;
 		}
 
+		if ( class_exists( '\WP_Block_Type_Registry' )
+			&& \WP_Block_Type_Registry::get_instance()->is_registered( 'mclogiora/language-switcher' ) ) {
+			return;
+		}
+
 		$args = array(
 			'api_version'     => 2,
 			'title'           => __( 'Language Switcher', 'mclogiora' ),
@@ -222,6 +227,14 @@ final class SwitcherModule implements ModuleInterface {
 			array(),
 			$this->constants->version()
 		);
+
+		wp_register_script(
+			'mclogiora-switcher',
+			$this->constants->url() . 'assets/js/switcher.js',
+			array(),
+			$this->constants->version(),
+			true
+		);
 	}
 
 	/**
@@ -235,6 +248,7 @@ final class SwitcherModule implements ModuleInterface {
 		}
 
 		wp_enqueue_style( 'mclogiora-switcher' );
+		wp_enqueue_script( 'mclogiora-switcher' );
 		wp_print_styles( 'mclogiora-switcher' );
 	}
 }

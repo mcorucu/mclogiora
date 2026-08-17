@@ -1,6 +1,6 @@
 # mcLogiora Planning
 
-Current phase: Phase 17 complete (Developer & Operations Layer, v0.16.0). Phase 16 is complete (Translation Suggestions, v0.15.0). The release header still declares `Tested up to: 7.0`; raising it to 7.1 is a separate compatibility gate once WordPress 7.1 ships final. Phase 18 is not started.
+Current phase: Phase 18, Slice 2 complete (Performance, Accessibility, RTL & WordPress.org Compliance Hardening), on the `0.16.0` version line. Phase 17 is complete (Developer & Operations Layer). The release header still declares `Tested up to: 7.0`; raising it to 7.1 is a separate compatibility gate once WordPress 7.1 ships final.
 
 This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 
@@ -290,20 +290,9 @@ ACF:
 
 Builder integrations must use adapters and must never be tightly coupled into Core.
 
-Recommended contract:
-
-```text
-BuilderAdapterInterface
-  get_id()
-  get_label()
-  is_available()
-  supports_object_type($object_type)
-  detect_translatable_fields($object_id)
-  copy_source_structure($source_id, $target_id, $context)
-  extract_segments($object_id, $context)
-  apply_translated_segments($object_id, $segments, $context)
-  get_status($object_id)
-```
+No builder adapter contract is shipped until a concrete builder integration
+needs one. A future contract must be introduced with the first adapter and
+reviewed against the editor and payload interfaces that actually ship.
 
 Adapter registry:
 
@@ -607,11 +596,13 @@ Two items from the earlier plan are deliberately dropped rather than postponed:
 - Bulk automatic publishing of machine translations remains out of scope in every edition. Machine output must always be reviewed by a human before publication.
 - Any feature whose purpose would be to justify a paid tier is out of scope by definition.
 
-The core should expose adapter contracts that make these integrations possible later without carrying their logic in the shipped WordPress.org package.
+The core should expose adapter contracts only when these integrations are
+actually scheduled, without carrying builder logic in the shipped
+WordPress.org package.
 
 ## 20. Development Phases
 
-The original twelve-phase sequence in this document drifted from what was actually built: two persistence phases were inserted during execution, which shifted every later number. The list below is the reconciled roadmap. Phases 01-17 are historical fact, verified against `CHANGELOG.md`, the plugin version header, the ADR set, and the source tree. Phase 18 is planned and not yet started.
+The original twelve-phase sequence in this document drifted from what was actually built: two persistence phases were inserted during execution, which shifted every later number. The list below is the reconciled roadmap. Phases 01-17 are historical fact, verified against `CHANGELOG.md`, the plugin version header, the ADR set, and the source tree. Phase 18 engineering slices are complete; its final release gates remain open.
 
 ### Completed phases (verified against repository evidence)
 
@@ -777,11 +768,13 @@ Workstream D decomposes into three slices, in this order and for the reason sect
 
 - Workstream E delivered one transport-neutral `DiagnosticsService` projection, a capability-gated read-only System Status screen, one sanitized native WordPress Site Health debug-information section, and actionable direct tests for default language, schema, permalinks, and enabled-but-incomplete suggestions. Collection performs no writes, cache resets, provider requests, telemetry, or expensive full-table relation scans; missing subsystems become degraded findings. The historical `/mclogiora/v1/status` route remains unregistered because the authoritative Workstream E deliverable is the admin/System Status and Site Health surfaces, not a REST transport. See `docs/architecture/system-status.md` and ADR 0021.
 
-**Phase 17 is complete.** Feature workstreams A, B, C, D, and E, the closure audit, final qualification, and the merged-main verification are complete. Phase 18 remains out of scope and not started.
+**Phase 17 is complete.** Feature workstreams A, B, C, D, and E, the closure audit, final qualification, and the merged-main verification are complete.
 
 Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
 
-- Plugin Check, PHPCS, PHPStan, unit and integration tests, accessibility audit, performance profiling, readme and privacy review, external-service disclosure review, and release preparation.
+- Slice 1 — Correctness, Security & Internal Hardening: **complete**. The carried block-registration, switcher CSP, and dead-contract items were resolved; the term-suffix item was confirmed intentional and the seven PHPCS warnings remain documented.
+- Slice 2 — Performance, Accessibility, RTL & WordPress.org Compliance Hardening: **complete**. Measurement found no frontend query/N+1, conditional-loading, diagnostics, cache, or broad accessibility defect requiring change. The remaining inline admin submit behavior was moved to the conditionally loaded admin asset with a visible no-JavaScript submit control, the admin button padding was made logical for RTL, the current source POT was regenerated to 787 msgids, and the switcher ADR was corrected to match the shipped no-JavaScript fallback.
+- Final release gate — WordPress 7.1 final qualification, live provider qualification, and release preparation: **open**.
 
 ## Discovery Notes
 
@@ -816,11 +809,13 @@ These notes record the Phase 01 discovery environment. They are historical conte
 
 ## Next Phase
 
-Phases 02 through 17 are complete. **Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation** is not started; its scope is in section 20.
+Phases 02 through 17 are complete. **Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation** engineering slices are complete; the final release gates remain open.
 
 Two items are carried forward from Phase 16 and remain open after Phase 17:
 
 - Raising `Tested up to` from 7.0 to 7.1 is a separate compatibility gate, to be run once WordPress 7.1 ships final. Phase 16 qualified against 7.1-RC3 and deliberately did not change the release header on the strength of a release candidate.
 - Live provider qualification with real credentials, per provider, including one representative failure per normalized error category.
 
-A low-severity observation is also carried to Phase 18: language-switcher block registration is not idempotent when `init` is fired more than once artificially. The normal WordPress lifecycle does not do this.
+The low-severity observation about language-switcher block registration is closed in Phase 18 Slice 1: the registration boundary now checks WordPress's native block registry, so repeated `init`-style callbacks are harmless.
+
+The exact next scope is the final release gate: WordPress 7.1 final qualification, live provider qualification with real credentials, final package/ZIP qualification, release visuals and publication preparation, followed by the release commit/tag/deploy decision.

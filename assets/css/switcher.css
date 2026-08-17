@@ -64,8 +64,10 @@
 	max-width: 100%;
 }
 
-.mclogiora-switcher__submit {
-	margin-inline-start: 0.35rem;
+.mclogiora-switcher__fallback {
+	margin: 0.5rem 0 0;
+	padding: 0;
+	list-style: none;
 }
 
 /* Direction-aware spacing for RTL languages offered on an LTR page. */
