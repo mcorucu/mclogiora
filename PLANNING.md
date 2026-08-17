@@ -711,7 +711,7 @@ Phase 17: Developer & Operations Layer — in progress
 | | Workstream | Delivers | Status |
 | --- | --- | --- | --- |
 | A | Developer Extension API | Public read functions, then a reviewed hook contract | Complete |
-| B | REST API | `/mclogiora/v1/…` under permission callbacks | Slices 1 (reads) and 2 (status writes) complete; six domain mutations still unexposed |
+| B | REST API | `/mclogiora/v1/…` under permission callbacks | Slices 1 (reads), 2 (status writes) and 3 (relation membership) complete; `create_translation` still unexposed |
 | C | WP-CLI | `wp mclogiora …`, wrapping the workflow services | Not started |
 | D | Import / Export | Portable packages with a dry run before any write | Not started |
 | E | Diagnostics | System Status screen and Site Health integration | Not started |
@@ -725,8 +725,10 @@ Phase 17: Developer & Operations Layer — in progress
 - `/languages` serves its active set publicly, because a page carrying a switcher already publishes every field it returns; `status=all` adds unpublished configuration and is gated. `/relations` and `/translations` require the capability to manage translations, because a relation record names object IDs whatever state those objects are in, and section 14 forbids exposing private post data or unpublished translation content to unauthorised users. A per-object public projection is deferred rather than guessed at.
 - Workstream B slice 2 exposed one mutation family over `POST|PUT|PATCH /translations`: translation status transitions. Of the seven mutations the domain supports — create, link and unlink for posts, the same three for terms, and the status change — this is the only one that creates and destroys nothing, which is what makes its blast radius provable rather than merely argued. The handler maps HTTP to one `TranslationWorkflowService::change_status()` call and decides nothing itself; whether a transition is legal remains the domain's answer.
 - Writes require no additional mcLogiora nonce. WordPress already governs REST authentication, and layering an admin-form nonce on top would break Application Password clients while adding nothing.
-- Six domain mutations remain unexposed: create, link and unlink for posts and for terms. Each creates, links or detaches, and each needs its own security argument.
-- Next slice: workstream B slice 3, the relation lifecycle mutations (link and unlink), or workstream C once REST is judged sufficient.
+- Workstream B slice 3 exposed relation membership over `POST /relations` and `DELETE /relations`, covering `link_existing` and `unlink` for both posts and terms. The `DELETE` removes membership, never the WordPress object: the post or term survives with every field byte-identical, which is asserted by full fingerprint comparison rather than argued. Posts and terms share the transport but dispatch to their own workflow, because the checks that differ — post type against post type, taxonomy against taxonomy — are what stop a category becoming the translation of a page.
+- These routes surfaced that the workflows apply per-object checks (`edit_post` on source and target, `manage_categories` for terms) after the general capability passes. REST maps those to 403 and adds nothing of its own.
+- One domain mutation remains unexposed: `create_translation` for posts and terms. It is the only one that creates a real WordPress object.
+- Next slice: workstream B slice 4, `create_translation` over REST, or workstream C once REST is judged sufficient.
 
 Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
 

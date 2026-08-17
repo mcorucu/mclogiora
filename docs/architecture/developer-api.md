@@ -401,9 +401,10 @@ covered by the stability policy; the rest of `SeoSubject` is not.
 
 ## REST API
 
-Namespace `mclogiora/v1`. Reads on every resource; one write, the translation
-status transition. `DELETE` is registered nowhere, and `/languages` and
-`/relations` accept no write verb at all.
+Namespace `mclogiora/v1`. Reads on every resource, plus writes for translation
+relation membership and translation status. `/languages` is read-only, and the
+only `DELETE` in the namespace removes a relation membership — never a post or
+a term.
 
 Every read response is projected from the same readers documented above, and the
 write returns the same projection, so HTTP and PHP always answer the same
@@ -526,6 +527,70 @@ posts, terms, strings, media, menu items and widgets: six answers with six ways
 to be subtly wrong. It is deferred rather than guessed at. `/languages` already
 covers the public case.
 
+### `POST /mclogiora/v1/relations`
+
+Links an object that already exists into a translation group.
+
+| Parameter | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `object_type` | string | yes | `post` or `term` — the only types with a link workflow |
+| `source_id` | integer | yes | The object whose group the target joins |
+| `target_id` | integer | yes | The existing object to link as a translation |
+| `language` | string | yes | Language the target represents |
+| `taxonomy` | string | for terms | Required when `object_type` is `term` |
+
+**Permission:** requires the capability to manage translations. The workflow
+additionally requires `edit_post` on both objects for posts, so a caller who
+passes the general check can still be refused for a specific object.
+
+Returns the same shape as `GET /relations`, showing the group after the link.
+
+**Linking creates nothing.** No post and no term is created, and neither the
+source nor the target object is edited — not the title, content, excerpt, slug,
+status, parent, author, dates, or revisions. Only a relation record is added.
+
+Repeating a successful link returns 409 `mclogiora_object_already_related`. An
+object belongs to at most one translation group, so a second link is a conflict
+rather than a second success.
+
+```
+POST /wp-json/mclogiora/v1/relations
+{ "object_type": "post", "source_id": 42, "target_id": 77, "language": "tr" }
+```
+
+### `DELETE /mclogiora/v1/relations`
+
+Detaches an object from its translation group.
+
+| Parameter | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `object_type` | string | yes | `post` or `term` |
+| `object_id` | integer | yes | The object to detach |
+| `language` | string | yes | The language slot it occupies |
+
+> **This removes translation relation membership. It does not delete the
+> WordPress post or term.** The object survives with every field unchanged —
+> content, meta, status, slug, parent, revisions, and for terms the name,
+> description and taxonomy. It is never trashed. The resource this `DELETE`
+> removes is the membership, which is why it lives under `/relations` and not
+> under a content path. Deleting content remains WordPress's own job and is not
+> reachable from this namespace at all.
+
+```json
+{ "object_type": "post", "object_id": 77, "language": "tr", "detached": true }
+```
+
+Repeating a successful unlink returns 404 `mclogiora_relation_item_not_found` —
+the membership is already gone.
+
+The **source item of a group cannot be detached**: 409
+`mclogiora_relation_detach_original`. Removing it would orphan every
+translation hanging off it.
+
+The group itself survives losing its last translation, keeping its key and its
+source. No group cleanup happens; that is the domain's existing behaviour, not
+something REST adds.
+
 ### `POST|PUT|PATCH /mclogiora/v1/translations`
 
 Moves an existing translation to a new status. All three verbs do the same
@@ -571,10 +636,9 @@ not ask anyone to translate anything.
 
 #### Not yet writable
 
-Creating a translation, linking an existing object as a translation, and
-unlinking one are supported by the domain for both posts and terms, and none is
-exposed over REST yet. Each creates, links or detaches, and each needs its own
-security argument.
+Creating a translation — which creates a real WordPress post or term — is
+supported by the domain for both posts and terms and is not exposed over REST.
+It needs its own security argument and its own qualification.
 
 ### Errors
 
@@ -604,6 +668,29 @@ Domain refusals from the status write:
 | `mclogiora_status_unchanged` | 409 | Already at that status |
 | `mclogiora_invalid_status_transition` | 409 | Not reachable from the current status |
 | `mclogiora_original_status_immutable` | 409 | The source item of a group cannot change status |
+
+Domain refusals from the membership routes:
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| `mclogiora_cannot_link_to_self` | 400 | Source and target are the same object |
+| `mclogiora_invalid_source_id`, `mclogiora_invalid_target_id` | 400 | Identifier is not usable |
+| `mclogiora_rest_missing_taxonomy` | 400 | Linking terms without naming a taxonomy |
+| `mclogiora_cannot_edit_source`, `mclogiora_cannot_edit_target` | 403 | You may manage translations, but not this particular object |
+| `mclogiora_cannot_edit_terms` | 403 | You may not edit terms |
+| `mclogiora_source_not_found`, `mclogiora_target_not_found` | 404 | Named object does not exist, or not in that taxonomy |
+| `mclogiora_relation_item_not_found` | 404 | No membership to detach |
+| `mclogiora_object_already_related` | 409 | The target already belongs to a translation group |
+| `mclogiora_translation_exists` | 409 | That language slot is already filled |
+| `mclogiora_post_type_mismatch` | 409 | A translation must use the same post type as its source |
+| `mclogiora_taxonomy_mismatch` | 409 | A translated term must share its source's taxonomy |
+| `mclogiora_same_language` | 409 | Target language equals the source language |
+| `mclogiora_relation_detach_original` | 409 | The source item of a group cannot be detached |
+
+The 403s are worth noting: they arrive from the workflow *after* the permission
+callback has already passed. Whether you may edit one particular post is not
+knowable until the workflow has resolved which post that is, so a general
+capability is never the whole check.
 
 The 400/409 split answers two different questions. **400** means the request was
 wrong whatever state the site is in — retry after fixing the request. **409**
