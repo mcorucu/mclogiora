@@ -21,6 +21,7 @@ use McLogiora\Editors\Payload\TranslationPayloadAdapterInterface;
 use McLogiora\Languages\LanguageServiceInterface;
 use McLogiora\Relations\ContentType;
 use McLogiora\Relations\TranslationRelationServiceInterface;
+use McLogiora\Relations\TranslationStatus;
 use McLogiora\Workflows\ContentTranslationWorkflow;
 use McLogiora\Workflows\TranslationWorkflowValidator;
 use McLogiora\WordPress\ContentGatewayInterface;
@@ -614,5 +615,98 @@ final class TranslationWorkflowIntegrationTest extends WP_UnitTestCase {
 		}
 
 		$this->assertSame( array( 'en' ), $languages, 'The target language slot must be free again.' );
+	}
+
+	/**
+	 * Asserts a failed relation write removes the term it just created.
+	 *
+	 * The unit suite already proves the workflow *calls* delete_term on this
+	 * path, against a fake gateway. What it cannot show is that WordPress then
+	 * actually removes the term, which is the part a site cares about.
+	 *
+	 * The failure is injected through `created_term`, a core hook that fires
+	 * inside wp_insert_term -- after the term exists, before the relation is
+	 * written. Occupying the target language slot at that instant is the real
+	 * race the compensation was written for: the slot was free when the
+	 * workflow checked, and taken by the time it wrote.
+	 *
+	 * @return void
+	 */
+	public function test_a_failed_relation_write_removes_the_created_term() {
+		$workflows = $this->container->get( TranslationWorkflowService::class );
+		$relations = $this->container->get( TranslationRelationServiceInterface::class );
+
+		$languages = $this->container->get( LanguageRepositoryInterface::class );
+
+		if ( ! $languages->find_by_code( 'de' ) instanceof Language ) {
+			$languages->create( new Language( 'de', 'de_DE', 'Deutsch', 'German', 'ltr', LanguageStatus::ACTIVE, 2, false ) );
+		}
+
+		$source = self::factory()->term->create( array( 'taxonomy' => 'category', 'name' => 'Rollback source' ) );
+		$spare  = self::factory()->term->create( array( 'taxonomy' => 'category', 'name' => 'Squatter' ) );
+
+		/*
+		 * The group is established with a first translation so the injected
+		 * failure lands on the relation write rather than on group creation.
+		 */
+		$established = $workflows->taxonomy()->create_translation( $source, 'category', 'de', 'Nachrichten' );
+
+		$this->assertIsArray( $established, is_wp_error( $established ) ? $established->get_error_message() : '' );
+
+		$group_key = $established['group_key'];
+		$before    = $this->term_count();
+
+		$squat = static function () use ( &$squat, $relations, $group_key, $spare ) {
+			remove_action( 'created_term', $squat, 10 );
+
+			$relations->attach_existing_object_as_translation(
+				$group_key,
+				ContentType::TERM,
+				(string) $spare,
+				'tr',
+				TranslationStatus::DRAFT
+			);
+		};
+
+		add_action( 'created_term', $squat, 10 );
+
+		$result = $workflows->taxonomy()->create_translation( $source, 'category', 'tr', 'Haberler' );
+
+		remove_action( 'created_term', $squat, 10 );
+
+		$this->assertWPError( $result, 'A relation write that loses the race must fail the whole operation.' );
+
+		$this->assertSame( $before, $this->term_count(), 'The term created before the failure must be removed.' );
+		$this->assertFalse( get_term_by( 'name', 'Haberler', 'category' ), 'No orphan term may survive.' );
+
+		$source_term = get_term( $source, 'category' );
+
+		$this->assertInstanceOf( 'WP_Term', $source_term, 'The source term must survive.' );
+		$this->assertSame( 'Rollback source', $source_term->name );
+		$this->assertInstanceOf( 'WP_Term', get_term( $spare, 'category' ), 'Unrelated terms must survive.' );
+
+		$group = $relations->get_translation_set_for_object( ContentType::TERM, (string) $source );
+
+		$this->assertNotNull( $group );
+
+		foreach ( $group->items() as $item ) {
+			$this->assertInstanceOf(
+				'WP_Term',
+				get_term( (int) $item->object_id(), 'category' ),
+				'No relation item may point at a term that no longer exists.'
+			);
+		}
+	}
+
+	/**
+	 * Returns the number of terms.
+	 *
+	 * @return int
+	 */
+	private function term_count() {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- counting rows is the assertion.
+		return (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->terms}" );
 	}
 }
