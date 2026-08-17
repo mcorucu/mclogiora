@@ -238,7 +238,13 @@ jobs:
         run: bash bin/install-builder-plugins.sh
 
       - name: Run builder compatibility tests
-        run: composer test:integration
+        # Loading third-party builders globally changes WordPress routing hooks.
+        # The required integration job already runs the complete suite without
+        # those plugins; this optional job owns only the builder contracts.
+        run: >-
+          vendor/bin/phpunit -c phpunit-integration.xml.dist
+          tests/Integration/BuilderContentIntegrationTest.php
+          tests/Integration/OptionalBuilderPluginTest.php
 
   hygiene:
     name: Repository hygiene
