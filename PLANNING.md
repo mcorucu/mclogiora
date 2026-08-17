@@ -712,7 +712,7 @@ Phase 17: Developer & Operations Layer — in progress
 | --- | --- | --- | --- |
 | A | Developer Extension API | Public read functions, then a reviewed hook contract | Complete |
 | B | REST API | `/mclogiora/v1/…` under permission callbacks | Complete for the translation domain (slices 1–4B). `/import`, `/export` and `/status` belong to workstreams D and E; `/strings`, `/suggestions` and `/switcher` are reassessed below |
-| C | WP-CLI | `wp mclogiora …`, wrapping the workflow services | Not started |
+| C | WP-CLI | `wp mclogiora …`, wrapping the workflow services | Slice 1 (read-only commands) complete; mutation commands not started |
 | D | Import / Export | Portable packages with a dry run before any write | Not started |
 | E | Diagnostics | System Status screen and Site Health integration | Not started |
 
@@ -744,7 +744,15 @@ Phase 17: Developer & Operations Layer — in progress
 | `/suggestions` | Deliberately not built. ADR 0018 requires an explicit human action per suggestion and forbids background sending of site content; the existing admin AJAX surface already enforces that. A REST endpoint would make bulk machine translation trivially scriptable, which is the outcome Phase 16 was designed to prevent. |
 | `/switcher` | Superseded. Section 14 wanted a public cacheable switcher endpoint; `GET /languages` already serves that data publicly, including each language's home URL, and the switcher itself renders server-side. |
 
-- Workstream B is therefore complete unless a concrete consumer justifies `/strings`. Next: workstream C (WP-CLI), D (import/export) or E (diagnostics).
+- Workstream B is therefore complete unless a concrete consumer justifies `/strings`.
+
+Workstream C decomposes into three slices: read-only commands, relation and status mutation commands, then content and term creation commands. Slices 2 and 3 wrap the same workflows REST already wraps.
+
+- Workstream C slice 1 registered `wp mclogiora language list`, `wp mclogiora relation get` and `wp mclogiora translation get`. Every command reads through `Api\PublicApi` and publishes the same field names REST does, so an operator comparing the two interfaces finds one answer rather than two. Output goes through WP-CLI's own formatter; mcLogiora ships no table renderer.
+- Registration is gated on `RuntimeReadiness::is_cli()`, so a web request constructs nothing. No Composer dependency on WP-CLI is added and no command class extends `WP_CLI_Command`, so a site without WP-CLI can autoload them safely.
+- Two decisions deliberately differ from REST because the execution model does. `language list` defaults to **all** configured languages rather than active, and relation inspection returns object IDs for drafts and private posts. REST is gated because anonymous callers exist; running `wp` means shell access, which is already more privileged than any role, so copying those defaults would hide configuration from the operator administering it. Credentials, preview tokens, source hashes, table and class names stay out regardless.
+- Qualified by running the real binary against real installations of WordPress 7.0.4 and 7.1-RC3: fifteen invocations left every row count, relation hash and `post_modified_gmt` byte-identical and made zero outbound requests.
+- Next: workstream C slice 2 (relation and status mutation commands), or workstream D or E.
 
 Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
 

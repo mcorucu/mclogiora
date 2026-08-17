@@ -818,7 +818,85 @@ sketched in the plan and are not registered. Nothing about suggestions is
 reachable over REST: no provider credential, setting, preview or model cache is
 exposed, and a REST read makes no outbound HTTP request at all.
 
+## WP-CLI
+
+Root command `wp mclogiora`. **Read-only.** No command in this release changes
+anything; every one reads through the same functions documented above, so the
+CLI, REST and PHP all answer the same question the same way and use the same
+field names.
+
+Commands register only under WP-CLI. A web or admin request constructs no
+command object and touches no WP-CLI symbol. mcLogiora takes no Composer
+dependency on WP-CLI — the runtime provides it when it is the runtime — and the
+command classes deliberately do not extend `WP_CLI_Command`, so a site without
+WP-CLI can autoload them without fatalling.
+
+Every command supports `--format` (`table` by default, plus `csv`, `json`,
+`yaml`, `count`) and `--fields=<comma,separated>`, through WP-CLI's own
+formatter. A field name outside the published set is an error, not an empty
+column. A successful read exits `0`; anything refused exits non-zero with a
+message on stderr.
+
+### `wp mclogiora language list`
+
+Lists configured languages.
+
+| Option | Values | Default |
+| --- | --- | --- |
+| `--status` | `all`, `active` | **`all`** |
+
+Fields: `code`, `locale`, `tag`, `native_name`, `english_name`, `direction`,
+`is_active`, `is_default`, `order`, `home_url`.
+
+> **`--status` defaults to `all` here, unlike the REST route.** REST defaults to
+> active and gates the rest behind a capability because anonymous callers exist.
+> Running `wp` means shell access to the server, which is already more
+> privileged than any WordPress role, so that distinction buys nothing — and
+> hiding configured-but-disabled languages from the person administering them
+> would be the wrong default.
+
+```
+$ wp mclogiora language list --status=active --format=json
+```
+
+### `wp mclogiora relation get <object-type> <object-id>`
+
+Shows the translation group an object belongs to, one row per language.
+
+Fields: `language`, `object_id`, `object_type`, `status`, `is_source`, `url`.
+`--taxonomy=<name>` is needed to resolve URLs for terms; without it the `url`
+column is empty rather than wrong.
+
+Errors with a non-zero exit when the object type is unknown, the identifier is
+not a positive integer, or the object belongs to no group.
+
+### `wp mclogiora translation get <object-type> <object-id> <language>`
+
+Resolves one translation. Same fields and options.
+
+A missing translation is an error with a non-zero exit — never an invitation to
+create one. `wp mclogiora translation get` that quietly created a draft would be
+a surprising thing for a `get` to do.
+
+```
+$ wp mclogiora translation get post 42 tr --fields=object_id --format=csv
+```
+
+### What the CLI shows that REST does not
+
+Relation inspection returns object IDs whatever state those objects are in,
+drafts and private posts included. That is deliberate and differs from the REST
+routes, which are gated because anonymous HTTP callers exist. An operator with
+shell access could read the database directly; withholding an ID from them would
+be theatre. Secrets and internals stay out regardless — no credential, preview
+token, source hash, table name or class name appears in any output.
+
+### Not yet in the CLI
+
+Every mutation. Creating, linking, unlinking and status changes are reachable
+over REST and are not exposed as commands yet.
+
 ## Not yet built
 
-WP-CLI commands, import/export, and the System Status and Site Health surfaces
-are the remaining Phase 17 workstreams, along with REST writes. See ADR 0019.
+Import/export and the System Status and Site Health surfaces are the remaining
+Phase 17 workstreams, along with WP-CLI mutation commands. See ADR 0019.

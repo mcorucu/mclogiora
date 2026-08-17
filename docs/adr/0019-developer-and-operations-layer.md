@@ -6,8 +6,9 @@ Accepted for the layer's shape. Partially implemented: Workstream A is built —
 slice 1 the public read API, slice 2 the hook contract review. Workstream B is
 complete for the translation domain: slice 1 the read surface, slice 2 status
 transitions, slice 3 relation membership, slice 4A content creation, slice 4B
-taxonomy creation. All seven domain mutations are reachable. Workstreams C
-through E are not started.
+taxonomy creation. All seven domain mutations are reachable over HTTP.
+Workstream C is under way: slice 1, the read-only commands, is built; CLI
+mutations are not. Workstreams D and E are not started.
 
 ## Context
 
@@ -450,6 +451,50 @@ leak.
 
 REST contains no compensation code. A second implementation would eventually
 disagree with the first about what cleaning up means.
+
+#### WP-CLI is a third transport, not a third rulebook
+
+The commands read through `PublicApi` and publish the same field names REST
+does. Having shell access means a command *could* reach a repository directly,
+and that is precisely why it must not: an operator comparing `wp mclogiora
+relation get` against `GET /relations` must not find two answers, and
+`native_name` must not become `label` because a table looked nicer that way.
+
+Registration is gated on `RuntimeReadiness::is_cli()`, the same authority every
+other module asks about the request, so a web request constructs nothing. The
+command classes deliberately do not extend `WP_CLI_Command` and mcLogiora takes
+no Composer dependency on WP-CLI: the runtime provides it when it is the
+runtime, and no file in `src/` names a WP-CLI class that a site without WP-CLI
+would fail to load. Output goes through WP-CLI's own `Formatter` rather than a
+renderer of ours.
+
+#### CLI does not inherit REST's permission model
+
+Two decisions differ from REST on purpose, because the execution model differs.
+
+`wp mclogiora language list` defaults to **all** configured languages, where
+REST defaults to active and gates the rest behind a capability. REST is gated
+because anonymous HTTP callers exist. Running `wp` means shell access to the
+server, which is already more privileged than any WordPress role, so copying
+that default would hide configured-but-disabled languages from the person
+administering them.
+
+Relation inspection likewise returns object IDs for drafts and private posts.
+An operator who can run `wp` can read the database directly; withholding an ID
+from them would be theatre rather than security. What stays out is what stays
+out everywhere: credentials, preview tokens, source hashes, table names, class
+names.
+
+#### Read and write are separated again
+
+No command mutates anything. Qualifying that took running the real binary
+against a real installation — fifteen command invocations left every row count,
+every relation hash and every `post_modified_gmt` byte-identical, and made zero
+outbound requests. A PHPUnit suite could not have shown it: WP-CLI's classes are
+present in the harness as a development dependency, but nothing dispatches a
+command, so the argument parsing and projections are tested there and the
+dispatch, formatting and exit codes are qualified by running `wp mclogiora …`
+on both WordPress builds.
 
 #### Declared arguments only constrain if a validate_callback says so
 
