@@ -820,10 +820,10 @@ exposed, and a REST read makes no outbound HTTP request at all.
 
 ## WP-CLI
 
-Root command `wp mclogiora`. **Read-only.** No command in this release changes
-anything; every one reads through the same functions documented above, so the
-CLI, REST and PHP all answer the same question the same way and use the same
-field names.
+Root command `wp mclogiora`. Reads go through the same functions documented
+above; writes go through the same workflow services REST calls. CLI, REST and
+PHP therefore answer the same question the same way and use the same field
+names.
 
 Commands register only under WP-CLI. A web or admin request constructs no
 command object and touches no WP-CLI symbol. mcLogiora takes no Composer
@@ -831,11 +831,35 @@ dependency on WP-CLI — the runtime provides it when it is the runtime — and 
 command classes deliberately do not extend `WP_CLI_Command`, so a site without
 WP-CLI can autoload them without fatalling.
 
-Every command supports `--format` (`table` by default, plus `csv`, `json`,
+Read commands support `--format` (`table` by default, plus `csv`, `json`,
 `yaml`, `count`) and `--fields=<comma,separated>`, through WP-CLI's own
 formatter. A field name outside the published set is an error, not an empty
-column. A successful read exits `0`; anything refused exits non-zero with a
-message on stderr.
+column.
+
+Mutation commands are human-first: a success line, no table and no `--format`.
+Adding a formatter to them would either pollute machine output with the success
+message or invent a mutation-only shape; an operator who wants the resulting
+state runs `wp mclogiora relation get`, which is already machine-readable.
+
+A successful command exits `0`. Anything refused — permission, invalid
+argument, or a domain conflict — exits non-zero with a message on stderr. A
+domain refusal carries the workflow's own code in parentheses, so the same
+refusal stays identifiable whether it arrives from the CLI, from REST or from
+an admin screen.
+
+> ### Mutation commands need a WordPress user
+>
+> WP-CLI commands do **not** bypass WordPress or mcLogiora authorization.
+> Running `wp` without `--user` leaves no current user at all, so every mutation
+> is refused with `mclogiora_cannot_manage_translations`. That is correct, not a
+> bug.
+>
+> Pass a sufficiently capable user with WP-CLI's own global flag:
+> `--user=<login|id|email>`. There is deliberately no `--force`, `--as-admin` or
+> `--skip-permissions`; shell access is not a WordPress capability.
+>
+> Read commands need no user because they perform no capability check — the
+> read API never has.
 
 ### `wp mclogiora language list`
 
@@ -891,12 +915,65 @@ shell access could read the database directly; withholding an ID from them would
 be theatre. Secrets and internals stay out regardless — no credential, preview
 token, source hash, table name or class name appears in any output.
 
+### `wp mclogiora translation status <object-type> <object-id> <language> <status>`
+
+Moves an existing translation to a new status by calling
+`TranslationWorkflowService::change_status()`.
+
+`<status>` is one of the canonical statuses — `draft`, `translated`,
+`needs_review`, `needs_update`, `machine_suggested`, `disabled`. Friendly
+aliases such as `approved` or `done` deliberately do not exist: a status that
+works on one transport and not another means two vocabularies for one concept.
+
+A valid status is not a legal transition. Which moves are allowed is the
+workflow's answer, identically to REST — repeating the current status is
+`mclogiora_status_unchanged`, and the source item of a group cannot change
+status at all.
+
+```
+$ wp mclogiora translation status post 77 tr needs_review --user=admin
+Success: post 77 in tr is now needs_review.
+```
+
+### `wp mclogiora relation link <object-type> <source-id> <target-id> <language>`
+
+Links an object that already exists into a translation group. `--taxonomy` is
+required for terms.
+
+**Creates nothing.** Both objects must already exist; neither is edited. Posts
+and terms dispatch to their own workflow, so the checks that differ between them
+— post type against post type, taxonomy against taxonomy — still apply. The new
+membership starts at `needs_review`, the same status REST produces.
+
+```
+$ wp mclogiora relation link post 42 77 tr --user=admin
+$ wp mclogiora relation link term 5 9 tr --taxonomy=category --user=admin
+```
+
+### `wp mclogiora relation unlink <object-type> <object-id> <language>`
+
+Detaches an object from its translation group.
+
+> **This removes translation relation membership only. It does not delete the
+> WordPress post or term.** The object survives with every field unchanged —
+> content, status, slug, parent, revisions, and for terms the name, description
+> and taxonomy. Deleting content is WordPress's own job and is not reachable
+> from this namespace.
+
+```
+$ wp mclogiora relation unlink post 77 tr --user=admin
+Success: Detached post 77 from its tr translation slot. The post itself was not deleted.
+```
+
+Repeating an unlink reports `mclogiora_relation_item_not_found`. The source item
+of a group cannot be detached at all.
+
 ### Not yet in the CLI
 
-Every mutation. Creating, linking, unlinking and status changes are reachable
-over REST and are not exposed as commands yet.
+Creating a translation. `create_translation` is reachable over REST for both
+posts and terms and is not exposed as a command yet.
 
 ## Not yet built
 
 Import/export and the System Status and Site Health surfaces are the remaining
-Phase 17 workstreams, along with WP-CLI mutation commands. See ADR 0019.
+Phase 17 workstreams, along with the WP-CLI creation commands. See ADR 0019.

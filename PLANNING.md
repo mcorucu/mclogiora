@@ -712,7 +712,7 @@ Phase 17: Developer & Operations Layer — in progress
 | --- | --- | --- | --- |
 | A | Developer Extension API | Public read functions, then a reviewed hook contract | Complete |
 | B | REST API | `/mclogiora/v1/…` under permission callbacks | Complete for the translation domain (slices 1–4B). `/import`, `/export` and `/status` belong to workstreams D and E; `/strings`, `/suggestions` and `/switcher` are reassessed below |
-| C | WP-CLI | `wp mclogiora …`, wrapping the workflow services | Slice 1 (read-only commands) complete; mutation commands not started |
+| C | WP-CLI | `wp mclogiora …`, wrapping the workflow services | Slices 1 (reads) and 2 (relation and status mutations) complete; creation commands not started |
 | D | Import / Export | Portable packages with a dry run before any write | Not started |
 | E | Diagnostics | System Status screen and Site Health integration | Not started |
 
@@ -752,7 +752,11 @@ Workstream C decomposes into three slices: read-only commands, relation and stat
 - Registration is gated on `RuntimeReadiness::is_cli()`, so a web request constructs nothing. No Composer dependency on WP-CLI is added and no command class extends `WP_CLI_Command`, so a site without WP-CLI can autoload them safely.
 - Two decisions deliberately differ from REST because the execution model does. `language list` defaults to **all** configured languages rather than active, and relation inspection returns object IDs for drafts and private posts. REST is gated because anonymous callers exist; running `wp` means shell access, which is already more privileged than any role, so copying those defaults would hide configuration from the operator administering it. Credentials, preview tokens, source hashes, table and class names stay out regardless.
 - Qualified by running the real binary against real installations of WordPress 7.0.4 and 7.1-RC3: fifteen invocations left every row count, relation hash and `post_modified_gmt` byte-identical and made zero outbound requests.
-- Next: workstream C slice 2 (relation and status mutation commands), or workstream D or E.
+- Workstream C slice 2 added `wp mclogiora translation status`, `wp mclogiora relation link` and `wp mclogiora relation unlink`, calling the same workflow services REST calls. Nothing under `src/Cli` writes through a repository or `$wpdb`.
+- Running `wp` without `--user` leaves no current WordPress user, so every mutation is refused with `mclogiora_cannot_manage_translations`. That is correct rather than a usability defect: assuming an administrator, or adding a `--force` flag, would make shell access silently equivalent to a capability nobody granted. Operators pass `--user=<login|id|email>`; there is no bypass of any kind.
+- Mutation commands are human-first with no `--format`. Read commands render data and keep theirs. `unlink` states in words that the object was not deleted, because the verb invites exactly the wrong assumption.
+- Qualified by running the real binary on WordPress 7.0.4 and 7.1-RC3: the full user matrix (no user, subscriber, editor, administrator), every domain refusal with its code preserved, full post and term fingerprints unchanged across link and unlink, zero objects created or deleted, and zero outbound requests.
+- Next: workstream C slice 3 (content and taxonomy creation commands), or workstream D or E.
 
 Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
 
