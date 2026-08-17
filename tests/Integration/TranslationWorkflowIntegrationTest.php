@@ -20,6 +20,7 @@ use McLogiora\Editors\Payload\PayloadAdapterRegistry;
 use McLogiora\Editors\Payload\TranslationPayloadAdapterInterface;
 use McLogiora\Languages\LanguageServiceInterface;
 use McLogiora\Relations\ContentType;
+use McLogiora\Relations\TranslationRelationRepositoryInterface;
 use McLogiora\Relations\TranslationRelationServiceInterface;
 use McLogiora\Relations\TranslationStatus;
 use McLogiora\Workflows\ContentTranslationWorkflow;
@@ -373,6 +374,60 @@ final class TranslationWorkflowIntegrationTest extends WP_UnitTestCase {
 
 		$this->assertNotNull( $group );
 		$this->assertCount( 2, $group->items(), 'The group should hold the source and its translation.' );
+	}
+
+	/**
+	 * Asserts detaching refreshes a group read in the same request.
+	 *
+	 * @return void
+	 */
+	public function test_detaching_refreshes_a_cached_group_in_the_same_request() {
+		$workflow = $this->container->get( TranslationWorkflowService::class )->content();
+		$languages = $this->container->get( LanguageRepositoryInterface::class );
+
+		if ( ! $languages->find_by_code( 'de' ) instanceof Language ) {
+			$languages->create( new Language( 'de', 'de_DE', 'Deutsch', 'German', 'ltr', LanguageStatus::ACTIVE, 2, false ) );
+		}
+
+		$source = self::factory()->post->create( array( 'post_type' => 'post', 'post_status' => 'publish' ) );
+		$first  = $workflow->create_translation( $source, 'tr' );
+		$second = self::factory()->post->create( array( 'post_type' => 'post', 'post_status' => 'publish' ) );
+		$link   = $workflow->link_existing( $source, $second, 'de' );
+
+		$this->assertIsArray( $first, is_wp_error( $first ) ? $first->get_error_message() : '' );
+		$this->assertIsArray( $link, is_wp_error( $link ) ? $link->get_error_message() : '' );
+
+		$repository = $this->container->get( TranslationRelationRepositoryInterface::class );
+		$group_key  = $first['group_key'];
+		$cached     = $repository->find_group( $group_key );
+
+		$this->assertInstanceOf( \McLogiora\Relations\TranslationGroup::class, $cached );
+		$this->assertCount( 3, $cached->items() );
+		$this->assertTrue( $repository->detach_item( ContentType::POST, (string) $first['post_id'], 'tr' ) );
+
+		$refreshed = $repository->find_group( $group_key );
+		$ids       = array_map(
+			static function ( $item ) {
+				return $item->object_id();
+			},
+			$refreshed->items()
+		);
+
+		$this->assertNotContains( (string) $first['post_id'], $ids );
+		$this->assertContains( (string) $source, $ids );
+		$this->assertContains( (string) $second, $ids );
+		$this->assertNull( $repository->find_item( ContentType::POST, (string) $first['post_id'], 'tr' ) );
+
+		$this->assertNotWPError( $workflow->link_existing( $source, $first['post_id'], 'tr' ) );
+		$reattached = $repository->find_group( $group_key );
+		$reattached_ids = array_map(
+			static function ( $item ) {
+				return $item->object_id();
+			},
+			$reattached->items()
+		);
+
+		$this->assertContains( (string) $first['post_id'], $reattached_ids );
 	}
 
 	/**
