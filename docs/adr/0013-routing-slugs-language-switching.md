@@ -139,7 +139,7 @@ The readable label never depends on a flag, so a flag-only inaccessible mode is 
 
 ### Accessibility and direction
 
-Every mode renders real links or a real `<select>` inside a `<form>` — never a div with a click handler — so keyboard and screen-reader users get working navigation with no JavaScript. The dropdown degrades to a submit button under `<noscript>`.
+Every mode renders real links or a real `<select>` — never a div with a click handler — so keyboard and screen-reader users get working navigation with no JavaScript. The dropdown is enhanced by the external switcher script when available; its `<noscript>` fallback renders real language links.
 
 Links carry `lang`, `hreflang`, and `dir`. The current language is marked `aria-current` with screen-reader text, and an unavailable language is announced as such rather than rendered as a dead link. The switcher is wrapped in a labelled `<nav>`.
 

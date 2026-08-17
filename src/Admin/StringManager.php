@@ -25,7 +25,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * Follows the existing admin patterns: the same panel, filter bar, card, and
  * table classes used by the other mcLogiora screens. No new visual language
- * is introduced, and no scripts are enqueued.
+ * is introduced, and screen-specific scripts are not enqueued here; shared
+ * admin behavior is loaded conditionally by AssetLoader.
  */
 final class StringManager implements ModuleInterface {
 	const SUGGESTIONS_HANDLE = 'mclogiora-admin-suggestions';
@@ -228,7 +229,7 @@ final class StringManager implements ModuleInterface {
 			<input type="hidden" name="page" value="<?php echo esc_attr( self::PAGE_SLUG ); ?>">
 			<label>
 				<span><?php esc_html_e( 'Target language', 'mclogiora' ); ?></span>
-				<select name="language" onchange="this.form.submit()">
+				<select name="language" data-mclogiora-submit-on-change="1">
 					<?php foreach ( $languages as $language ) : ?>
 						<?php if ( $language instanceof Language ) : ?>
 							<option value="<?php echo esc_attr( $language->code() ); ?>" <?php selected( $target, $language->code() ); ?>>
@@ -238,6 +239,7 @@ final class StringManager implements ModuleInterface {
 					<?php endforeach; ?>
 				</select>
 			</label>
+			<button type="submit" class="button"><?php esc_html_e( 'Filter', 'mclogiora' ); ?></button>
 		</form>
 
 		<table class="widefat striped mclogiora-table">

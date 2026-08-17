@@ -1,6 +1,6 @@
 # mcLogiora Planning
 
-Current phase: Phase 18, Slice 1 complete (Correctness, Security & Internal Hardening), on the `0.16.0` version line. Phase 17 is complete (Developer & Operations Layer). The release header still declares `Tested up to: 7.0`; raising it to 7.1 is a separate compatibility gate once WordPress 7.1 ships final.
+Current phase: Phase 18, Slice 2 complete (Performance, Accessibility, RTL & WordPress.org Compliance Hardening), on the `0.16.0` version line. Phase 17 is complete (Developer & Operations Layer). The release header still declares `Tested up to: 7.0`; raising it to 7.1 is a separate compatibility gate once WordPress 7.1 ships final.
 
 This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 
@@ -602,7 +602,7 @@ WordPress.org package.
 
 ## 20. Development Phases
 
-The original twelve-phase sequence in this document drifted from what was actually built: two persistence phases were inserted during execution, which shifted every later number. The list below is the reconciled roadmap. Phases 01-17 are historical fact, verified against `CHANGELOG.md`, the plugin version header, the ADR set, and the source tree. Phase 18 is in progress; Slice 1 is complete and the later slices remain open.
+The original twelve-phase sequence in this document drifted from what was actually built: two persistence phases were inserted during execution, which shifted every later number. The list below is the reconciled roadmap. Phases 01-17 are historical fact, verified against `CHANGELOG.md`, the plugin version header, the ADR set, and the source tree. Phase 18 engineering slices are complete; its final release gates remain open.
 
 ### Completed phases (verified against repository evidence)
 
@@ -773,7 +773,7 @@ Workstream D decomposes into three slices, in this order and for the reason sect
 Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
 
 - Slice 1 — Correctness, Security & Internal Hardening: **complete**. The carried block-registration, switcher CSP, and dead-contract items were resolved; the term-suffix item was confirmed intentional and the seven PHPCS warnings remain documented.
-- Slice 2 — Performance, Accessibility, RTL & WordPress.org Compliance Hardening: **not started**.
+- Slice 2 — Performance, Accessibility, RTL & WordPress.org Compliance Hardening: **complete**. Measurement found no frontend query/N+1, conditional-loading, diagnostics, cache, or broad accessibility defect requiring change. The remaining inline admin submit behavior was moved to the conditionally loaded admin asset with a visible no-JavaScript submit control, the admin button padding was made logical for RTL, the current source POT was regenerated to 787 msgids, and the switcher ADR was corrected to match the shipped no-JavaScript fallback.
 - Final release gate — WordPress 7.1 final qualification, live provider qualification, and release preparation: **open**.
 
 ## Discovery Notes
@@ -809,7 +809,7 @@ These notes record the Phase 01 discovery environment. They are historical conte
 
 ## Next Phase
 
-Phases 02 through 17 are complete. **Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation** is in progress; Slice 1 is complete and the remaining scope is in section 20.
+Phases 02 through 17 are complete. **Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation** engineering slices are complete; the final release gates remain open.
 
 Two items are carried forward from Phase 16 and remain open after Phase 17:
 
@@ -817,3 +817,5 @@ Two items are carried forward from Phase 16 and remain open after Phase 17:
 - Live provider qualification with real credentials, per provider, including one representative failure per normalized error category.
 
 The low-severity observation about language-switcher block registration is closed in Phase 18 Slice 1: the registration boundary now checks WordPress's native block registry, so repeated `init`-style callbacks are harmless.
+
+The exact next scope is the final release gate: WordPress 7.1 final qualification, live provider qualification with real credentials, final package/ZIP qualification, release visuals and publication preparation, followed by the release commit/tag/deploy decision.

@@ -2,43 +2,45 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: mcLogiora 0.15.0\n"
+"Project-Id-Version: mcLogiora 0.16.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mclogiora\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-16T18:05:52+00:00\n"
+"POT-Creation-Date: 2026-08-17T19:44:39+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mclogiora\n"
 
 #. Plugin Name of the plugin
-#: mclogiora.php
+#: mclogiora.php:3
 #: src/Admin/AdminMenu.php:96
 #: src/Admin/AdminMenu.php:97
+#: src/Diagnostics/SiteHealthIntegration.php:48
+#: src/Diagnostics/SiteHealthIntegration.php:194
 #: assets/js/editor-panel.js:628
 msgid "mcLogiora"
 msgstr ""
 
 #. Plugin URI of the plugin
-#: mclogiora.php
+#: mclogiora.php:4
 msgid "https://mcorucu.com/"
 msgstr ""
 
 #. Description of the plugin
-#: mclogiora.php
+#: mclogiora.php:5
 msgid "A modern multilingual platform foundation for WordPress."
 msgstr ""
 
 #. Author of the plugin
-#: mclogiora.php
+#: mclogiora.php:10
 msgid "Mehmet Can Orucu"
 msgstr ""
 
 #. Author URI of the plugin
-#: mclogiora.php
+#: mclogiora.php:11
 msgid "https://mcorucu.com"
 msgstr ""
 
@@ -53,7 +55,8 @@ msgstr ""
 #: src/Admin/AdminMenu.php:144
 #: src/Admin/AdminMenu.php:161
 #: src/Admin/RoutingSettingsScreen.php:85
-#: src/Admin/StringManager.php:98
+#: src/Admin/StringManager.php:99
+#: src/Admin/SystemStatusDashboard.php:67
 #: src/Admin/WidgetTranslationManager.php:87
 #: src/Compatibility/CompatibilityDashboard.php:78
 #: src/Languages/LanguageManager.php:74
@@ -140,7 +143,7 @@ msgid "You do not have permission to do that."
 msgstr ""
 
 #: src/Admin/MediaTranslationFields.php:252
-#: src/Admin/StringManager.php:426
+#: src/Admin/StringManager.php:428
 #: src/Editors/ClassicEditorMetabox.php:317
 #: src/Relations/TranslationManager.php:551
 #: assets/js/admin-suggestions.js:193
@@ -150,7 +153,7 @@ msgid "Generate suggestion"
 msgstr ""
 
 #: src/Admin/MediaTranslationFields.php:284
-#: src/Admin/StringManager.php:405
+#: src/Admin/StringManager.php:407
 #: src/Editors/ClassicEditorMetabox.php:273
 #: src/Relations/TranslationManager.php:500
 #: assets/js/editor-panel.js:381
@@ -265,7 +268,7 @@ msgid "Leaving this off keeps your existing default-language URLs unchanged. Tur
 msgstr ""
 
 #: src/Admin/RoutingSettingsScreen.php:124
-#: src/Switcher/SwitcherModule.php:129
+#: src/Switcher/SwitcherModule.php:134
 msgid "Language Switcher"
 msgstr ""
 
@@ -344,106 +347,107 @@ msgstr ""
 msgid "Settings saved."
 msgstr ""
 
-#: src/Admin/StringManager.php:79
+#: src/Admin/StringManager.php:80
 msgid "mcLogiora String Translation"
 msgstr ""
 
-#: src/Admin/StringManager.php:82
-#: src/Admin/StringManager.php:112
+#: src/Admin/StringManager.php:83
+#: src/Admin/StringManager.php:113
 msgid "String Translation"
 msgstr ""
 
-#: src/Admin/StringManager.php:111
+#: src/Admin/StringManager.php:112
 #: src/Admin/WidgetTranslationManager.php:95
 msgid "Translation Data"
 msgstr ""
 
-#: src/Admin/StringManager.php:113
+#: src/Admin/StringManager.php:114
 msgid "Manage translations for interface strings found in your theme and plugins. Scanning only runs when you ask for it, and never during normal site traffic."
 msgstr ""
 
-#: src/Admin/StringManager.php:118
+#: src/Admin/StringManager.php:119
 msgid "String filters"
 msgstr ""
 
-#: src/Admin/StringManager.php:122
+#: src/Admin/StringManager.php:123
 #: src/Relations/TranslationManager.php:176
 msgid "Search"
 msgstr ""
 
-#: src/Admin/StringManager.php:126
-#: src/Admin/StringManager.php:247
+#: src/Admin/StringManager.php:127
+#: src/Admin/StringManager.php:249
 msgid "Text domain"
 msgstr ""
 
-#: src/Admin/StringManager.php:130
-#: src/Admin/StringManager.php:249
+#: src/Admin/StringManager.php:131
+#: src/Admin/StringManager.php:251
 msgid "Origin"
 msgstr ""
 
-#: src/Admin/StringManager.php:132
+#: src/Admin/StringManager.php:133
 msgid "Any origin"
 msgstr ""
 
-#: src/Admin/StringManager.php:140
+#: src/Admin/StringManager.php:141
+#: src/Admin/StringManager.php:242
 msgid "Filter"
 msgstr ""
 
-#: src/Admin/StringManager.php:146
+#: src/Admin/StringManager.php:147
 msgid "Registered Strings"
 msgstr ""
 
-#: src/Admin/StringManager.php:148
+#: src/Admin/StringManager.php:149
 msgid "Source strings discovered by scanning or registered manually."
 msgstr ""
 
-#: src/Admin/StringManager.php:151
+#: src/Admin/StringManager.php:152
 #: src/Languages/LanguageManager.php:277
 #: src/Relations/TranslationManager.php:201
 msgid "Active Languages"
 msgstr ""
 
-#: src/Admin/StringManager.php:153
+#: src/Admin/StringManager.php:154
 msgid "Languages available as translation targets."
 msgstr ""
 
-#: src/Admin/StringManager.php:171
+#: src/Admin/StringManager.php:172
 msgid "Scan for Strings"
 msgstr ""
 
-#: src/Admin/StringManager.php:172
+#: src/Admin/StringManager.php:173
 msgid "Reads the source files of a theme or plugin and registers the translatable strings it finds. This runs only when you submit this form."
 msgstr ""
 
-#: src/Admin/StringManager.php:177
+#: src/Admin/StringManager.php:178
 msgid "Scope"
 msgstr ""
 
-#: src/Admin/StringManager.php:179
+#: src/Admin/StringManager.php:180
 msgid "Theme"
 msgstr ""
 
-#: src/Admin/StringManager.php:180
+#: src/Admin/StringManager.php:181
 msgid "Plugin"
 msgstr ""
 
-#: src/Admin/StringManager.php:184
+#: src/Admin/StringManager.php:185
 msgid "Directory name"
 msgstr ""
 
-#: src/Admin/StringManager.php:187
+#: src/Admin/StringManager.php:188
 msgid "Scan"
 msgstr ""
 
-#: src/Admin/StringManager.php:205
+#: src/Admin/StringManager.php:206
 msgid "Add and activate at least one language before translating strings."
 msgstr ""
 
-#: src/Admin/StringManager.php:214
+#: src/Admin/StringManager.php:215
 msgid "No strings match these filters yet. Run a scan to discover strings."
 msgstr ""
 
-#: src/Admin/StringManager.php:230
+#: src/Admin/StringManager.php:231
 #: src/Admin/WidgetTranslationManager.php:143
 #: src/Relations/TranslationManager.php:164
 #: src/Relations/TranslationManager.php:611
@@ -451,44 +455,44 @@ msgstr ""
 msgid "Target language"
 msgstr ""
 
-#: src/Admin/StringManager.php:246
+#: src/Admin/StringManager.php:248
 msgid "Source string"
 msgstr ""
 
-#: src/Admin/StringManager.php:248
+#: src/Admin/StringManager.php:250
 msgid "Context"
 msgstr ""
 
-#: src/Admin/StringManager.php:250
+#: src/Admin/StringManager.php:252
 msgid "Translation"
 msgstr ""
 
-#: src/Admin/StringManager.php:282
+#: src/Admin/StringManager.php:284
 msgid "Not seen in the last scan. The translation is kept."
 msgstr ""
 
-#: src/Admin/StringManager.php:295
+#: src/Admin/StringManager.php:297
 msgid "Save"
 msgstr ""
 
-#: src/Admin/StringManager.php:420
+#: src/Admin/StringManager.php:422
 msgid "String"
 msgstr ""
 
-#: src/Admin/StringManager.php:425
+#: src/Admin/StringManager.php:427
 msgid "Generate String suggestion"
 msgstr ""
 
-#: src/Admin/StringManager.php:486
+#: src/Admin/StringManager.php:488
 #: src/Admin/WidgetTranslationManager.php:216
 msgid "The action could not be completed."
 msgstr ""
 
-#: src/Admin/StringManager.php:493
+#: src/Admin/StringManager.php:495
 msgid "The scan finished. Discovered strings are listed below."
 msgstr ""
 
-#: src/Admin/StringManager.php:494
+#: src/Admin/StringManager.php:496
 #: src/Admin/WidgetTranslationManager.php:224
 msgid "The translation was saved."
 msgstr ""
@@ -503,7 +507,7 @@ msgstr ""
 #: src/Menus/MenuTranslationWorkflow.php:139
 #: src/Strings/StringRegistry.php:97
 #: src/Widgets/WidgetTranslationService.php:107
-#: src/Workflows/TranslationWorkflowValidator.php:108
+#: src/Workflows/TranslationWorkflowValidator.php:109
 msgid "You are not allowed to manage translations."
 msgstr ""
 
@@ -517,6 +521,7 @@ msgid "That translation could not be found."
 msgstr ""
 
 #: src/Admin/SuggestionAdminController.php:311
+#: src/Api/Rest/RestErrors.php:93
 msgid "That language is not configured on this site."
 msgstr ""
 
@@ -602,6 +607,10 @@ msgstr ""
 
 #: src/Admin/SuggestionSettingsScreen.php:139
 #: src/Admin/SuggestionSettingsScreen.php:174
+#: src/Admin/SystemStatusDashboard.php:180
+#: src/Diagnostics/DiagnosticsService.php:535
+#: src/Diagnostics/DiagnosticsService.php:546
+#: src/Diagnostics/SiteHealthIntegration.php:57
 #: src/Editors/ClassicEditorMetabox.php:264
 #: src/Relations/TranslationManager.php:491
 #: assets/js/editor-panel.js:399
@@ -788,15 +797,114 @@ msgstr ""
 msgid "That translation provider is not available."
 msgstr ""
 
-#: src/Admin/TranslationActionController.php:138
-#: src/Workflows/TranslationStatusTransitions.php:128
-msgid "The requested translation status is not recognised."
+#: src/Admin/SystemStatusDashboard.php:48
+msgid "mcLogiora System Status"
 msgstr ""
 
+#: src/Admin/SystemStatusDashboard.php:51
+#: src/Admin/SystemStatusDashboard.php:76
+msgid "System Status"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:75
+msgid "Diagnostics"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:77
+msgid "A read-only view of mcLogiora configuration and runtime prerequisites. It performs no repairs, cache resets, provider requests, or other writes."
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:79
+msgid "Overall status:"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:85
+msgid "Environment"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:86
 #: src/Admin/TranslationColumns.php:96
+#: src/Diagnostics/SiteHealthIntegration.php:53
 #: src/Languages/LanguageManager.php:58
 #: src/Languages/LanguageManager.php:87
 msgid "Languages"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:88
+msgid "Routing and object cache"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:91
+msgid "Import and Export"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:105
+msgid "Findings"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:161
+msgid "Translation persistence"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:165
+msgid "Present"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:165
+#: src/Admin/TranslationColumns.php:215
+#: src/Editors/TranslationStatusPresenter.php:51
+msgid "Missing"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:167
+msgid "Required tables"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:186
+msgid "Provider readiness"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:211
+msgid "Editors and builders"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:235
+msgid "Good"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:236
+msgid "Recommended"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:237
+msgid "Critical"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:238
+#: src/Admin/SystemStatusDashboard.php:241
+msgid "Informational"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:252
+#: src/Diagnostics/SiteHealthIntegration.php:55
+#: src/Diagnostics/SiteHealthIntegration.php:58
+msgid "Yes"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:252
+#: src/Diagnostics/SiteHealthIntegration.php:55
+#: src/Diagnostics/SiteHealthIntegration.php:58
+msgid "No"
+msgstr ""
+
+#: src/Admin/SystemStatusDashboard.php:256
+#: src/Compatibility/CompatibilityDashboard.php:99
+msgid "Unavailable"
+msgstr ""
+
+#: src/Admin/TranslationActionController.php:138
+#: src/Workflows/TranslationStatusTransitions.php:128
+msgid "The requested translation status is not recognised."
 msgstr ""
 
 #: src/Admin/TranslationColumns.php:116
@@ -834,13 +942,9 @@ msgid "Machine suggested"
 msgstr ""
 
 #: src/Admin/TranslationColumns.php:213
+#: src/Diagnostics/SiteHealthIntegration.php:57
 #: src/Editors/TranslationStatusPresenter.php:49
 msgid "Disabled"
-msgstr ""
-
-#: src/Admin/TranslationColumns.php:215
-#: src/Editors/TranslationStatusPresenter.php:51
-msgid "Missing"
 msgstr ""
 
 #: src/Admin/WidgetTranslationManager.php:68
@@ -900,6 +1004,213 @@ msgstr ""
 
 #: src/Admin/WidgetTranslationManager.php:223
 msgid "The translated menu was created."
+msgstr ""
+
+#: src/Api/Rest/LanguagesController.php:90
+msgid "Which languages to return. Requesting all requires permission to manage translations."
+msgstr ""
+
+#: src/Api/Rest/LanguagesController.php:175
+msgid "Language code used in URLs."
+msgstr ""
+
+#: src/Api/Rest/LanguagesController.php:180
+msgid "WordPress locale."
+msgstr ""
+
+#: src/Api/Rest/LanguagesController.php:185
+msgid "BCP 47 language tag."
+msgstr ""
+
+#: src/Api/Rest/LanguagesController.php:190
+msgid "Language name in the language itself."
+msgstr ""
+
+#: src/Api/Rest/LanguagesController.php:195
+msgid "Language name in English."
+msgstr ""
+
+#: src/Api/Rest/LanguagesController.php:200
+msgid "Text direction."
+msgstr ""
+
+#: src/Api/Rest/LanguagesController.php:206
+msgid "Whether the language is enabled."
+msgstr ""
+
+#: src/Api/Rest/LanguagesController.php:211
+msgid "Whether this is the site default language."
+msgstr ""
+
+#: src/Api/Rest/LanguagesController.php:216
+msgid "Display order."
+msgstr ""
+
+#: src/Api/Rest/LanguagesController.php:221
+msgid "Site home URL in this language."
+msgstr ""
+
+#: src/Api/Rest/RelationsController.php:87
+msgid "Language code of the translation."
+msgstr ""
+
+#: src/Api/Rest/RelationsController.php:169
+msgid "Translation status to move to."
+msgstr ""
+
+#: src/Api/Rest/RelationsController.php:701
+msgid "Type of the object to translate."
+msgstr ""
+
+#: src/Api/Rest/RelationsController.php:709
+msgid "Identifier of the object to create a translation of."
+msgstr ""
+
+#: src/Api/Rest/RelationsController.php:717
+msgid "Taxonomy name. Required when translating a term."
+msgstr ""
+
+#: src/Api/Rest/RelationsController.php:725
+msgid "Name for the translated term. Required when translating a term."
+msgstr ""
+
+#: src/Api/Rest/RelationsController.php:733
+msgid "Description for the translated term. Empty by default."
+msgstr ""
+
+#: src/Api/Rest/RelationsController.php:760
+msgid "Identifier of the source object whose group the target joins."
+msgstr ""
+
+#: src/Api/Rest/RelationsController.php:769
+msgid "Identifier of the existing object to link as a translation."
+msgstr ""
+
+#: src/Api/Rest/RelationsController.php:777
+msgid "Taxonomy name. Required when linking terms."
+msgstr ""
+
+#: src/Api/Rest/RelationsController.php:797
+msgid "Type of the object to look up."
+msgstr ""
+
+#: src/Api/Rest/RelationsController.php:805
+msgid "Identifier of the object to look up."
+msgstr ""
+
+#: src/Api/Rest/RelationsController.php:813
+msgid "Taxonomy name. Required to resolve URLs for term objects."
+msgstr ""
+
+#: src/Api/Rest/RestErrors.php:47
+msgid "You are not allowed to read mcLogiora translation data."
+msgstr ""
+
+#: src/Api/Rest/RestErrors.php:61
+msgid "Unknown object type."
+msgstr ""
+
+#: src/Api/Rest/RestErrors.php:80
+msgid "A taxonomy is required when linking terms."
+msgstr ""
+
+#: src/Api/Rest/RestErrors.php:106
+#: src/Cli/RelationCommand.php:111
+#: src/Cli/TranslationCommand.php:113
+msgid "That object does not belong to a translation group."
+msgstr ""
+
+#: src/Api/Rest/RestErrors.php:119
+msgid "That object has no translation in the requested language."
+msgstr ""
+
+#. translators: 1: supplied object type, 2: comma-separated list of valid types.
+#: src/Cli/CliProjection.php:83
+#, php-format
+msgid "Unknown object type \"%1$s\". Expected one of: %2$s."
+msgstr ""
+
+#: src/Cli/CliProjection.php:104
+#: src/Cli/CliProjection.php:110
+msgid "The object identifier must be a positive integer."
+msgstr ""
+
+#. translators: %s: supplied language code.
+#: src/Cli/CliProjection.php:140
+#, php-format
+msgid "The language \"%s\" is not configured on this site."
+msgstr ""
+
+#. translators: 1: supplied status, 2: comma-separated list of valid statuses.
+#: src/Cli/CliProjection.php:170
+#, php-format
+msgid "Unknown status \"%1$s\". Expected one of: %2$s."
+msgstr ""
+
+#. translators: %s: comma-separated list of valid field names.
+#: src/Cli/CliProjection.php:262
+#, php-format
+msgid "No known fields requested. Available fields: %s."
+msgstr ""
+
+#: src/Cli/LanguageCommand.php:95
+msgid "No languages are configured yet."
+msgstr ""
+
+#: src/Cli/RelationCommand.php:172
+msgid "A --taxonomy is required when linking terms."
+msgstr ""
+
+#. translators: 1: object type, 2: target identifier, 3: language code, 4: source identifier.
+#: src/Cli/RelationCommand.php:187
+#, php-format
+msgid "Linked %1$s %2$d as the %3$s translation of %1$s %4$d."
+msgstr ""
+
+#. translators: 1: object type, 2: object identifier, 3: language code.
+#: src/Cli/RelationCommand.php:242
+#, php-format
+msgid "Detached %1$s %2$d from its %3$s translation slot. The %1$s itself was not deleted."
+msgstr ""
+
+#: src/Cli/RelationCommand.php:257
+#: src/Cli/TranslationCommand.php:167
+#: src/Cli/TranslationCommand.php:246
+msgid "Translation workflows are unavailable."
+msgstr ""
+
+#. translators: 1: supplied object type, 2: comma-separated list of valid types.
+#: src/Cli/RelationCommand.php:281
+#, php-format
+msgid "Membership is not supported for \"%1$s\". Expected one of: %2$s."
+msgstr ""
+
+#. translators: %s: language code.
+#: src/Cli/TranslationCommand.php:120
+#, php-format
+msgid "That object has no translation in \"%s\"."
+msgstr ""
+
+#. translators: 1: object type, 2: object identifier, 3: language code, 4: new status.
+#: src/Cli/TranslationCommand.php:184
+#, php-format
+msgid "%1$s %2$d in %3$s is now %4$s."
+msgstr ""
+
+#: src/Cli/TranslationCommand.php:257
+msgid "A --taxonomy is required when creating a term translation."
+msgstr ""
+
+#. translators: 1: object type, 2: created identifier, 3: language code, 4: translation group key.
+#: src/Cli/TranslationCommand.php:292
+#, php-format
+msgid "Created %1$s %2$d as the %3$s translation, in group %4$s."
+msgstr ""
+
+#. translators: 1: supplied object type, 2: comma-separated list of valid types.
+#: src/Cli/TranslationCommand.php:319
+#, php-format
+msgid "Translations cannot be created for \"%1$s\". Expected one of: %2$s."
 msgstr ""
 
 #: src/Compatibility/BuilderCompatibility.php:260
@@ -1013,10 +1324,6 @@ msgstr ""
 
 #: src/Compatibility/CompatibilityDashboard.php:98
 msgid "Detected Theme"
-msgstr ""
-
-#: src/Compatibility/CompatibilityDashboard.php:99
-msgid "Unavailable"
 msgstr ""
 
 #. translators: %s: detected theme version number.
@@ -1146,6 +1453,160 @@ msgstr ""
 msgid "Database migration %1$s did not create the expected tables: %2$s"
 msgstr ""
 
+#: src/Diagnostics/DiagnosticsService.php:201
+msgid "Object cache"
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:203
+msgid "A persistent WordPress object cache is active."
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:204
+msgid "WordPress is using its supported non-persistent object cache."
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:476
+msgid "Language persistence is unavailable"
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:476
+msgid "The language table could not be found."
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:478
+msgid "A valid default language is required"
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:478
+msgid "Configure one active default language before relying on translated routing."
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:480
+msgid "Language configuration needs review"
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:480
+msgid "Duplicate language codes or locales were detected."
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:482
+#: src/Diagnostics/SiteHealthIntegration.php:54
+msgid "Default language"
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:482
+msgid "One active default language is configured."
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:499
+msgid "mcLogiora database schema"
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:501
+msgid "Required tables and migrations are ready."
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:502
+msgid "Required tables or migrations are not ready. No repair was attempted."
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:518
+msgid "Translated routing prerequisites"
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:520
+msgid "Pretty permalinks are enabled."
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:521
+msgid "Pretty permalinks are disabled; review WordPress permalink settings before using translated paths."
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:535
+msgid "Suggestions are disabled. No provider request will be made."
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:541
+msgid "Translation Suggestions need configuration"
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:541
+msgid "Suggestions are enabled, but the selected provider is missing a credential, model, or provider selection."
+msgstr ""
+
+#: src/Diagnostics/DiagnosticsService.php:546
+msgid "Suggestions are enabled and the selected provider is locally configured."
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:50
+msgid "Version"
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:51
+msgid "WordPress version"
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:52
+msgid "PHP version"
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:54
+#: src/Suggestions/ProviderReadiness.php:102
+msgid "Not configured"
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:55
+msgid "Schema ready"
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:56
+msgid "Package format"
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:57
+msgid "Enabled"
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:58
+msgid "Persistent object cache"
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:73
+msgid "mcLogiora has a valid default language"
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:77
+msgid "mcLogiora database schema is ready"
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:81
+msgid "mcLogiora translated routing has suitable permalinks"
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:88
+msgid "mcLogiora Translation Suggestions are configured"
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:102
+msgid "Configure one active default language in mcLogiora."
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:111
+msgid "Use the normal plugin activation or migration path to restore the schema; diagnostics never repairs it."
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:120
+msgid "Review WordPress Settings → Permalinks and choose a pretty permalink structure."
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:129
+msgid "Select a provider and configure its credential/model locally; no connection test is performed."
+msgstr ""
+
+#: src/Diagnostics/SiteHealthIntegration.php:175
+msgid "mcLogiora diagnostic unavailable"
+msgstr ""
+
 #: src/Editors/BlockEditorAdapter.php:27
 msgid "WordPress Block Editor"
 msgstr ""
@@ -1174,7 +1635,7 @@ msgstr ""
 
 #: src/Editors/ClassicEditorMetabox.php:343
 #: src/Setup/SetupWizard.php:249
-#: src/Switcher/SwitcherRenderer.php:68
+#: src/Switcher/SwitcherRenderer.php:66
 #: assets/js/editor-panel.js:596
 msgid "Language"
 msgstr ""
@@ -1360,6 +1821,342 @@ msgstr ""
 
 #: src/Health/SeoHealthCheck.php:204
 msgid "Database setup did not finish"
+msgstr ""
+
+#. translators: 1: language code, 2: comma-separated field names.
+#: src/ImportExport/ImportPlanner.php:184
+#, php-format
+msgid "The language %1$s already exists here with a different %2$s. Import never overwrites an existing language."
+msgstr ""
+
+#. translators: 1: default language code in the package, 2: default language code on this site.
+#: src/ImportExport/ImportPlanner.php:236
+#, php-format
+msgid "The package treats %1$s as the default language and this site treats %2$s as the default. Import does not change the default language."
+msgstr ""
+
+#. translators: 1: object description, 2: translation group key.
+#: src/ImportExport/ImportPlanner.php:358
+#, php-format
+msgid "%1$s already belongs to a different translation group here, so the group %2$s cannot be created around it."
+msgstr ""
+
+#. translators: %s: translation group key.
+#: src/ImportExport/ImportPlanner.php:415
+#, php-format
+msgid "The translation group %s exists here with no source item, which the package cannot be reconciled against."
+msgstr ""
+
+#. translators: 1: translation group key, 2: object description in the package.
+#: src/ImportExport/ImportPlanner.php:448
+#, php-format
+msgid "The translation group %1$s exists here with a different source object than %2$s."
+msgstr ""
+
+#. translators: 1: language code, 2: translation group key.
+#: src/ImportExport/ImportPlanner.php:497
+#, php-format
+msgid "The language %1$s is configured neither on this site nor in the package, so the %2$s item cannot be linked."
+msgstr ""
+
+#. translators: 1: translation group key, 2: source object type, 3: target object type.
+#: src/ImportExport/ImportPlanner.php:516
+#, php-format
+msgid "Translation group %1$s relates a %2$s to a %3$s, which mcLogiora does not treat as a translation."
+msgstr ""
+
+#. translators: 1: translation group key, 2: source taxonomy, 3: target taxonomy.
+#: src/ImportExport/ImportPlanner.php:538
+#, php-format
+msgid "Translation group %1$s relates a term in %2$s to a term in %3$s. A term can only be the translation of a term in the same taxonomy."
+msgstr ""
+
+#. translators: 1: translation group key, 2: language already claiming the object, 3: language claiming it again.
+#: src/ImportExport/ImportPlanner.php:571
+#, php-format
+msgid "Translation group %1$s names the same object for both %2$s and %3$s."
+msgstr ""
+
+#. translators: 1: object description, 2: translation group key.
+#: src/ImportExport/ImportPlanner.php:604
+#, php-format
+msgid "%1$s already belongs to a different translation group here, so it cannot also be linked into %2$s."
+msgstr ""
+
+#. translators: 1: language code, 2: translation group key, 3: object description in the package.
+#: src/ImportExport/ImportPlanner.php:661
+#, php-format
+msgid "The %1$s slot of translation group %2$s is already filled here by a different object than %3$s."
+msgstr ""
+
+#. translators: 1: language code, 2: translation group key, 3: status on this site, 4: status in the package.
+#: src/ImportExport/ImportPlanner.php:712
+#, php-format
+msgid "The %1$s item of translation group %2$s has the status %3$s here and %4$s in the package. Import does not change a translation status."
+msgstr ""
+
+#. translators: 1: object locator, 2: language code, 3: translation group key.
+#: src/ImportExport/ImportPlanner.php:742
+#, php-format
+msgid "%1$s names no object on this site, so the %2$s item of translation group %3$s cannot be placed."
+msgstr ""
+
+#. translators: 1: object locator, 2: language code, 3: translation group key.
+#: src/ImportExport/ImportPlanner.php:744
+#, php-format
+msgid "%1$s names more than one object on this site, so the %2$s item of translation group %3$s is ambiguous. mcLogiora will not choose between them."
+msgstr ""
+
+#. translators: 1: object locator, unused here because the locator has no slug to print, 2: language code, 3: translation group key.
+#: src/ImportExport/ImportPlanner.php:746
+#, php-format
+msgid "The %2$s item of translation group %3$s has no slug to look up, so it cannot be placed. WordPress leaves a draft without a slug until it is published."
+msgstr ""
+
+#. translators: 1: object locator, 2: language code, 3: translation group key.
+#: src/ImportExport/ImportPlanner.php:748
+#, php-format
+msgid "%1$s carries no locator, so the %2$s item of translation group %3$s cannot be placed. The exporting site could not address the object."
+msgstr ""
+
+#. translators: 1: object locator, 2: language code, 3: translation group key.
+#: src/ImportExport/ImportPlanner.php:750
+#, php-format
+msgid "%1$s names a post type or taxonomy that is not registered on this site, so the %2$s item of translation group %3$s cannot be placed."
+msgstr ""
+
+#: src/ImportExport/PackageParser.php:53
+msgid "The package is empty."
+msgstr ""
+
+#. translators: %d: maximum package size in bytes.
+#: src/ImportExport/PackageParser.php:61
+#, php-format
+msgid "The package is larger than the %d bytes the reader accepts."
+msgstr ""
+
+#: src/ImportExport/PackageParser.php:70
+msgid "The package is not valid JSON."
+msgstr ""
+
+#: src/ImportExport/PackageParser.php:74
+msgid "The package is not a JSON object."
+msgstr ""
+
+#. translators: %s: unexpected package member name.
+#: src/ImportExport/PackageParser.php:83
+#, php-format
+msgid "The package carries an unexpected top-level member: %s."
+msgstr ""
+
+#: src/ImportExport/PackageParser.php:91
+msgid "The package has no manifest."
+msgstr ""
+
+#: src/ImportExport/PackageParser.php:95
+msgid "The package has no payload."
+msgstr ""
+
+#. translators: %s: expected package format identifier.
+#: src/ImportExport/PackageParser.php:135
+#, php-format
+msgid "The file does not declare itself as %s."
+msgstr ""
+
+#: src/ImportExport/PackageParser.php:142
+msgid "The package declares no format version."
+msgstr ""
+
+#. translators: 1: declared format version, 2: supported format version.
+#: src/ImportExport/PackageParser.php:150
+#, php-format
+msgid "The package uses format version %1$s, and this version of mcLogiora reads format version %2$d."
+msgstr ""
+
+#. translators: %s: manifest field name.
+#: src/ImportExport/PackageParser.php:163
+#, php-format
+msgid "The manifest field %s is missing or is not a string."
+msgstr ""
+
+#: src/ImportExport/PackageParser.php:171
+msgid "The manifest does not list its sections."
+msgstr ""
+
+#. translators: %s: section name.
+#: src/ImportExport/PackageParser.php:182
+#, php-format
+msgid "The package declares a section this version cannot read: %s."
+msgstr ""
+
+#: src/ImportExport/PackageParser.php:192
+msgid "The manifest carries no counts."
+msgstr ""
+
+#. translators: %s: count name.
+#: src/ImportExport/PackageParser.php:203
+#, php-format
+msgid "The manifest count %s is not a whole number."
+msgstr ""
+
+#. translators: %s: section name.
+#: src/ImportExport/PackageParser.php:237
+#, php-format
+msgid "The payload carries a section this version cannot read: %s."
+msgstr ""
+
+#. translators: %s: section name.
+#: src/ImportExport/PackageParser.php:248
+#, php-format
+msgid "The payload carries a section the manifest does not declare: %s."
+msgstr ""
+
+#. translators: %s: section name.
+#: src/ImportExport/PackageParser.php:261
+#, php-format
+msgid "The section %s is missing or is not a list."
+msgstr ""
+
+#: src/ImportExport/PackageParser.php:303
+msgid "A language entry is not an object."
+msgstr ""
+
+#: src/ImportExport/PackageParser.php:309
+msgid "A language entry has no usable language code."
+msgstr ""
+
+#. translators: %s: language code.
+#: src/ImportExport/PackageParser.php:317
+#, php-format
+msgid "The package lists the language %s more than once."
+msgstr ""
+
+#. translators: 1: language code, 2: field name.
+#: src/ImportExport/PackageParser.php:329
+#, php-format
+msgid "The language %1$s has a missing or non-textual %2$s."
+msgstr ""
+
+#. translators: %s: language code.
+#: src/ImportExport/PackageParser.php:342
+#, php-format
+msgid "The language %s declares a text direction that is neither ltr nor rtl."
+msgstr ""
+
+#. translators: 1: language code, 2: field name.
+#: src/ImportExport/PackageParser.php:354
+#, php-format
+msgid "The language %1$s has a missing or non-boolean %2$s."
+msgstr ""
+
+#. translators: %s: language code.
+#: src/ImportExport/PackageParser.php:367
+#, php-format
+msgid "The language %s has no whole-number display order."
+msgstr ""
+
+#: src/ImportExport/PackageParser.php:391
+msgid "The package marks more than one language as the default."
+msgstr ""
+
+#: src/ImportExport/PackageParser.php:409
+msgid "A relation group is not an object."
+msgstr ""
+
+#: src/ImportExport/PackageParser.php:415
+msgid "A relation group has no usable group key."
+msgstr ""
+
+#. translators: %s: translation group key.
+#: src/ImportExport/PackageParser.php:423
+#, php-format
+msgid "The package lists the translation group %s more than once."
+msgstr ""
+
+#. translators: %s: translation group key.
+#: src/ImportExport/PackageParser.php:434
+#, php-format
+msgid "The translation group %s carries no items."
+msgstr ""
+
+#: src/ImportExport/PackageParser.php:467
+msgid "A relation item is not an object."
+msgstr ""
+
+#. translators: %s: translation group key.
+#: src/ImportExport/PackageParser.php:477
+#, php-format
+msgid "An item of translation group %s has no usable language code."
+msgstr ""
+
+#. translators: 1: translation group key, 2: language code.
+#: src/ImportExport/PackageParser.php:488
+#, php-format
+msgid "Translation group %1$s carries two items in the language %2$s."
+msgstr ""
+
+#. translators: 1: translation group key, 2: language code.
+#: src/ImportExport/PackageParser.php:502
+#, php-format
+msgid "The %2$s item of translation group %1$s has no usable object type."
+msgstr ""
+
+#. translators: 1: translation group key, 2: language code.
+#: src/ImportExport/PackageParser.php:514
+#, php-format
+msgid "The %2$s item of translation group %1$s has no status."
+msgstr ""
+
+#. translators: 1: translation group key, 2: language code.
+#: src/ImportExport/PackageParser.php:526
+#, php-format
+msgid "The %2$s item of translation group %1$s does not say whether it is the source."
+msgstr ""
+
+#. translators: 1: translation group key, 2: language code.
+#: src/ImportExport/PackageParser.php:538
+#, php-format
+msgid "The %2$s item of translation group %1$s carries no locator member."
+msgstr ""
+
+#. translators: 1: translation group key, 2: language code.
+#: src/ImportExport/PackageParser.php:555
+#, php-format
+msgid "The %2$s item of translation group %1$s has a locator this version cannot read."
+msgstr ""
+
+#. translators: %s: translation group key.
+#: src/ImportExport/PackageParser.php:576
+#, php-format
+msgid "Translation group %s must carry exactly one source item."
+msgstr ""
+
+#. translators: 1: count name, 2: declared count, 3: counted value.
+#: src/ImportExport/PackageParser.php:617
+#, php-format
+msgid "The manifest declares %2$d for %1$s and the payload contains %3$d."
+msgstr ""
+
+#: src/ImportExport/PackageValidator.php:76
+msgid "mcLogiora has not finished installing its database tables on this site, so a package cannot be considered against it."
+msgstr ""
+
+#. translators: 1: status found in the package, 2: language code, 3: translation group key.
+#: src/ImportExport/PackageValidator.php:112
+#, php-format
+msgid "The status %1$s on the %2$s item of translation group %3$s is not a translation status mcLogiora recognises."
+msgstr ""
+
+#. translators: %s: generator name declared in the package.
+#: src/ImportExport/PackageValidator.php:151
+#, php-format
+msgid "The package was written by %s rather than by mcLogiora. Its format version is supported, so it will be read."
+msgstr ""
+
+#. translators: 1: plugin version that produced the package, 2: plugin version reading it, 3: package format version.
+#: src/ImportExport/PackageValidator.php:164
+#, php-format
+msgid "The package was produced by mcLogiora %1$s and is being read by %2$s. Format version %3$d is supported by both."
 msgstr ""
 
 #: src/Languages/DatabaseLanguageRepository.php:164
@@ -1703,14 +2500,14 @@ msgstr ""
 #: src/Media/MediaTranslationService.php:163
 #: src/Menus/MenuTranslationWorkflow.php:155
 #: src/Widgets/WidgetTranslationService.php:126
-#: src/Workflows/TranslationWorkflowValidator.php:207
+#: src/Workflows/TranslationWorkflowValidator.php:208
 msgid "The selected target language does not exist."
 msgstr ""
 
 #: src/Media/MediaTranslationService.php:167
 #: src/Menus/MenuTranslationWorkflow.php:159
 #: src/Widgets/WidgetTranslationService.php:130
-#: src/Workflows/TranslationWorkflowValidator.php:213
+#: src/Workflows/TranslationWorkflowValidator.php:214
 msgid "The selected target language is not active."
 msgstr ""
 
@@ -1723,12 +2520,12 @@ msgid "The source menu could not be found."
 msgstr ""
 
 #: src/Menus/MenuTranslationWorkflow.php:169
-#: src/Workflows/TranslationWorkflowValidator.php:231
+#: src/Workflows/TranslationWorkflowValidator.php:232
 msgid "The target language must be different from the source language."
 msgstr ""
 
 #: src/Menus/MenuTranslationWorkflow.php:182
-#: src/Workflows/TranslationWorkflowValidator.php:252
+#: src/Workflows/TranslationWorkflowValidator.php:253
 msgid "A translation already exists for this language."
 msgstr ""
 
@@ -1739,110 +2536,114 @@ msgid "Set a default language before creating translations."
 msgstr ""
 
 #: src/Relations/DatabaseTranslationRelationRepository.php:104
-#: src/Relations/DatabaseTranslationRelationRepository.php:148
+#: src/Relations/DatabaseTranslationRelationRepository.php:159
 msgid "The translation group could not be created."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:128
-#: src/Relations/DatabaseTranslationRelationRepository.php:325
+#: src/Relations/DatabaseTranslationRelationRepository.php:139
+#: src/Relations/DatabaseTranslationRelationRepository.php:336
 #: src/Relations/InMemoryTranslationRelationRepository.php:73
-#: src/Relations/InMemoryTranslationRelationRepository.php:201
+#: src/Relations/InMemoryTranslationRelationRepository.php:230
 msgid "This object is already assigned to an active translation group."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:246
-#: src/Relations/DatabaseTranslationRelationRepository.php:306
-#: src/Relations/InMemoryTranslationRelationRepository.php:160
-#: src/Relations/InMemoryTranslationRelationRepository.php:173
-#: src/Relations/InMemoryTranslationRelationRepository.php:187
+#: src/Relations/DatabaseTranslationRelationRepository.php:257
+#: src/Relations/DatabaseTranslationRelationRepository.php:317
+#: src/Relations/InMemoryTranslationRelationRepository.php:189
+#: src/Relations/InMemoryTranslationRelationRepository.php:202
+#: src/Relations/InMemoryTranslationRelationRepository.php:216
 msgid "The translation group could not be found."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:256
+#: src/Relations/DatabaseTranslationRelationRepository.php:267
 msgid "The translation group status is invalid."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:272
+#: src/Relations/DatabaseTranslationRelationRepository.php:283
 msgid "The translation group could not be updated."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:317
-#: src/Relations/InMemoryTranslationRelationRepository.php:191
+#: src/Relations/DatabaseTranslationRelationRepository.php:328
+#: src/Relations/InMemoryTranslationRelationRepository.php:220
 msgid "A translation group can only have one original item."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:321
-#: src/Relations/DatabaseTranslationRelationRepository.php:408
-#: src/Relations/DatabaseTranslationRelationRepository.php:876
-#: src/Relations/InMemoryTranslationRelationRepository.php:196
+#: src/Relations/DatabaseTranslationRelationRepository.php:332
+#: src/Relations/DatabaseTranslationRelationRepository.php:419
+#: src/Relations/DatabaseTranslationRelationRepository.php:912
+#: src/Relations/InMemoryTranslationRelationRepository.php:225
 msgid "This translation group already has an item for that language."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:354
-#: src/Relations/InMemoryTranslationRelationRepository.php:225
+#: src/Relations/DatabaseTranslationRelationRepository.php:365
+#: src/Relations/InMemoryTranslationRelationRepository.php:254
 msgid "The translation status is invalid."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:360
-#: src/Relations/DatabaseTranslationRelationRepository.php:396
-#: src/Relations/DatabaseTranslationRelationRepository.php:588
-#: src/Relations/DatabaseTranslationRelationRepository.php:760
-#: src/Relations/InMemoryTranslationRelationRepository.php:231
-#: src/Relations/InMemoryTranslationRelationRepository.php:271
+#: src/Relations/DatabaseTranslationRelationRepository.php:371
+#: src/Relations/DatabaseTranslationRelationRepository.php:407
+#: src/Relations/DatabaseTranslationRelationRepository.php:599
+#: src/Relations/DatabaseTranslationRelationRepository.php:796
+#: src/Relations/InMemoryTranslationRelationRepository.php:260
 #: src/Relations/InMemoryTranslationRelationRepository.php:300
-#: src/Relations/InMemoryTranslationRelationRepository.php:413
+#: src/Relations/InMemoryTranslationRelationRepository.php:329
+#: src/Relations/InMemoryTranslationRelationRepository.php:442
 msgid "The translation item could not be found."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:364
-#: src/Relations/InMemoryTranslationRelationRepository.php:235
+#: src/Relations/DatabaseTranslationRelationRepository.php:375
+#: src/Relations/InMemoryTranslationRelationRepository.php:264
 msgid "The original item status cannot be changed in this phase."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:368
-#: src/Relations/InMemoryTranslationRelationRepository.php:239
+#: src/Relations/DatabaseTranslationRelationRepository.php:379
+#: src/Relations/InMemoryTranslationRelationRepository.php:268
 msgid "Only the source item may use the original status."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:402
+#: src/Relations/DatabaseTranslationRelationRepository.php:413
 msgid "Only active configured languages can receive relation items."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:592
-#: src/Relations/InMemoryTranslationRelationRepository.php:417
+#: src/Relations/DatabaseTranslationRelationRepository.php:603
+#: src/Relations/InMemoryTranslationRelationRepository.php:446
 msgid "The original item cannot be detached in this phase."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:608
+#: src/Relations/DatabaseTranslationRelationRepository.php:619
 msgid "The translation relation could not be removed."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:739
+#: src/Relations/DatabaseTranslationRelationRepository.php:775
 msgid "The translation item could not be added."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:776
+#: src/Relations/DatabaseTranslationRelationRepository.php:812
 msgid "The translation item could not be updated."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:854
+#: src/Relations/DatabaseTranslationRelationRepository.php:890
 msgid "Object type and object ID are required."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:860
+#: src/Relations/DatabaseTranslationRelationRepository.php:896
 msgid "The item language must exist before a relation item is created."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:864
+#: src/Relations/DatabaseTranslationRelationRepository.php:900
 msgid "Disabled languages cannot receive new relation items."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:872
+#: src/Relations/DatabaseTranslationRelationRepository.php:908
 msgid "Only the original item may use the original status."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:966
+#: src/Relations/DatabaseTranslationRelationRepository.php:1002
 msgid "The relation tables are not available. Reactivate the plugin to run database migrations."
+msgstr ""
+
+#: src/Relations/InMemoryTranslationRelationRepository.php:107
+msgid "The translation group already exists or the object is assigned."
 msgstr ""
 
 #: src/Relations/TranslationManager.php:102
@@ -2297,10 +3098,6 @@ msgstr ""
 msgid "Model required"
 msgstr ""
 
-#: src/Suggestions/ProviderReadiness.php:102
-msgid "Not configured"
-msgstr ""
-
 #: src/Suggestions/ProviderReadiness.php:118
 msgid "Refresh the model list, then choose a model and save."
 msgstr ""
@@ -2499,20 +3296,16 @@ msgstr ""
 msgid "%s cannot translate between these languages."
 msgstr ""
 
-#: src/Switcher/SwitcherRenderer.php:109
+#: src/Switcher/SwitcherRenderer.php:107
 msgid "(translation not available)"
 msgstr ""
 
-#: src/Switcher/SwitcherRenderer.php:117
+#: src/Switcher/SwitcherRenderer.php:115
 msgid "Current language:"
 msgstr ""
 
-#: src/Switcher/SwitcherRenderer.php:145
+#: src/Switcher/SwitcherRenderer.php:143
 msgid "Choose a language"
-msgstr ""
-
-#: src/Switcher/SwitcherRenderer.php:163
-msgid "Go"
 msgstr ""
 
 #: src/Switcher/SwitcherStyle.php:47
@@ -2609,7 +3402,7 @@ msgid "The content identifier is not valid."
 msgstr ""
 
 #: src/Workflows/ContentTranslationWorkflow.php:324
-#: src/Workflows/TranslationWorkflowValidator.php:146
+#: src/Workflows/TranslationWorkflowValidator.php:147
 msgid "You are not allowed to edit this content."
 msgstr ""
 
@@ -2626,7 +3419,7 @@ msgid "The term identifier is not valid."
 msgstr ""
 
 #: src/Workflows/TaxonomyTranslationWorkflow.php:277
-#: src/Workflows/TranslationWorkflowValidator.php:184
+#: src/Workflows/TranslationWorkflowValidator.php:185
 msgid "You are not allowed to edit terms."
 msgstr ""
 
@@ -2660,80 +3453,80 @@ msgstr ""
 msgid "The translation could not be found."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:125
+#: src/Workflows/TranslationWorkflowValidator.php:126
 msgid "The source content identifier is not valid."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:131
+#: src/Workflows/TranslationWorkflowValidator.php:132
 msgid "The source content could not be found."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:139
-#: src/Workflows/TranslationWorkflowValidator.php:350
+#: src/Workflows/TranslationWorkflowValidator.php:140
+#: src/Workflows/TranslationWorkflowValidator.php:351
 msgid "This content type is not available for translation."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:165
+#: src/Workflows/TranslationWorkflowValidator.php:166
 msgid "The source term identifier is not valid."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:171
+#: src/Workflows/TranslationWorkflowValidator.php:172
 msgid "This taxonomy is not available for translation."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:178
+#: src/Workflows/TranslationWorkflowValidator.php:179
 msgid "The source term could not be found."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:201
+#: src/Workflows/TranslationWorkflowValidator.php:202
 msgid "Select a target language."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:271
+#: src/Workflows/TranslationWorkflowValidator.php:272
 msgid "This content is already part of a translation group."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:288
+#: src/Workflows/TranslationWorkflowValidator.php:289
 msgid "The content type is not registered."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:300
+#: src/Workflows/TranslationWorkflowValidator.php:301
 msgid "You are not allowed to create content of this type."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:318
+#: src/Workflows/TranslationWorkflowValidator.php:319
 msgid "The target content identifier is not valid."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:322
+#: src/Workflows/TranslationWorkflowValidator.php:323
 msgid "Content cannot be linked to itself."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:328
+#: src/Workflows/TranslationWorkflowValidator.php:329
 msgid "The target content could not be found."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:343
+#: src/Workflows/TranslationWorkflowValidator.php:344
 msgid "A translation must use the same content type as its source."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:357
+#: src/Workflows/TranslationWorkflowValidator.php:358
 msgid "You are not allowed to edit the target content."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:382
+#: src/Workflows/TranslationWorkflowValidator.php:383
 msgid "The target term identifier is not valid."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:386
+#: src/Workflows/TranslationWorkflowValidator.php:387
 msgid "A term cannot be linked to itself."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:392
+#: src/Workflows/TranslationWorkflowValidator.php:393
 msgid "The target term could not be found in this taxonomy."
 msgstr ""
 
-#: src/Workflows/TranslationWorkflowValidator.php:398
+#: src/Workflows/TranslationWorkflowValidator.php:399
 msgid "A translated term must belong to the same taxonomy as its source."
 msgstr ""
 
