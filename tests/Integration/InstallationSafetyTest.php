@@ -320,6 +320,44 @@ final class InstallationSafetyTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Asserts repeated init-style block registration is idempotent.
+	 *
+	 * WordPress normally fires init once, but test harnesses and other
+	 * bootstrap code can invoke the callback again. The module must not ask
+	 * core to register an already-registered block and emit a notice.
+	 *
+	 * @return void
+	 */
+	public function test_repeated_block_registration_is_idempotent() {
+		$registry = \WP_Block_Type_Registry::get_instance();
+
+		if ( $registry->is_registered( 'mclogiora/language-switcher' ) ) {
+			unregister_block_type( 'mclogiora/language-switcher' );
+		}
+
+		$module  = new SwitcherModule();
+		$notices = 0;
+		$observe = static function ( $function ) use ( &$notices ) {
+			if ( 'register_block_type' === $function ) {
+				++$notices;
+			}
+		};
+
+		add_action( 'doing_it_wrong_run', $observe, 10, 3 );
+
+		try {
+			$module->register( $this->container );
+			$module->register_block();
+			$module->register_block();
+		} finally {
+			remove_action( 'doing_it_wrong_run', $observe, 10 );
+		}
+
+		$this->assertSame( 0, $notices, 'Repeated block registration must not emit a duplicate-registration notice.' );
+		$this->assertTrue( $registry->is_registered( 'mclogiora/language-switcher' ) );
+	}
+
+	/**
 	 * Asserts the readiness gate itself performs no query per call.
 	 *
 	 * The lifecycle fix sits in front of every `gettext` call on the site. If
