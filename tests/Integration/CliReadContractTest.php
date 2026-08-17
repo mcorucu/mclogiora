@@ -26,6 +26,7 @@ use McLogiora\Relations\TranslationStatus;
 use McLogiora\Routing\LanguageContextInterface;
 use McLogiora\Routing\RoutingSettings;
 use McLogiora\Workflows\TranslationWorkflowService;
+use ReflectionClass;
 use WP_UnitTestCase;
 
 /**
@@ -188,8 +189,16 @@ final class CliReadContractTest extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_no_command_receives_a_repository() {
+		/*
+		 * The mutation commands take the workflow service as well, which is the
+		 * point: writes go through the same application service REST calls. What
+		 * must never appear is a repository or wpdb, so the check is on the
+		 * whole constructor rather than a single expected type.
+		 */
+		$allowed = array( PublicApi::class, TranslationWorkflowService::class, '' );
+
 		foreach ( array( LanguageCommand::class, RelationCommand::class, TranslationCommand::class ) as $class ) {
-			$constructor = ( new \ReflectionClass( $class ) )->getConstructor();
+			$constructor = ( new ReflectionClass( $class ) )->getConstructor();
 
 			$this->assertNotNull( $constructor );
 
@@ -197,9 +206,145 @@ final class CliReadContractTest extends WP_UnitTestCase {
 				$type = $parameter->getType();
 				$name = $type instanceof \ReflectionNamedType ? $type->getName() : '';
 
-				$this->assertSame( PublicApi::class, $name, $class . ' must read only through PublicApi.' );
+				$this->assertContains( $name, $allowed, $class . ' must not receive a repository.' );
+				$this->assertStringNotContainsString( 'Repository', $name );
+				$this->assertNotSame( 'wpdb', $name );
 			}
 		}
+	}
+
+	/* --------------------------------------------------------------------
+	 * Mutation command surface
+	 * ----------------------------------------------------------------- */
+
+	/**
+	 * Asserts the mutation commands exist and creation commands do not.
+	 *
+	 * Slice 3 owns creation; a `create` method appearing here early would be
+	 * registered by WP-CLI the moment it was written.
+	 *
+	 * @return void
+	 */
+	public function test_the_command_surface_is_the_intended_one() {
+		$relation    = $this->public_methods( RelationCommand::class );
+		$translation = $this->public_methods( TranslationCommand::class );
+		$language    = $this->public_methods( LanguageCommand::class );
+
+		sort( $relation );
+		sort( $translation );
+
+		$this->assertSame( array( 'get', 'link', 'unlink' ), $relation );
+		$this->assertSame( array( 'get', 'status' ), $translation );
+		$this->assertSame( array( 'list_' ), $language );
+
+		foreach ( array( 'create', 'create_translation', 'new', 'add', 'delete' ) as $absent ) {
+			$this->assertNotContains( $absent, $relation, 'relation ' . $absent . ' belongs to a later slice.' );
+			$this->assertNotContains( $absent, $translation, 'translation ' . $absent . ' belongs to a later slice.' );
+		}
+	}
+
+	/**
+	 * Asserts the mutation commands accept the workflow service.
+	 *
+	 * @return void
+	 */
+	public function test_the_mutation_commands_take_the_workflow_service() {
+		foreach ( array( RelationCommand::class, TranslationCommand::class ) as $class ) {
+			$parameters = ( new ReflectionClass( $class ) )->getConstructor()->getParameters();
+
+			$this->assertCount( 2, $parameters, $class . ' takes the reader and the workflow service.' );
+			$this->assertSame( 'workflows', $parameters[1]->getName() );
+			$this->assertTrue( $parameters[1]->isOptional(), 'A site without workflows must still construct the command.' );
+		}
+
+		$this->assertCount(
+			1,
+			( new ReflectionClass( LanguageCommand::class ) )->getConstructor()->getParameters(),
+			'The language command reads only; it needs no workflow service.'
+		);
+	}
+
+	/**
+	 * Asserts the status vocabulary is the canonical one, with no aliases.
+	 *
+	 * A status that exists on one transport and not another is how an operator
+	 * learns two vocabularies for one concept.
+	 *
+	 * @return void
+	 */
+	public function test_the_status_vocabulary_is_canonical() {
+		foreach ( TranslationStatus::all() as $status ) {
+			$this->assertSame( $status, $this->projection->status( $status ) );
+		}
+
+		$this->assertNotContains( 'approved', TranslationStatus::all() );
+		$this->assertNotContains( 'done', TranslationStatus::all() );
+		$this->assertNotContains( 'complete', TranslationStatus::all() );
+	}
+
+	/**
+	 * Asserts a workflow refusal keeps its domain code visible.
+	 *
+	 * The same refusal must stay identifiable whether it arrives from CLI,
+	 * REST or an admin screen.
+	 *
+	 * @return void
+	 */
+	public function test_workflow_refusals_keep_their_domain_code() {
+		$result = $this->container->get( TranslationWorkflowService::class )
+			->change_status( ContentType::POST, 999999, 'tr', TranslationStatus::TRANSLATED );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'mclogiora_translation_item_not_found', $result->get_error_code() );
+		$this->assertStringNotContainsString( 'SELECT', $result->get_error_message() );
+		$this->assertStringNotContainsString( 'wpdb', $result->get_error_message() );
+	}
+
+	/**
+	 * Asserts an unauthenticated run is refused by the workflow, not the CLI.
+	 *
+	 * Running `wp` without --user leaves no current user, and the refusal has
+	 * to come from the domain rather than from a check the transport invented.
+	 *
+	 * @return void
+	 */
+	public function test_an_unauthenticated_run_is_refused_by_the_workflow() {
+		$pair = $this->translated_post();
+
+		wp_set_current_user( 0 );
+
+		$workflows = $this->container->get( TranslationWorkflowService::class );
+
+		foreach (
+			array(
+				$workflows->change_status( ContentType::POST, $pair['target'], 'tr', TranslationStatus::NEEDS_REVIEW ),
+				$workflows->content()->unlink( $pair['target'], 'tr' ),
+				$workflows->taxonomy()->unlink( 1, 'tr' ),
+			) as $result
+		) {
+			$this->assertWPError( $result );
+			$this->assertSame( 'mclogiora_cannot_manage_translations', $result->get_error_code() );
+		}
+	}
+
+	/**
+	 * Returns the public method names of a command class.
+	 *
+	 * @param string $class Class name.
+	 * @return string[]
+	 */
+	private function public_methods( $class ) {
+		$names = array();
+
+		foreach ( ( new ReflectionClass( $class ) )->getMethods( \ReflectionMethod::IS_PUBLIC ) as $method ) {
+			if ( '__construct' === $method->getName() ) {
+				continue;
+			}
+
+			$names[] = $method->getName();
+		}
+
+		return $names;
 	}
 
 	/* --------------------------------------------------------------------
