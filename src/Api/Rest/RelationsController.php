@@ -393,25 +393,39 @@ final class RelationsController {
 	}
 
 	/**
-	 * Creates a translation of an existing post.
+	 * Creates a translation of an existing post or term.
 	 *
 	 * This is the only route in the namespace that brings a WordPress object
 	 * into existence, and the handler is deliberately the thinnest of the lot
-	 * because of it. Every creation default belongs to the workflow: the new
-	 * post is a draft, it carries the source's type, title, content, excerpt,
-	 * menu order and author, and it gets no slug, no parent, no meta and no
-	 * terms. REST supplies none of those and accepts none of them, so this
-	 * route can never become a `wp_insert_post` proxy with a translation
-	 * record attached.
+	 * because of it. Every creation default belongs to the workflow.
 	 *
-	 * Nothing here is translated. The draft starts as a copy of the source's
-	 * text for a person to work on; no provider is contacted.
+	 * For posts: the new post is a draft carrying the source's type, title,
+	 * content, excerpt, menu order and author, with no slug, parent, meta or
+	 * terms. For terms: the new term takes the caller's name and description,
+	 * a provisional language-scoped slug the workflow derives, and a parent
+	 * only when the source's parent already has a translation in the same
+	 * language. REST supplies none of those and accepts no `slug`, `parent`,
+	 * `term_id` or meta, so this route can never become a `wp_insert_post` or
+	 * `wp_insert_term` proxy with a translation record attached.
 	 *
-	 * Rollback is the workflow's. If the relation write or the builder payload
-	 * step fails after the post exists, the workflow removes the post it just
-	 * created. There is deliberately no compensation code in this controller —
-	 * a second implementation would eventually disagree with the first about
-	 * what "clean up" means.
+	 * Posts and terms share the transport, not a code path. Their creation
+	 * rules differ in every particular that matters, and the two workflows are
+	 * where those differences live.
+	 *
+	 * Nothing here is translated. A created post starts as a copy of the
+	 * source's text and a created term takes the name the caller supplied; no
+	 * provider is contacted either way.
+	 *
+	 * Creation never adopts an object that already exists. If WordPress
+	 * reports the term as already present, that error is returned rather than
+	 * quietly treating the existing term as the translation — linking one is
+	 * `POST /relations`, and the caller must choose it deliberately.
+	 *
+	 * Rollback is the workflow's. If the relation write, or the builder
+	 * payload step for posts, fails after the object exists, the workflow
+	 * removes the object it just created. There is deliberately no
+	 * compensation code in this controller — a second implementation would
+	 * eventually disagree with the first about what "clean up" means.
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @return WP_REST_Response|\WP_Error
@@ -421,10 +435,10 @@ final class RelationsController {
 			return RestErrors::relation_not_found();
 		}
 
-		$object_type = (string) $request->get_param( 'object_type' );
+		$object_type = $this->membership_object_type( $request );
 
-		if ( ContentType::POST !== $object_type ) {
-			return RestErrors::invalid_object_type( array( ContentType::POST ) );
+		if ( is_wp_error( $object_type ) ) {
+			return $object_type;
 		}
 
 		$language = (string) $request->get_param( 'language' );
@@ -434,19 +448,41 @@ final class RelationsController {
 		}
 
 		$source_id = (int) $request->get_param( 'source_id' );
-		$result    = $this->workflows->content()->create_translation( $source_id, $language );
+		$taxonomy  = (string) $request->get_param( 'taxonomy' );
+
+		if ( ContentType::TERM === $object_type ) {
+			if ( '' === $taxonomy ) {
+				return RestErrors::missing_taxonomy();
+			}
+
+			/*
+			 * The name is passed through as the caller sent it, minus
+			 * sanitization. Whether an empty one is acceptable is the domain's
+			 * answer, and it already has a specific error for it; rejecting it
+			 * here would replace that answer with a generic one.
+			 */
+			$result = $this->workflows->taxonomy()->create_translation(
+				$source_id,
+				$taxonomy,
+				$language,
+				(string) $request->get_param( 'translated_name' ),
+				(string) $request->get_param( 'translated_description' )
+			);
+		} else {
+			$result = $this->workflows->content()->create_translation( $source_id, $language );
+		}
 
 		if ( is_wp_error( $result ) ) {
 			return RestErrors::from_workflow( $result );
 		}
 
-		$group = $this->api->translation_group( $source_id, ContentType::POST );
+		$group = $this->api->translation_group( $source_id, $object_type );
 
 		if ( null === $group ) {
 			return RestErrors::relation_not_found();
 		}
 
-		return rest_ensure_response( $this->project_group( $group, '' ) );
+		return rest_ensure_response( $this->project_group( $group, $taxonomy ) );
 	}
 
 	/**
@@ -661,21 +697,45 @@ final class RelationsController {
 	 */
 	private function create_args() {
 		return array(
-			'object_type' => array(
-				'description'       => __( 'Type of the object to translate. Only posts are supported.', 'mclogiora' ),
+			'object_type'            => array(
+				'description'       => __( 'Type of the object to translate.', 'mclogiora' ),
 				'type'              => 'string',
 				'required'          => true,
-				'enum'              => array( ContentType::POST ),
+				'enum'              => $this->membership_types(),
 				'validate_callback' => 'rest_validate_request_arg',
 				'sanitize_callback' => 'sanitize_key',
 			),
-			'source_id'   => array(
-				'description'       => __( 'Identifier of the post to create a translation of.', 'mclogiora' ),
+			'source_id'              => array(
+				'description'       => __( 'Identifier of the object to create a translation of.', 'mclogiora' ),
 				'type'              => 'integer',
 				'required'          => true,
 				'minimum'           => 1,
 				'validate_callback' => array( $this, 'validate_object_id' ),
 				'sanitize_callback' => 'absint',
+			),
+			'taxonomy'               => array(
+				'description'       => __( 'Taxonomy name. Required when translating a term.', 'mclogiora' ),
+				'type'              => 'string',
+				'required'          => false,
+				'default'           => '',
+				'validate_callback' => 'rest_validate_request_arg',
+				'sanitize_callback' => 'sanitize_key',
+			),
+			'translated_name'        => array(
+				'description'       => __( 'Name for the translated term. Required when translating a term.', 'mclogiora' ),
+				'type'              => 'string',
+				'required'          => false,
+				'default'           => '',
+				'validate_callback' => 'rest_validate_request_arg',
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+			'translated_description' => array(
+				'description'       => __( 'Description for the translated term. Empty by default.', 'mclogiora' ),
+				'type'              => 'string',
+				'required'          => false,
+				'default'           => '',
+				'validate_callback' => 'rest_validate_request_arg',
+				'sanitize_callback' => 'sanitize_textarea_field',
 			),
 		);
 	}
