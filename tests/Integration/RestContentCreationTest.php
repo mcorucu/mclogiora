@@ -188,14 +188,22 @@ final class RestContentCreationTest extends WP_UnitTestCase {
 	public function test_creation_arguments_are_validated_and_minimal() {
 		$args = $this->create_handler_args();
 
-		$this->assertSame( array( 'object_type', 'source_id', 'language' ), array_keys( $args ) );
+		/*
+		 * The taxonomy fields arrived with term creation and are optional; a
+		 * post creation never sends them. What matters for content is that the
+		 * three it does send are required and validated, and that no WordPress
+		 * post field is accepted at all.
+		 */
+		foreach ( array( 'object_type', 'source_id', 'language' ) as $name ) {
+			$this->assertArrayHasKey( $name, $args );
+			$this->assertTrue( $args[ $name ]['required'], $name . ' must be required.' );
+		}
 
 		foreach ( $args as $name => $arg ) {
-			$this->assertTrue( $arg['required'], $name . ' must be required.' );
 			$this->assertTrue( is_callable( $arg['validate_callback'] ), $name . ' must really validate.' );
 		}
 
-		$this->assertSame( array( ContentType::POST ), $args['object_type']['enum'] );
+		$this->assertContains( ContentType::POST, $args['object_type']['enum'] );
 
 		foreach (
 			array(
