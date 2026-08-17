@@ -670,6 +670,31 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 	}
 
 	/**
+	 * Returns active group keys in a stable order.
+	 *
+	 * @param int $limit Maximum keys to return.
+	 * @param int $offset Number of keys to skip.
+	 * @return string[]
+	 */
+	public function active_group_keys( $limit, $offset = 0 ) {
+		if ( ! $this->tables_ready() ) {
+			return array();
+		}
+
+		$table = $this->tables->translation_groups();
+		$keys  = $this->wpdb->get_col(
+			$this->wpdb->prepare(
+				"SELECT group_uuid FROM {$table} WHERE status = %s ORDER BY group_uuid ASC LIMIT %d OFFSET %d",
+				self::GROUP_STATUS_ACTIVE,
+				max( 1, (int) $limit ),
+				max( 0, (int) $offset )
+			)
+		);
+
+		return array_values( array_map( 'strval', is_array( $keys ) ? $keys : array() ) );
+	}
+
+	/**
 	 * Counts active translation groups.
 	 *
 	 * @return int
