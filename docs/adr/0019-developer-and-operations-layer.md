@@ -4,10 +4,10 @@
 
 Accepted for the layer's shape. Partially implemented: Workstream A is built —
 slice 1 the public read API, slice 2 the hook contract review. Workstream B is
-under way: slice 1 the read surface, slice 2 translation status transitions,
-slice 3 relation membership for posts and terms, slice 4A content creation. Only
-taxonomy `create_translation` remains unexposed. Workstreams C through E are not
-started.
+complete for the translation domain: slice 1 the read surface, slice 2 status
+transitions, slice 3 relation membership, slice 4A content creation, slice 4B
+taxonomy creation. All seven domain mutations are reachable. Workstreams C
+through E are not started.
 
 ## Context
 
@@ -393,15 +393,52 @@ for one. And a repeat creates nothing — the language-slot check runs before th
 insert, so a refused request costs no post rather than creating one that is then
 rolled back.
 
+#### Terms got their own slice, and it earned it
+
+Taxonomy creation shares a route and a method name with content creation and
+almost nothing else, which is why it was held back rather than folded in.
+Qualifying it against real WordPress corrected two assumptions that reading the
+code had not.
+
+The first was collision behaviour. The workflow supplies a provisional
+language-scoped slug — `sanitize_title( "{name}-{language}" )` — precisely so a
+translation does not collide with its source when both names reduce to the same
+slug. A consequence is that `wp_insert_term` does *not* treat a matching name as
+a duplicate, and when the derived slug is itself taken WordPress suffixes rather
+than refusing. Both cases were expected to be refusals and are not.
+
+That makes the adoption boundary more important, not less: creation succeeds
+where it might have failed, so what matters is that it creates. A term with the
+same name, or one already holding the wanted slug, is never handed back as the
+translation. There is no fallback to `link_existing` — that is a different
+operation with its own route and the caller must choose it. Both cases are now
+pinned by tests asserting a distinct new term id and an untouched original.
+
+The second was the parent rule, which is a real invariant rather than a default:
+the translated term takes its parent only when the source's parent is already
+translated *into the same language*, and `0` otherwise. mcLogiora will build a
+flat hierarchy before it builds a mixed-language one. All three states — no
+parent, untranslated parent, parent translated into another language — are
+tested, along with the non-hierarchical case.
+
 #### The rollback existed and was untested
 
 The workflow has compensated for post-create failures since Phase 14, with two
-paths and a comment explaining each. Neither had a test. That is the state in
-which a guarantee quietly stops being true, so this slice adds the regression at
-the domain layer where the guarantee lives, injecting the failure through
+paths and a comment explaining each. Neither had a test at the content layer.
+That is the state in which a guarantee quietly stops being true, so the
+regression was added at the domain layer where the guarantee lives, injecting
+the failure through
 `mclogiora_register_payload_adapters` — the plugin's own supported extension
 point — so nothing is stubbed and no production code is altered to make the test
 possible. A site whose builder adapter fails is exactly the modelled situation.
+
+The taxonomy path was better off: a unit test already proved the workflow
+*calls* `delete_term` against a fake gateway. What it could not show is that
+WordPress then actually removes the term, so an integration regression was added
+using `created_term`, a core hook firing inside `wp_insert_term` — after the term
+exists, before the relation is written. Occupying the target slot at that instant
+is the real race the compensation exists for: free when checked, taken when
+written.
 
 The test found the guarantee holds: the draft is removed and no relation record
 outlives the object it pointed at. It also clarified the boundary. The
