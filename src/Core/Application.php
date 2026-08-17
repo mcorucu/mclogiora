@@ -50,6 +50,13 @@ use McLogiora\Editors\Payload\PayloadAdapterRegistry;
 use McLogiora\Editors\TranslationStatusPresenter;
 use McLogiora\Health\DatabaseHealthCheck;
 use McLogiora\Health\SeoHealthCheck;
+use McLogiora\ImportExport\ImportPlanner;
+use McLogiora\ImportExport\ObjectLocatorGatewayInterface;
+use McLogiora\ImportExport\PackageEncoder;
+use McLogiora\ImportExport\PackageExporter;
+use McLogiora\ImportExport\PackageParser;
+use McLogiora\ImportExport\PackageValidator;
+use McLogiora\ImportExport\WordPressObjectLocatorGateway;
 use McLogiora\Languages\CachedLanguageRepository;
 use McLogiora\Languages\DatabaseLanguageRepository;
 use McLogiora\Languages\LanguageRepositoryInterface;
@@ -1030,6 +1037,68 @@ final class Application {
 				return new SeoHealthCheck(
 					$container->get( LanguageRepositoryInterface::class ),
 					$container->get( SeoCompatibilityManager::class )
+				);
+			}
+		);
+
+		/*
+		 * The portable package layer. Registered as services and added to no
+		 * module: nothing here hooks WordPress, registers a route or a command,
+		 * or runs on any request. A transport that needs a package resolves the
+		 * exporter or the planner; until one exists, this costs a closure.
+		 */
+		$this->container->set(
+			ObjectLocatorGatewayInterface::class,
+			static function () {
+				return new WordPressObjectLocatorGateway();
+			}
+		);
+
+		$this->container->set(
+			PackageExporter::class,
+			static function ( Container $container ) {
+				return new PackageExporter(
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( TranslationRelationRepositoryInterface::class ),
+					$container->get( ObjectLocatorGatewayInterface::class ),
+					$container->get( Constants::class )->version()
+				);
+			}
+		);
+
+		$this->container->set(
+			PackageEncoder::class,
+			static function () {
+				return new PackageEncoder();
+			}
+		);
+
+		$this->container->set(
+			PackageParser::class,
+			static function () {
+				return new PackageParser();
+			}
+		);
+
+		$this->container->set(
+			PackageValidator::class,
+			static function ( Container $container ) {
+				return new PackageValidator(
+					$container->get( RuntimeReadiness::class ),
+					$container->get( Constants::class )->version()
+				);
+			}
+		);
+
+		$this->container->set(
+			ImportPlanner::class,
+			static function ( Container $container ) {
+				return new ImportPlanner(
+					$container->get( PackageValidator::class ),
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( TranslationRelationRepositoryInterface::class ),
+					$container->get( ObjectLocatorGatewayInterface::class ),
+					$container->get( TranslationStatusTransitions::class )
 				);
 			}
 		);
