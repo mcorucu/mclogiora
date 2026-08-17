@@ -54,6 +54,15 @@ final class ModuleLoader {
 	 * @return void
 	 */
 	public function register() {
+		/*
+		 * Internal. Deliberately NOT part of the public developer API, and it
+		 * carries no @since for that reason.
+		 *
+		 * It hands out the service container, so supporting it would turn every
+		 * service inside into a permanent compatibility contract. It also lets a
+		 * consumer return a list with the core modules missing, which disables
+		 * the plugin silently. See docs/architecture/developer-api.md.
+		 */
 		$modules = apply_filters( 'mclogiora_register_modules', $this->modules, $this->container );
 
 		if ( ! is_array( $modules ) ) {

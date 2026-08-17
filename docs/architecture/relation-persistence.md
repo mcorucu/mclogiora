@@ -71,6 +71,11 @@ The relation cache is intentionally small:
 
 Successful group and item writes invalidate the active group list. Writes that know the group UUID also invalidate that group cache key. Failed writes do not invalidate cache.
 
+Item writes that receive only an object identity resolve the affected group key
+before mutation, so targeted invalidation remains correct with a persistent
+WordPress object cache. The decorator owns this lookup; workflows do not know
+cache keys.
+
 ## Admin Limitations
 
 The Translation Manager reads and displays relation records, missing languages, statuses, and placeholder action buttons.

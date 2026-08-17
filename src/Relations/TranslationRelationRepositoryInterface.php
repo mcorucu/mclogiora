@@ -29,6 +29,18 @@ interface TranslationRelationRepositoryInterface {
 	public function create_group_placeholder( TranslationItem $original );
 
 	/**
+	 * Creates a placeholder group while preserving a supplied group key.
+	 *
+	 * Import is allowed to restore the package identity, but it still enters
+	 * through the same repository invariants as every other group creation.
+	 *
+	 * @param string          $group_key Group key.
+	 * @param TranslationItem $original Original item.
+	 * @return TranslationGroup|\WP_Error
+	 */
+	public function create_group_placeholder_with_key( $group_key, TranslationItem $original );
+
+	/**
 	 * Finds a group by its key.
 	 *
 	 * @param string $group_key Group key.
@@ -175,6 +187,21 @@ interface TranslationRelationRepositoryInterface {
 	 * @return TranslationGroup[]
 	 */
 	public function all();
+
+	/**
+	 * Returns active group keys in a stable order, for exhaustive iteration.
+	 *
+	 * `all()` answers "show me some groups": it is capped and ordered by recent
+	 * activity, which is right for a dashboard and wrong for anything that must
+	 * see every group and see them in the same order twice. Export is that
+	 * caller, so it gets a paged reader ordered by the group key itself --
+	 * stable under concurrent edits in a way `updated_at` is not.
+	 *
+	 * @param int $limit Maximum keys to return.
+	 * @param int $offset Number of keys to skip.
+	 * @return string[]
+	 */
+	public function active_group_keys( $limit, $offset = 0 );
 
 	/**
 	 * Counts active translation groups.

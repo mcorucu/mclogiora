@@ -99,7 +99,18 @@ final class CanonicalService {
 		/**
 		 * Filters the canonical URL mcLogiora prints for non-singular requests.
 		 *
-		 * Returning an empty string suppresses the tag.
+		 * Returning an empty string suppresses the tag. A non-string return is
+		 * treated as an empty string rather than printed.
+		 *
+		 * Singular requests never reach this filter: WordPress core prints
+		 * their canonical, and mcLogiora does not compete with it.
+		 *
+		 * Only four methods on `$subject` are contract -- `kind()`,
+		 * `object_id()`, `taxonomy()` and `is_home()`. `kind()` returns `post`,
+		 * `term` or `home`. The class itself is internal and may gain or lose
+		 * anything else.
+		 *
+		 * @since 0.12.0
 		 *
 		 * @param string     $url Canonical URL, or an empty string.
 		 * @param SeoSubject $subject Request subject.

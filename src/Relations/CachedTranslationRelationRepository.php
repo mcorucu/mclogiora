@@ -68,6 +68,20 @@ final class CachedTranslationRelationRepository implements TranslationRelationRe
 	}
 
 	/**
+	 * Creates a placeholder group with a supplied key.
+	 *
+	 * @param string          $group_key Group key.
+	 * @param TranslationItem $original Original item.
+	 * @return TranslationGroup|\WP_Error
+	 */
+	public function create_group_placeholder_with_key( $group_key, TranslationItem $original ) {
+		$result = $this->repository->create_group_placeholder_with_key( $group_key, $original );
+		$this->invalidate_after_write( $result, $group_key );
+
+		return $result;
+	}
+
+	/**
 	 * Finds a group by its key.
 	 *
 	 * @param string $group_key Group key.
@@ -158,8 +172,9 @@ final class CachedTranslationRelationRepository implements TranslationRelationRe
 	 * @return TranslationItem|\WP_Error
 	 */
 	public function update_item_status( $object_type, $object_id, $language_code, $status ) {
-		$result = $this->repository->update_item_status( $object_type, $object_id, $language_code, $status );
-		$this->invalidate_after_write( $result );
+		$group_key = $this->group_key_for_item( $object_type, $object_id, $language_code );
+		$result    = $this->repository->update_item_status( $object_type, $object_id, $language_code, $status );
+		$this->invalidate_after_write( $result, $group_key );
 
 		return $result;
 	}
@@ -174,8 +189,9 @@ final class CachedTranslationRelationRepository implements TranslationRelationRe
 	 * @return TranslationItem|\WP_Error
 	 */
 	public function update_item_language( $object_type, $object_id, $language_code, $new_language_code ) {
-		$result = $this->repository->update_item_language( $object_type, $object_id, $language_code, $new_language_code );
-		$this->invalidate_after_write( $result );
+		$group_key = $this->group_key_for_item( $object_type, $object_id, $language_code );
+		$result    = $this->repository->update_item_language( $object_type, $object_id, $language_code, $new_language_code );
+		$this->invalidate_after_write( $result, $group_key );
 
 		return $result;
 	}
@@ -187,8 +203,9 @@ final class CachedTranslationRelationRepository implements TranslationRelationRe
 	 * @return TranslationItem|\WP_Error
 	 */
 	public function update_item_source_metadata( TranslationItem $item ) {
-		$result = $this->repository->update_item_source_metadata( $item );
-		$this->invalidate_after_write( $result );
+		$group_key = $this->group_key_for_item( $item->object_type(), $item->object_id(), $item->language_code() );
+		$result    = $this->repository->update_item_source_metadata( $item );
+		$this->invalidate_after_write( $result, $group_key );
 
 		return $result;
 	}
@@ -259,8 +276,9 @@ final class CachedTranslationRelationRepository implements TranslationRelationRe
 	 * @return bool|\WP_Error
 	 */
 	public function detach_item( $object_type, $object_id, $language_code ) {
-		$result = $this->repository->detach_item( $object_type, $object_id, $language_code );
-		$this->invalidate_after_write( $result );
+		$group_key = $this->group_key_for_item( $object_type, $object_id, $language_code );
+		$result    = $this->repository->detach_item( $object_type, $object_id, $language_code );
+		$this->invalidate_after_write( $result, $group_key );
 
 		return $result;
 	}
@@ -291,6 +309,21 @@ final class CachedTranslationRelationRepository implements TranslationRelationRe
 		$this->cache->set( self::CACHE_KEY_ALL, $groups );
 
 		return $groups;
+	}
+
+	/**
+	 * Returns active group keys in a stable order.
+	 *
+	 * Deliberately not cached. Its only caller walks every page exactly once
+	 * during an export, so a cache entry per page would be written and never
+	 * read again, and would go stale the moment a group is created.
+	 *
+	 * @param int $limit Maximum keys to return.
+	 * @param int $offset Number of keys to skip.
+	 * @return string[]
+	 */
+	public function active_group_keys( $limit, $offset = 0 ) {
+		return $this->repository->active_group_keys( $limit, $offset );
 	}
 
 	/**
@@ -335,12 +368,65 @@ final class CachedTranslationRelationRepository implements TranslationRelationRe
 	}
 
 	/**
+	 * Finds the group containing an item before an item mutation.
+	 *
+	 * Item writes return the item rather than its group key, while the group
+	 * cache is keyed by that UUID. Enumerating the existing stable group-key
+	 * reader keeps this lookup inside the repository boundary and works with a
+	 * persistent object cache without relying on process-local state.
+	 *
+	 * @param string $object_type Object type.
+	 * @param string $object_id Object ID.
+	 * @param string $language_code Language code.
+	 * @return string
+	 */
+	private function group_key_for_item( $object_type, $object_id, $language_code ) {
+		$item = $this->repository->find_item( $object_type, $object_id, $language_code );
+
+		if ( ! $item instanceof TranslationItem ) {
+			return '';
+		}
+
+		$limit     = 100;
+		$offset    = 0;
+		$keys      = array();
+		$key_count = 0;
+
+		do {
+			$keys = $this->repository->active_group_keys( $limit, $offset );
+
+			foreach ( $keys as $group_key ) {
+				$group = $this->repository->find_group( $group_key );
+
+				if ( $group instanceof TranslationGroup && $group->contains( $item ) ) {
+					return $group->group_key();
+				}
+			}
+
+			$offset   += count( $keys );
+			$key_count = count( $keys );
+		} while ( $key_count === $limit );
+
+		return '';
+	}
+
+	/**
 	 * Builds a group cache key.
 	 *
 	 * @param string $group_key Group key.
 	 * @return string
 	 */
 	private function group_cache_key( $group_key ) {
+		return self::cache_key_for_group( $group_key );
+	}
+
+	/**
+	 * Returns the stable cache key for one translation group.
+	 *
+	 * @param string $group_key Group key.
+	 * @return string
+	 */
+	public static function cache_key_for_group( $group_key ) {
 		return 'translation_group_' . md5( (string) $group_key );
 	}
 }

@@ -2,6 +2,10 @@
 
 mcLogiora uses a thin plugin bootstrap, PSR-4 autoloading, a core application, a service container, and a module loader.
 
+The Phase 17 operations layer is documented in
+[`system-status.md`](system-status.md): diagnostics are shared across the
+read-only System Status screen and native WordPress Site Health integration.
+
 The kernel owns lifecycle, environment validation, module registration, admin foundation routing, conditional assets, capabilities, feature flags, and localization. Future multilingual domains must be added as modules behind contracts rather than as direct bootstrap logic.
 
 Phase 09 adds dormant editor and compatibility foundations while still intentionally excluding:

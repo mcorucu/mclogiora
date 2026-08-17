@@ -139,7 +139,19 @@ final class AlternateUrlService {
 		/**
 		 * Filters the x-default URL for the current subject.
 		 *
-		 * Returning an empty string omits the annotation.
+		 * Returning an empty string omits the annotation. A non-string return
+		 * is treated as an empty string rather than printed.
+		 *
+		 * The value arrives already empty when the default language has no
+		 * equivalent for this subject, because there is nothing honest to point
+		 * at. Filling it in aims visitors at a guess.
+		 *
+		 * Only four methods on `$subject` are contract -- `kind()`,
+		 * `object_id()`, `taxonomy()` and `is_home()`. `kind()` returns `post`,
+		 * `term` or `home`. The class itself is internal and may gain or lose
+		 * anything else.
+		 *
+		 * @since 0.12.0
 		 *
 		 * @param string     $url Default-language URL, or an empty string.
 		 * @param SeoSubject $subject Request subject.

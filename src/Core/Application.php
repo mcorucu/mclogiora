@@ -9,6 +9,8 @@ namespace McLogiora\Core;
 
 use McLogiora\Admin\AdminMenu;
 use McLogiora\Admin\AdminScreenRegistry;
+use McLogiora\Api\Rest\RestApiModule;
+use McLogiora\Cli\CliModule;
 use McLogiora\Admin\Settings\SettingsManager;
 use McLogiora\Assets\AssetLoader;
 use McLogiora\Capabilities\CapabilityRegistry;
@@ -28,13 +30,18 @@ use McLogiora\Compatibility\CompatibilityService;
 use McLogiora\Compatibility\PluginDetector;
 use McLogiora\Compatibility\ThemeDetector;
 use McLogiora\Database\DatabaseVersionManager;
+use McLogiora\Database\DatabaseTransaction;
 use McLogiora\Database\Installer;
 use McLogiora\Database\MigrationRegistry;
 use McLogiora\Database\MigrationRunner;
 use McLogiora\Database\SchemaBuilder;
 use McLogiora\Database\TableNames;
+use McLogiora\Database\TransactionInterface;
 use McLogiora\Database\UuidGenerator;
 use McLogiora\Database\VersionChecker;
+use McLogiora\Diagnostics\DiagnosticsService;
+use McLogiora\Diagnostics\SiteHealthIntegration;
+use McLogiora\Admin\SystemStatusDashboard;
 use McLogiora\Editors\BlockEditorPanel;
 use McLogiora\Editors\ClassicEditorMetabox;
 use McLogiora\Editors\SuggestionEditorController;
@@ -44,14 +51,24 @@ use McLogiora\Editors\EditorFactory;
 use McLogiora\Editors\EditorManager;
 use McLogiora\Editors\EditorRegistry;
 use McLogiora\Editors\EditorTranslationModel;
-use McLogiora\Editors\Payload\AcfPayloadAdapter;
-use McLogiora\Editors\Payload\BeaverBuilderPayloadAdapter;
-use McLogiora\Editors\Payload\ElementorPayloadAdapter;
 use McLogiora\Editors\Payload\PayloadAdapterRegistry;
-use McLogiora\Editors\Payload\TranslationPayloadAdapterInterface;
 use McLogiora\Editors\TranslationStatusPresenter;
 use McLogiora\Health\DatabaseHealthCheck;
 use McLogiora\Health\SeoHealthCheck;
+use McLogiora\ImportExport\ImportPlanner;
+use McLogiora\ImportExport\ImportApplyService;
+use McLogiora\ImportExport\ImportAuthorizationInterface;
+use McLogiora\ImportExport\ImportOperationExecutor;
+use McLogiora\ImportExport\ImportOperationExecutorInterface;
+use McLogiora\ImportExport\ImportPlanPreconditionChecker;
+use McLogiora\ImportExport\ImportPlanVerifier;
+use McLogiora\ImportExport\ImportRollbackCacheInvalidator;
+use McLogiora\ImportExport\ObjectLocatorGatewayInterface;
+use McLogiora\ImportExport\PackageEncoder;
+use McLogiora\ImportExport\PackageExporter;
+use McLogiora\ImportExport\PackageParser;
+use McLogiora\ImportExport\PackageValidator;
+use McLogiora\ImportExport\WordPressObjectLocatorGateway;
 use McLogiora\Languages\CachedLanguageRepository;
 use McLogiora\Languages\DatabaseLanguageRepository;
 use McLogiora\Languages\LanguageRepositoryInterface;
@@ -249,6 +266,8 @@ final class Application {
 		$modules->add( new SuggestionSettingsScreen() );
 		$modules->add( new SeoModule() );
 		$modules->add( new SitemapIntegration() );
+		$modules->add( new RestApiModule() );
+		$modules->add( new CliModule() );
 		$modules->add( new InstallationFailureNotice() );
 		$modules->add( new EditorManager() );
 		$modules->add( new BlockEditorPanel() );
@@ -256,6 +275,8 @@ final class Application {
 		$modules->add( new SuggestionEditorController() );
 		$modules->add( new SuggestionAdminController() );
 		$modules->add( new CompatibilityDashboard() );
+		$modules->add( new SystemStatusDashboard() );
+		$modules->add( new SiteHealthIntegration() );
 		$modules->add( new AdminMenu() );
 		$modules->register();
 
@@ -371,29 +392,7 @@ final class Application {
 		$this->container->set(
 			PayloadAdapterRegistry::class,
 			static function () {
-				$registry = new PayloadAdapterRegistry();
-
-				/*
-				 * Both adapters are registered unconditionally and each
-				 * reports its own availability, so a site without Elementor or
-				 * ACF loads them without touching either plugin's classes.
-				 * Phase 15 builders register here through the same filter.
-				 */
-				$registry->add( new ElementorPayloadAdapter() );
-				$registry->add( new BeaverBuilderPayloadAdapter() );
-				$registry->add( new AcfPayloadAdapter() );
-
-				$extra = apply_filters( 'mclogiora_register_payload_adapters', array(), $registry );
-
-				if ( is_array( $extra ) ) {
-					foreach ( $extra as $adapter ) {
-						if ( $adapter instanceof TranslationPayloadAdapterInterface ) {
-							$registry->add( $adapter );
-						}
-					}
-				}
-
-				return $registry;
+				return PayloadAdapterRegistry::with_core_adapters();
 			}
 		);
 
@@ -450,6 +449,13 @@ final class Application {
 			SchemaBuilder::class,
 			static function () use ( $wpdb ) {
 				return new SchemaBuilder( $wpdb );
+			}
+		);
+
+		$this->container->set(
+			TransactionInterface::class,
+			static function () use ( $wpdb ) {
+				return new DatabaseTransaction( $wpdb );
 			}
 		);
 
@@ -647,6 +653,13 @@ final class Application {
 					$container->get( TaxonomyRegistryInterface::class ),
 					$container->get( CapabilityRegistry::class )
 				);
+			}
+		);
+
+		$this->container->set(
+			ImportAuthorizationInterface::class,
+			static function ( Container $container ) {
+				return $container->get( TranslationWorkflowValidator::class );
 			}
 		);
 
@@ -1053,6 +1066,143 @@ final class Application {
 					$container->get( LanguageRepositoryInterface::class ),
 					$container->get( SeoCompatibilityManager::class )
 				);
+			}
+		);
+
+		$this->container->set(
+			DiagnosticsService::class,
+			static function ( Container $container ) {
+				return new DiagnosticsService(
+					$container->get( Constants::class ),
+					$container->get( RuntimeReadiness::class ),
+					$container->get( DatabaseVersionManager::class ),
+					$container->get( SchemaBuilder::class ),
+					$container->get( TableNames::class ),
+					$container->get( MigrationRunner::class ),
+					$container->get( LanguageRepositoryInterface::class ),
+					$container->get( TranslationRelationRepositoryInterface::class ),
+					$container->get( RoutingSettings::class ),
+					$container->get( SuggestionSettings::class ),
+					$container->get( ProviderRegistry::class ),
+					$container->get( ProviderReadiness::class ),
+					$container->get( EditorDetector::class ),
+					$container->get( BuilderCompatibilityRegistry::class )
+				);
+			}
+		);
+
+		/*
+		 * The portable package layer. Registered as services and added to no
+		 * module: nothing here hooks WordPress, registers a route or a command,
+		 * or runs on any request. A transport that needs a package resolves the
+		 * exporter or the planner; until one exists, this costs a closure.
+		 */
+		$this->container->set(
+			ObjectLocatorGatewayInterface::class,
+			static function () {
+				return new WordPressObjectLocatorGateway();
+			}
+		);
+
+		$this->container->set(
+			PackageExporter::class,
+			static function ( Container $container ) {
+				return new PackageExporter(
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( TranslationRelationRepositoryInterface::class ),
+					$container->get( ObjectLocatorGatewayInterface::class ),
+					$container->get( Constants::class )->version()
+				);
+			}
+		);
+
+		$this->container->set(
+			PackageEncoder::class,
+			static function () {
+				return new PackageEncoder();
+			}
+		);
+
+		$this->container->set(
+			PackageParser::class,
+			static function () {
+				return new PackageParser();
+			}
+		);
+
+		$this->container->set(
+			PackageValidator::class,
+			static function ( Container $container ) {
+				return new PackageValidator(
+					$container->get( RuntimeReadiness::class ),
+					$container->get( Constants::class )->version()
+				);
+			}
+		);
+
+		$this->container->set(
+			ImportPlanner::class,
+			static function ( Container $container ) {
+				return new ImportPlanner(
+					$container->get( PackageValidator::class ),
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( TranslationRelationRepositoryInterface::class ),
+					$container->get( ObjectLocatorGatewayInterface::class ),
+					$container->get( TranslationStatusTransitions::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			ImportPlanPreconditionChecker::class,
+			static function ( Container $container ) {
+				return new ImportPlanPreconditionChecker(
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( TranslationRelationRepositoryInterface::class ),
+					$container->get( ObjectLocatorGatewayInterface::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			ImportPlanVerifier::class,
+			static function ( Container $container ) {
+				return new ImportPlanVerifier(
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( TranslationRelationRepositoryInterface::class ),
+					$container->get( ObjectLocatorGatewayInterface::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			ImportOperationExecutorInterface::class,
+			static function ( Container $container ) {
+				return new ImportOperationExecutor(
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( TranslationRelationServiceInterface::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			ImportApplyService::class,
+			static function ( Container $container ) {
+				return new ImportApplyService(
+					$container->get( ImportAuthorizationInterface::class ),
+					$container->get( ImportPlanPreconditionChecker::class ),
+					$container->get( ImportOperationExecutorInterface::class ),
+					$container->get( ImportPlanVerifier::class ),
+					$container->get( TransactionInterface::class ),
+					$container->get( ImportRollbackCacheInvalidator::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			ImportRollbackCacheInvalidator::class,
+			static function ( Container $container ) {
+				return new ImportRollbackCacheInvalidator( $container->get( CacheInterface::class ) );
 			}
 		);
 	}

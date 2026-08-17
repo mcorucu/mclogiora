@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.16.0
+
+- Added the public read API and reviewed developer hook contracts.
+- Added authenticated REST translation reads and workflow mutations, plus matching `wp mclogiora` language, relation, and translation commands.
+- Added portable translation package export, parsing, validation, dry-run planning, additive atomic apply, stale-plan protection, rollback, and targeted cache invalidation. No operator transport is exposed.
+- Added read-only System Status and native Site Health diagnostics with redacted output and no automatic provider network calls.
+- WordPress 7.1 final compatibility and live provider qualification remain separate open gates; `Tested up to` remains 7.0.
+
 ## 0.15.0
 
 - Added optional Translation Suggestions. The feature is off by default, needs no account with the plugin author, and does nothing until a site owner enables it, chooses a provider and supplies their own API key. A site that never opens the settings screen behaves exactly as it did in 0.14.0.

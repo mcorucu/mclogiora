@@ -16,6 +16,7 @@ use McLogiora\Relations\ContentType;
 use McLogiora\Relations\TranslationRelationRepositoryInterface;
 use McLogiora\Taxonomies\TaxonomyRegistryInterface;
 use McLogiora\WordPress\ContentGatewayInterface;
+use McLogiora\ImportExport\ImportAuthorizationInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -25,7 +26,7 @@ defined( 'ABSPATH' ) || exit;
  * Every rule returns a WP_Error rather than throwing, so callers can surface
  * a specific admin notice. Validation never mutates state.
  */
-final class TranslationWorkflowValidator {
+final class TranslationWorkflowValidator implements ImportAuthorizationInterface {
 	/**
 	 * Content gateway.
 	 *

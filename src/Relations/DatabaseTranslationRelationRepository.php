@@ -114,6 +114,17 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 	 * @return TranslationGroup|\WP_Error
 	 */
 	public function create_group_placeholder( TranslationItem $original ) {
+		return $this->create_group_placeholder_with_key( $this->uuid_generator->generate(), $original );
+	}
+
+	/**
+	 * Creates a placeholder group with a supplied key.
+	 *
+	 * @param string          $group_key Group key.
+	 * @param TranslationItem $original Original item.
+	 * @return TranslationGroup|\WP_Error
+	 */
+	public function create_group_placeholder_with_key( $group_key, TranslationItem $original ) {
 		if ( ! $this->tables_ready() ) {
 			return $this->database_unavailable_error();
 		}
@@ -128,7 +139,7 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 			return new \WP_Error( 'mclogiora_relation_object_assigned', __( 'This object is already assigned to an active translation group.', 'mclogiora' ) );
 		}
 
-		$group_uuid = $this->uuid_generator->generate();
+		$group_uuid = (string) $group_key;
 		$now        = current_time( 'mysql', true );
 		$result     = $this->wpdb->insert(
 			$this->tables->translation_groups(),
@@ -667,6 +678,31 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 		}
 
 		return $groups;
+	}
+
+	/**
+	 * Returns active group keys in a stable order.
+	 *
+	 * @param int $limit Maximum keys to return.
+	 * @param int $offset Number of keys to skip.
+	 * @return string[]
+	 */
+	public function active_group_keys( $limit, $offset = 0 ) {
+		if ( ! $this->tables_ready() ) {
+			return array();
+		}
+
+		$table = $this->tables->translation_groups();
+		$keys  = $this->wpdb->get_col(
+			$this->wpdb->prepare(
+				"SELECT group_uuid FROM {$table} WHERE status = %s ORDER BY group_uuid ASC LIMIT %d OFFSET %d",
+				self::GROUP_STATUS_ACTIVE,
+				max( 1, (int) $limit ),
+				max( 0, (int) $offset )
+			)
+		);
+
+		return array_values( array_map( 'strval', is_array( $keys ) ? $keys : array() ) );
 	}
 
 	/**

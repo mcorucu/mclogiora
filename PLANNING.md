@@ -1,6 +1,6 @@
 # mcLogiora Planning
 
-Current phase: Phase 16 complete (Translation Suggestions, v0.15.0). Next planned phase: Phase 17 — Developer & Operations Layer. The release header still declares `Tested up to: 7.0`; raising it to 7.1 is a separate compatibility gate once WordPress 7.1 ships final.
+Current phase: Phase 17 complete (Developer & Operations Layer, v0.16.0). Phase 16 is complete (Translation Suggestions, v0.15.0). The release header still declares `Tested up to: 7.0`; raising it to 7.1 is a separate compatibility gate once WordPress 7.1 ships final. Phase 18 is not started.
 
 This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 
@@ -463,28 +463,30 @@ REST should power Gutenberg panels, setup wizard interactions, suggestions, impo
 
 mcLogiora should provide a stable developer API before encouraging third-party extensions.
 
+The published contract now lives in `docs/architecture/developer-api.md`, which is authoritative over the sketch below.
+
 Planned public functions:
 
-- `mclogiora_get_current_language()`
-- `mclogiora_get_default_language()`
-- `mclogiora_get_languages()`
-- `mclogiora_get_translation($object_id, $object_type, $language)`
-- `mclogiora_get_translation_group($object_id, $object_type)`
-- `mclogiora_get_language_url($language, $object_id = null)`
-- `mclogiora_render_language_switcher($args = array())`
+- `mclogiora_get_current_language()` — delivered
+- `mclogiora_get_default_language()` — delivered
+- `mclogiora_get_languages()` — delivered
+- `mclogiora_get_translation($object_id, $object_type, $language)` — delivered
+- `mclogiora_get_translation_group($object_id, $object_type)` — delivered
+- `mclogiora_get_language_url($language, $object_id = null)` — delivered, with optional object type and taxonomy arguments so translated terms are reachable
+- `mclogiora_render_language_switcher($args = array())` — not added. `mclogiora_language_switcher()` has shipped since 0.11.0 and is the supported name; a second name for the same function would be sprawl.
 
-Planned filters/actions:
+Planned filters/actions. This list was a sketch; the hooks that exist and their support status are recorded in `docs/architecture/developer-api.md`, which is authoritative. Names below that were never built are not commitments to build them:
 
-- `mclogiora_register_modules`
-- `mclogiora_register_builder_adapters`
-- `mclogiora_register_seo_adapters`
-- `mclogiora_register_suggestion_providers`
-- `mclogiora_supported_object_types`
-- `mclogiora_language_switcher_args`
-- `mclogiora_language_url`
-- `mclogiora_translation_status`
-- `mclogiora_should_render_hreflang`
-- `mclogiora_external_service_disclosures`
+- `mclogiora_register_modules` — exists, deliberately **not** supported: it hands out the service container.
+- `mclogiora_register_builder_adapters` — shipped under the name `mclogiora_register_payload_adapters`, and supported.
+- `mclogiora_register_seo_adapters` — not built. SEO adapter ownership is settled through the supported `mclogiora_seo_owns_concern` filter instead.
+- `mclogiora_register_suggestion_providers` — not built. Third-party provider registration remains an open question bound by ADR 0018's constraints.
+- `mclogiora_supported_object_types` — not built.
+- `mclogiora_language_switcher_args` — not built. Switcher presentation is settled per instance through shortcode, block, and widget attributes.
+- `mclogiora_language_url` — not built. Translated URLs are read through `mclogiora_get_language_url()`.
+- `mclogiora_translation_status` — not built.
+- `mclogiora_should_render_hreflang` — shipped as the `hreflang` concern of the supported `mclogiora_seo_owns_concern` filter.
+- `mclogiora_external_service_disclosures` — not built.
 
 Developer documentation should include examples for custom post types, custom taxonomies, builder adapters, suggestion providers, SEO output overrides, and custom switcher rendering.
 
@@ -609,7 +611,7 @@ The core should expose adapter contracts that make these integrations possible l
 
 ## 20. Development Phases
 
-The original twelve-phase sequence in this document drifted from what was actually built: two persistence phases were inserted during execution, which shifted every later number. The list below is the reconciled roadmap. Phases 01-09 are historical fact, verified against `CHANGELOG.md`, the plugin version header, the ADR set, and the source tree. Phases 10-18 are planned and not yet started.
+The original twelve-phase sequence in this document drifted from what was actually built: two persistence phases were inserted during execution, which shifted every later number. The list below is the reconciled roadmap. Phases 01-17 are historical fact, verified against `CHANGELOG.md`, the plugin version header, the ADR set, and the source tree. Phase 18 is planned and not yet started.
 
 ### Completed phases (verified against repository evidence)
 
@@ -679,7 +681,7 @@ Phase 15: Extended Builder Compatibility - v0.14.0
 
 - Ten builders assessed against running copies rather than remembered meta keys. Kadence Blocks, GenerateBlocks and Spectra store their layout as ordinary block content and need no code; Beaver Builder needs a payload adapter and now has one, written against its own `FLBuilderModel` API; SeedProd needs nothing. Bricks, Divi, WPBakery, Oxygen and Avada are commercial, were not legitimately available, and are recorded as unverified rather than claimed. Fixed Beaver Builder and SeedProd never being detected. Added a builder compatibility CI job. See `docs/adr/0017-extended-builder-compatibility.md` and `docs/architecture/builder-compatibility-matrix.md`.
 
-### Planned phases
+### Reconciled phase notes
 
 - hreflang output, canonical handling, OpenGraph and JSON-LD compatibility, sitemap integration, and coexistence with established SEO plugins.
 
@@ -701,9 +703,81 @@ Phase 16: Translation Suggestions — complete (v0.15.0)
 - A REST suggestion workflow was not built; the surfaces use admin AJAX. REST belongs with the Phase 17 developer layer.
 - Live provider qualification has not been performed. All qualification used a deterministic local transport double.
 
-Phase 17: Developer & Operations Layer
+Phase 17: Developer & Operations Layer — complete (v0.16.0)
 
 - REST API, import/export with dry-run, WP-CLI commands, System Status, Site Health integration, and the public developer API.
+- Decomposed into five workstreams, deliberately sequential rather than parallel. Workstream A comes first because section 15 of this document requires a stable developer API before third-party extension is encouraged, and because B through E are each a consumer of A's resolver. See `docs/adr/0019-developer-and-operations-layer.md`.
+
+| | Workstream | Delivers | Status |
+| --- | --- | --- | --- |
+| A | Developer Extension API | Public read functions, then a reviewed hook contract | Complete |
+| B | REST API | `/mclogiora/v1/…` under permission callbacks | Complete for the translation domain (slices 1–4B). `/import`, `/export` and `/status` belong to workstreams D and E; `/strings`, `/suggestions` and `/switcher` are reassessed below |
+| C | WP-CLI | `wp mclogiora …`, wrapping the workflow services | **Complete** (slices 1–3) |
+| D | Import / Export | Portable packages with a dry run before any write | **Complete** (slices 1–3: package, export, parser, validation, immutable-plan apply, stale protection, atomicity, rollback, persistent-cache-safe invalidation, final verification). No operator transport required |
+| E | Diagnostics | System Status screen and Site Health integration | **Complete** (read-only diagnostics, native Site Health integration, no REST `/status` route required) |
+
+- Workstream A slice 1 delivered six `mclogiora_`-prefixed read functions returning plain arrays, documented in `docs/architecture/developer-api.md` alongside the three template tags that have shipped since 0.11.0. Nothing writes and no hook was added.
+- Domain objects deliberately do not cross the boundary. Callers receive projections, so the repositories, the value objects, the container, and the source-change fields behind the needs-update detector stay free to change.
+- Workstream A slice 2 reviewed all fourteen hooks the plugin fires and classified every one. Nine are now supported contracts with documented arguments, documented return semantics, an `@since` tag at the invocation, and a lifecycle test: `mclogiora_activated`, `mclogiora_deactivated`, `mclogiora_widget_adapters`, `mclogiora_register_payload_adapters`, `mclogiora_switcher_flag`, `mclogiora_seo_owns_concern`, `mclogiora_seo_output_open_graph_locale`, `mclogiora_seo_canonical_url`, and `mclogiora_seo_x_default_url`.
+- Five are recorded as unsupported with a specific reason. `mclogiora_register_modules` hands out the service container. `mclogiora_resolved_capability` is the security boundary every admin screen and write path checks, and WordPress offers no capability ordering that could narrow it honestly, so the decision is protected by a test on the unfiltered baseline instead. `mclogiora_feature_enabled` filters a table nothing reads and that no longer matches what shipped. `mclogiora_register_editors` and `mclogiora_register_settings` are deferred until `EditorInterface` and a real settings registry exist to freeze.
+- The only production change in slice 2 moved the payload adapter construction into `PayloadAdapterRegistry::with_core_adapters()`, mirroring the widget registry, because a hook invoked inside a cached container factory cannot be qualified as a contract. Behaviour is unchanged.
+- Workstream B slice 1 registered three read-only routes under `mclogiora/v1`, the namespace and vocabulary section 14 fixed: `GET /languages`, `GET /relations`, `GET /translations`. Every handler projects through `Api\PublicApi`, so HTTP adds no domain logic and cannot drift from what the functions say. No write method exists on any route — not even a stub — and a `POST` to a mcLogiora path is a 404 from WordPress.
+- `/languages` serves its active set publicly, because a page carrying a switcher already publishes every field it returns; `status=all` adds unpublished configuration and is gated. `/relations` and `/translations` require the capability to manage translations, because a relation record names object IDs whatever state those objects are in, and section 14 forbids exposing private post data or unpublished translation content to unauthorised users. A per-object public projection is deferred rather than guessed at.
+- Workstream B slice 2 exposed one mutation family over `POST|PUT|PATCH /translations`: translation status transitions. Of the seven mutations the domain supports — create, link and unlink for posts, the same three for terms, and the status change — this is the only one that creates and destroys nothing, which is what makes its blast radius provable rather than merely argued. The handler maps HTTP to one `TranslationWorkflowService::change_status()` call and decides nothing itself; whether a transition is legal remains the domain's answer.
+- Writes require no additional mcLogiora nonce. WordPress already governs REST authentication, and layering an admin-form nonce on top would break Application Password clients while adding nothing.
+- Workstream B slice 3 exposed relation membership over `POST /relations` and `DELETE /relations`, covering `link_existing` and `unlink` for both posts and terms. The `DELETE` removes membership, never the WordPress object: the post or term survives with every field byte-identical, which is asserted by full fingerprint comparison rather than argued. Posts and terms share the transport but dispatch to their own workflow, because the checks that differ — post type against post type, taxonomy against taxonomy — are what stop a category becoming the translation of a page.
+- These routes surfaced that the workflows apply per-object checks (`edit_post` on source and target, `manage_categories` for terms) after the general capability passes. REST maps those to 403 and adds nothing of its own.
+- Workstream B slice 4A exposed content creation over `POST /translations`, the only route in the namespace that brings a WordPress object into existence. The new post is always a draft, carries the source's type and text, and is never published or machine-translated. The route accepts three fields and no WordPress post field at all, so it cannot become a `wp_insert_post` proxy wearing a translation label.
+- This forced one correction: `/translations` had been registered `EDITABLE`, so `POST` meant "change a status". On a collection `POST` means create, and the status change narrowed to `PUT|PATCH`. Nothing was released, so this is a design correction before release rather than a break.
+- The workflow's post-create rollback had existed since Phase 14 with no test. Slice 4A added the domain regression, injecting the failure through the supported `mclogiora_register_payload_adapters` filter. The guarantee holds: the draft is removed and no relation record outlives the object it pointed at. The group survives holding only its source, which is the same state an unlinked group reaches and is recorded as existing behaviour.
+- Workstream B slice 4B exposed taxonomy creation through the same `POST /translations` route with `object_type=term`. Qualifying it against real WordPress corrected two assumptions: the workflow's provisional language-scoped slug means `wp_insert_term` does not treat a matching name as a duplicate, and a taken slug is suffixed rather than refused. Both cases therefore succeed — which makes the adoption boundary the thing that matters, and it holds: an existing term is never handed back as the translation, and there is no fallback to `link_existing`.
+- The parent rule is an invariant rather than a default: a translated term takes its parent only when the source's parent is already translated into the same language, and `0` otherwise. mcLogiora builds a flat hierarchy before a mixed-language one.
+- All seven translation-domain mutations are now reachable over REST.
+
+**REST scope reassessment.** Section 14 sketched nine route families. Three are built (`/languages`, `/relations`, `/translations`). The remaining six are not workstream B work:
+
+| Sketched route | Disposition |
+| --- | --- |
+| `/import`, `/export` | Workstream D owns the package and dry-run requirement in section 17. The Slice 3 transport audit found no operator route required for closure; no REST, CLI or admin import/export surface is added. |
+| `/status` | Historical sketch only. Workstream E closes with the System Status screen and Site Health integration; no REST status transport is required. |
+| `/strings` | No REST need identified. String translation is an admin-screen workflow with its own AJAX surface; a public REST projection would need the same per-object authorisation analysis the relation routes deferred, with no caller asking for it. Revisit only if a concrete consumer appears. |
+| `/suggestions` | Deliberately not built. ADR 0018 requires an explicit human action per suggestion and forbids background sending of site content; the existing admin AJAX surface already enforces that. A REST endpoint would make bulk machine translation trivially scriptable, which is the outcome Phase 16 was designed to prevent. |
+| `/switcher` | Superseded. Section 14 wanted a public cacheable switcher endpoint; `GET /languages` already serves that data publicly, including each language's home URL, and the switcher itself renders server-side. |
+
+- Workstream B is therefore complete unless a concrete consumer justifies `/strings`.
+
+Workstream C decomposes into three slices: read-only commands, relation and status mutation commands, then content and term creation commands. Slices 2 and 3 wrap the same workflows REST already wraps.
+
+- Workstream C slice 1 registered `wp mclogiora language list`, `wp mclogiora relation get` and `wp mclogiora translation get`. Every command reads through `Api\PublicApi` and publishes the same field names REST does, so an operator comparing the two interfaces finds one answer rather than two. Output goes through WP-CLI's own formatter; mcLogiora ships no table renderer.
+- Registration is gated on `RuntimeReadiness::is_cli()`, so a web request constructs nothing. No Composer dependency on WP-CLI is added and no command class extends `WP_CLI_Command`, so a site without WP-CLI can autoload them safely.
+- Two decisions deliberately differ from REST because the execution model does. `language list` defaults to **all** configured languages rather than active, and relation inspection returns object IDs for drafts and private posts. REST is gated because anonymous callers exist; running `wp` means shell access, which is already more privileged than any role, so copying those defaults would hide configuration from the operator administering it. Credentials, preview tokens, source hashes, table and class names stay out regardless.
+- Qualified by running the real binary against real installations of WordPress 7.0.4 and 7.1-RC3: fifteen invocations left every row count, relation hash and `post_modified_gmt` byte-identical and made zero outbound requests.
+- Workstream C slice 2 added `wp mclogiora translation status`, `wp mclogiora relation link` and `wp mclogiora relation unlink`, calling the same workflow services REST calls. Nothing under `src/Cli` writes through a repository or `$wpdb`.
+- Running `wp` without `--user` leaves no current WordPress user, so every mutation is refused with `mclogiora_cannot_manage_translations`. That is correct rather than a usability defect: assuming an administrator, or adding a `--force` flag, would make shell access silently equivalent to a capability nobody granted. Operators pass `--user=<login|id|email>`; there is no bypass of any kind.
+- Mutation commands are human-first with no `--format`. Read commands render data and keep theirs. `unlink` states in words that the object was not deleted, because the verb invites exactly the wrong assumption.
+- Qualified by running the real binary on WordPress 7.0.4 and 7.1-RC3: the full user matrix (no user, subscriber, editor, administrator), every domain refusal with its code preserved, full post and term fingerprints unchanged across link and unlink, zero objects created or deleted, and zero outbound requests.
+- Workstream C slice 3 added `wp mclogiora translation create` for posts and terms, dispatching to the same two workflows REST calls. The command takes the workflows' own inputs and nothing else — no `--title`, `--status`, `--slug`, `--parent` or `--meta` — because a flag for any of those would turn a translation command into a clone command. Creation never adopts an existing term; `relation link` is that operation, and the help says so.
+- Qualified by running the real binary on WordPress 7.0.4 and 7.1-RC3: the full user matrix for both creation paths, exact object-count deltas, draft-only posts, term name/description/slug/parent read back from WordPress, three-repeat duplication proofs, occupied-slot refusals creating nothing, the same-name and slug-collision boundaries, and zero outbound requests.
+
+**Workstream C is complete.** The authoritative scope — `wp mclogiora …` wrapping the workflow services (section 20, ADR 0010 row 17, ADR 0019) — is met: all seven translation-domain mutations plus the reads exist on both HTTP and the shell. Import/export belongs to workstream D, status and diagnostics to workstream E, and suggestions stay off every programmatic transport for the reason recorded under REST. Language configuration, strings, media and settings have no CLI requirement in any authoritative source.
+
+Workstream D decomposes into three slices, in this order and for the reason section 17 gives: the dry run is listed among the security requirements, beside prepared SQL and capability checks, which makes an inspection path a precondition for a write path rather than a preview feature. Slice 1 is the package, the reader and the plan. Slice 2 is apply, atomicity and rollback. Slice 3 is the authoritative transport decision, rollback-cache persistence audit and closure; the audit found no operator transport required.
+
+- Workstream D slices 1–2 deliver a portable JSON package covering two sections, `languages` and `relations`, plus the parser, destination validator, dry-run planner and transport-neutral immutable-plan apply service. Apply accepts `ImportPlan`, never raw JSON and never silently re-plans. See `docs/adr/0020-portable-import-export.md` and `docs/architecture/import-export.md`.
+- The package carries its own `format_version`, an integer, currently 1. It is never derived from the plugin version: a release that changes nothing about serialization must not invalidate every package a site has already taken. An unsupported format version is refused; a differing plugin version is a warning and never a refusal.
+- No package contains a post id or a term id, in either direction. Objects are named by post type plus slug — plus the ancestor slug path inside hierarchical types, because WordPress keeps a slug unique per parent rather than per type — or by taxonomy plus slug for terms. Translation groups keep the UUID the schema already assigns, which is what makes a repeated import find the group it created rather than build a duplicate.
+- A locator that names nothing, names several objects, has no slug yet, or names a post type the destination does not register is reported by name with every match listed. None of the four is resolved by picking one; the two that look alike from a distance — a draft that has no slug and an object that was deleted — are told apart, because an operator can only act on the difference if they are shown it.
+- Import is additive by policy. It creates what the destination lacks and links what it has not linked, and never overwrites a language's metadata, a translation's status, an occupied language slot or the site's default language. Every disagreement about something that already exists is a conflict in the plan and is planned for not at all. Format version 1 therefore has no `update_language` and no `update_status` operation, and where statuses differ the plan asks `TranslationStatusTransitions` whether the move would be legal rather than restating its matrix.
+- The dry run is the plan a later apply executes, carrying resolved destination identifiers. Slice 2 consumes that operation list; it does not re-read the package and decide again. Building a plan performs zero inserts, updates and deletes, proven by snapshotting every mcLogiora table plus posts, postmeta, terms and `mclogiora%` options around repeated planning runs. Export is read-only on the same evidence, and neither export, parse, validate nor plan makes an outbound request.
+- Apply performs a full pre-write stale gate for languages, groups, slots, object grouping and exact locators. Any drift returns `import_plan_stale` with zero writes; an old applied plan is stale and a fresh dry run produces skips. Language and relation writes share one plugin-table transaction, failure and late verification rollback atomically, and final verification runs before commit. Failure injection is a test executor double, never a production flag. No WordPress posts or terms are created, deleted or modified by this slice.
+- Strings, media metadata, menus, widgets and settings are outside format version 1. Each is a separate portability problem rather than an oversight; settings in particular need a per-setting audit, since `url_strategy` reshapes every permalink on the destination.
+- Nothing in the layer is a transport. The services are registered in the container and hooked to nothing — no REST route, no CLI command, no admin screen, no upload handling — so a site that never imports anything runs no extra code. The authoritative closure audit deliberately adds no `/import` or `/export` transport.
+- Slice 3 audited rollback under a persistent WordPress Object Cache model. `ImportRollbackCacheInvalidator` deletes the language-list cache, relation-group list cache and plan-named group caches through `CacheInterface`, so persistent entries are removed without flushing unrelated cache families.
+- Qualified on WordPress 7.0.4 and 7.1-RC3, and on a real installation through `wp eval` against the workstream C fixture site: two exports byte-identical apart from `created_at`, the plan repeatable, zero outbound requests, and every mcLogiora table, post, term and option hash unchanged.
+
+- Workstream E delivered one transport-neutral `DiagnosticsService` projection, a capability-gated read-only System Status screen, one sanitized native WordPress Site Health debug-information section, and actionable direct tests for default language, schema, permalinks, and enabled-but-incomplete suggestions. Collection performs no writes, cache resets, provider requests, telemetry, or expensive full-table relation scans; missing subsystems become degraded findings. The historical `/mclogiora/v1/status` route remains unregistered because the authoritative Workstream E deliverable is the admin/System Status and Site Health surfaces, not a REST transport. See `docs/architecture/system-status.md` and ADR 0021.
+
+**Phase 17 is complete.** Feature workstreams A, B, C, D, and E, the closure audit, final qualification, and the merged-main verification are complete. Phase 18 remains out of scope and not started.
 
 Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
 
@@ -742,9 +816,9 @@ These notes record the Phase 01 discovery environment. They are historical conte
 
 ## Next Phase
 
-Phases 02 through 16 are complete. The next implementation phase is **Phase 17: Developer & Operations Layer**.
+Phases 02 through 17 are complete. **Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation** is not started; its scope is in section 20.
 
-Two items are carried forward rather than resolved in Phase 16:
+Two items are carried forward from Phase 16 and remain open after Phase 17:
 
 - Raising `Tested up to` from 7.0 to 7.1 is a separate compatibility gate, to be run once WordPress 7.1 ships final. Phase 16 qualified against 7.1-RC3 and deliberately did not change the release header on the strength of a release candidate.
 - Live provider qualification with real credentials, per provider, including one representative failure per normalized error category.

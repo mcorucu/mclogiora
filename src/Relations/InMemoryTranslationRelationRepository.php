@@ -96,6 +96,35 @@ final class InMemoryTranslationRelationRepository implements TranslationRelation
 	}
 
 	/**
+	 * Creates a placeholder group with a supplied key.
+	 *
+	 * @param string          $group_key Group key.
+	 * @param TranslationItem $original Original item.
+	 * @return TranslationGroup|\WP_Error
+	 */
+	public function create_group_placeholder_with_key( $group_key, TranslationItem $original ) {
+		if ( null !== $this->find_group( $group_key ) || $this->object_is_assigned( $original->object_type(), $original->object_id() ) ) {
+			return new \WP_Error( 'mclogiora_relation_group_exists', __( 'The translation group already exists or the object is assigned.', 'mclogiora' ) );
+		}
+
+		$group          = new TranslationGroup(
+			(string) $group_key,
+			array(
+				new TranslationItem(
+					$original->object_type(),
+					$original->object_id(),
+					$original->language_code(),
+					TranslationStatus::ORIGINAL,
+					true,
+				),
+			)
+		);
+		$this->groups[] = $group;
+
+		return $group;
+	}
+
+	/**
 	 * Finds a group by its key.
 	 *
 	 * @param string $group_key Group key.
@@ -478,6 +507,25 @@ final class InMemoryTranslationRelationRepository implements TranslationRelation
 	 */
 	public function all() {
 		return $this->groups;
+	}
+
+	/**
+	 * Returns group keys in a stable order.
+	 *
+	 * @param int $limit Maximum keys to return.
+	 * @param int $offset Number of keys to skip.
+	 * @return string[]
+	 */
+	public function active_group_keys( $limit, $offset = 0 ) {
+		$keys = array();
+
+		foreach ( $this->groups as $group ) {
+			$keys[] = $group->group_key();
+		}
+
+		sort( $keys, SORT_STRING );
+
+		return array_slice( $keys, max( 0, (int) $offset ), max( 1, (int) $limit ) );
 	}
 
 	/**

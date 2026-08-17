@@ -16,7 +16,16 @@ use McLogiora\Languages\LanguageRepositoryInterface;
 use McLogiora\Languages\LanguageStatus;
 use McLogiora\Media\MediaTranslationService;
 use McLogiora\Menus\MenuTranslationWorkflow;
+use McLogiora\Editors\Payload\PayloadAdapterRegistry;
+use McLogiora\Editors\Payload\TranslationPayloadAdapterInterface;
+use McLogiora\Languages\LanguageServiceInterface;
 use McLogiora\Relations\ContentType;
+use McLogiora\Relations\TranslationRelationRepositoryInterface;
+use McLogiora\Relations\TranslationRelationServiceInterface;
+use McLogiora\Relations\TranslationStatus;
+use McLogiora\Workflows\ContentTranslationWorkflow;
+use McLogiora\Workflows\TranslationWorkflowValidator;
+use McLogiora\WordPress\ContentGatewayInterface;
 use McLogiora\Widgets\WidgetTranslationService;
 use McLogiora\Workflows\TranslationWorkflowService;
 use WP_UnitTestCase;
@@ -368,6 +377,60 @@ final class TranslationWorkflowIntegrationTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Asserts detaching refreshes a group read in the same request.
+	 *
+	 * @return void
+	 */
+	public function test_detaching_refreshes_a_cached_group_in_the_same_request() {
+		$workflow = $this->container->get( TranslationWorkflowService::class )->content();
+		$languages = $this->container->get( LanguageRepositoryInterface::class );
+
+		if ( ! $languages->find_by_code( 'de' ) instanceof Language ) {
+			$languages->create( new Language( 'de', 'de_DE', 'Deutsch', 'German', 'ltr', LanguageStatus::ACTIVE, 2, false ) );
+		}
+
+		$source = self::factory()->post->create( array( 'post_type' => 'post', 'post_status' => 'publish' ) );
+		$first  = $workflow->create_translation( $source, 'tr' );
+		$second = self::factory()->post->create( array( 'post_type' => 'post', 'post_status' => 'publish' ) );
+		$link   = $workflow->link_existing( $source, $second, 'de' );
+
+		$this->assertIsArray( $first, is_wp_error( $first ) ? $first->get_error_message() : '' );
+		$this->assertIsArray( $link, is_wp_error( $link ) ? $link->get_error_message() : '' );
+
+		$repository = $this->container->get( TranslationRelationRepositoryInterface::class );
+		$group_key  = $first['group_key'];
+		$cached     = $repository->find_group( $group_key );
+
+		$this->assertInstanceOf( \McLogiora\Relations\TranslationGroup::class, $cached );
+		$this->assertCount( 3, $cached->items() );
+		$this->assertTrue( $repository->detach_item( ContentType::POST, (string) $first['post_id'], 'tr' ) );
+
+		$refreshed = $repository->find_group( $group_key );
+		$ids       = array_map(
+			static function ( $item ) {
+				return $item->object_id();
+			},
+			$refreshed->items()
+		);
+
+		$this->assertNotContains( (string) $first['post_id'], $ids );
+		$this->assertContains( (string) $source, $ids );
+		$this->assertContains( (string) $second, $ids );
+		$this->assertNull( $repository->find_item( ContentType::POST, (string) $first['post_id'], 'tr' ) );
+
+		$this->assertNotWPError( $workflow->link_existing( $source, $first['post_id'], 'tr' ) );
+		$reattached = $repository->find_group( $group_key );
+		$reattached_ids = array_map(
+			static function ( $item ) {
+				return $item->object_id();
+			},
+			$reattached->items()
+		);
+
+		$this->assertContains( (string) $first['post_id'], $reattached_ids );
+	}
+
+	/**
 	 * Asserts unlinking frees the language slot for a different object.
 	 *
 	 * Unlink used to park the item in `disabled` and leave the row in place.
@@ -475,5 +538,230 @@ final class TranslationWorkflowIntegrationTest extends WP_UnitTestCase {
 
 		$this->assertNotNull( $group );
 		$this->assertCount( 1, $group->items(), 'Only the source should remain in the group.' );
+	}
+
+	/**
+	 * Asserts a failure after the draft exists leaves no orphan behind.
+	 *
+	 * `create_translation()` inserts a real post and only then writes the
+	 * relation and lets builder adapters prepare the payload. Both of those can
+	 * fail, and the workflow compensates by deleting the post it just made. The
+	 * compensation has been in the code since Phase 14 with a comment
+	 * explaining itself and no test proving it, which is the state in which a
+	 * guarantee quietly stops being true.
+	 *
+	 * The failure is injected through `mclogiora_register_payload_adapters`,
+	 * the plugin's own supported extension point, so nothing is stubbed and
+	 * nothing in production is altered to make the test possible. A site whose
+	 * builder adapter fails is exactly the situation being modelled.
+	 *
+	 * @return void
+	 */
+	public function test_a_failed_payload_step_leaves_no_orphan_draft() {
+		global $wpdb;
+
+		$source = self::factory()->post->create(
+			array(
+				'post_title'  => 'Rollback source',
+				'post_status' => 'publish',
+			)
+		);
+
+		$failing = new class() implements TranslationPayloadAdapterInterface {
+			/**
+			 * {@inheritDoc}
+			 *
+			 * @return string
+			 */
+			public function id() {
+				return 'mclogiora_failing_payload';
+			}
+
+			/**
+			 * {@inheritDoc}
+			 *
+			 * @return bool
+			 */
+			public function is_available() {
+				return true;
+			}
+
+			/**
+			 * {@inheritDoc}
+			 *
+			 * @param int $source_id Source post identifier.
+			 * @return bool
+			 */
+			public function applies_to( $source_id ) {
+				unset( $source_id );
+
+				return true;
+			}
+
+			/**
+			 * {@inheritDoc}
+			 *
+			 * @param int $source_id Source post identifier.
+			 * @param int $target_id Newly created translation identifier.
+			 * @return true|\WP_Error
+			 */
+			public function copy( $source_id, $target_id ) {
+				unset( $source_id, $target_id );
+
+				return new \WP_Error( 'mclogiora_test_payload_failed', 'Injected builder failure.' );
+			}
+		};
+
+		$callback = static function ( $adapters ) use ( $failing ) {
+			$adapters[] = $failing;
+
+			return $adapters;
+		};
+
+		add_filter( 'mclogiora_register_payload_adapters', $callback );
+
+		$workflow = new ContentTranslationWorkflow(
+			$this->container->get( ContentGatewayInterface::class ),
+			$this->container->get( TranslationRelationServiceInterface::class ),
+			$this->container->get( LanguageServiceInterface::class ),
+			$this->container->get( TranslationWorkflowValidator::class ),
+			PayloadAdapterRegistry::with_core_adapters()
+		);
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- counting rows is the assertion.
+		$posts_before = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->posts}" );
+
+		$result = $workflow->create_translation( $source, 'tr' );
+
+		remove_filter( 'mclogiora_register_payload_adapters', $callback );
+
+		$this->assertWPError( $result, 'A failing payload adapter must fail the whole operation.' );
+		$this->assertSame( 'mclogiora_test_payload_failed', $result->get_error_code() );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- counting rows is the assertion.
+		$posts_after = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->posts}" );
+
+		$this->assertSame( $posts_before, $posts_after, 'The draft created before the failure must be removed.' );
+		$this->assertSame( 'publish', get_post_status( $source ), 'The source must be untouched.' );
+
+		$relations = $this->container->get( TranslationRelationServiceInterface::class );
+		$group     = $relations->get_translation_set_for_object( ContentType::POST, (string) $source );
+
+		/*
+		 * The group itself survives, holding only its source. That is the same
+		 * state a group reaches when its last translation is unlinked, and it
+		 * is created before the post is inserted because the slot-free check
+		 * needs it. What must not survive is a record pointing at a post that
+		 * no longer exists, so every remaining item is resolved back to a real
+		 * object rather than merely counted.
+		 */
+		$this->assertNotNull( $group );
+
+		$languages = array();
+
+		foreach ( $group->items() as $item ) {
+			$languages[] = $item->language_code();
+
+			$this->assertInstanceOf(
+				'WP_Post',
+				get_post( (int) $item->object_id() ),
+				'No relation item may outlive the object it points at.'
+			);
+		}
+
+		$this->assertSame( array( 'en' ), $languages, 'The target language slot must be free again.' );
+	}
+
+	/**
+	 * Asserts a failed relation write removes the term it just created.
+	 *
+	 * The unit suite already proves the workflow *calls* delete_term on this
+	 * path, against a fake gateway. What it cannot show is that WordPress then
+	 * actually removes the term, which is the part a site cares about.
+	 *
+	 * The failure is injected through `created_term`, a core hook that fires
+	 * inside wp_insert_term -- after the term exists, before the relation is
+	 * written. Occupying the target language slot at that instant is the real
+	 * race the compensation was written for: the slot was free when the
+	 * workflow checked, and taken by the time it wrote.
+	 *
+	 * @return void
+	 */
+	public function test_a_failed_relation_write_removes_the_created_term() {
+		$workflows = $this->container->get( TranslationWorkflowService::class );
+		$relations = $this->container->get( TranslationRelationServiceInterface::class );
+
+		$languages = $this->container->get( LanguageRepositoryInterface::class );
+
+		if ( ! $languages->find_by_code( 'de' ) instanceof Language ) {
+			$languages->create( new Language( 'de', 'de_DE', 'Deutsch', 'German', 'ltr', LanguageStatus::ACTIVE, 2, false ) );
+		}
+
+		$source = self::factory()->term->create( array( 'taxonomy' => 'category', 'name' => 'Rollback source' ) );
+		$spare  = self::factory()->term->create( array( 'taxonomy' => 'category', 'name' => 'Squatter' ) );
+
+		/*
+		 * The group is established with a first translation so the injected
+		 * failure lands on the relation write rather than on group creation.
+		 */
+		$established = $workflows->taxonomy()->create_translation( $source, 'category', 'de', 'Nachrichten' );
+
+		$this->assertIsArray( $established, is_wp_error( $established ) ? $established->get_error_message() : '' );
+
+		$group_key = $established['group_key'];
+		$before    = $this->term_count();
+
+		$squat = static function () use ( &$squat, $relations, $group_key, $spare ) {
+			remove_action( 'created_term', $squat, 10 );
+
+			$relations->attach_existing_object_as_translation(
+				$group_key,
+				ContentType::TERM,
+				(string) $spare,
+				'tr',
+				TranslationStatus::DRAFT
+			);
+		};
+
+		add_action( 'created_term', $squat, 10 );
+
+		$result = $workflows->taxonomy()->create_translation( $source, 'category', 'tr', 'Haberler' );
+
+		remove_action( 'created_term', $squat, 10 );
+
+		$this->assertWPError( $result, 'A relation write that loses the race must fail the whole operation.' );
+
+		$this->assertSame( $before, $this->term_count(), 'The term created before the failure must be removed.' );
+		$this->assertFalse( get_term_by( 'name', 'Haberler', 'category' ), 'No orphan term may survive.' );
+
+		$source_term = get_term( $source, 'category' );
+
+		$this->assertInstanceOf( 'WP_Term', $source_term, 'The source term must survive.' );
+		$this->assertSame( 'Rollback source', $source_term->name );
+		$this->assertInstanceOf( 'WP_Term', get_term( $spare, 'category' ), 'Unrelated terms must survive.' );
+
+		$group = $relations->get_translation_set_for_object( ContentType::TERM, (string) $source );
+
+		$this->assertNotNull( $group );
+
+		foreach ( $group->items() as $item ) {
+			$this->assertInstanceOf(
+				'WP_Term',
+				get_term( (int) $item->object_id(), 'category' ),
+				'No relation item may point at a term that no longer exists.'
+			);
+		}
+	}
+
+	/**
+	 * Returns the number of terms.
+	 *
+	 * @return int
+	 */
+	private function term_count() {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- counting rows is the assertion.
+		return (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->terms}" );
 	}
 }

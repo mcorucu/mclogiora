@@ -212,6 +212,27 @@ final class SwitcherRenderer {
 	 * @return string
 	 */
 	private function flag_for( $code ) {
+		/**
+		 * Filters the flag shown beside a language in the switcher.
+		 *
+		 * Return **plain text**, normally a regional-indicator emoji. The
+		 * return value is placed in the switcher label and escaped with
+		 * `esc_html()` before output, so markup is displayed literally rather
+		 * than rendered. Escaping is mcLogiora's responsibility, and this
+		 * filter is deliberately not an HTML injection point.
+		 *
+		 * Returning an empty string, the default, shows no flag at all. That
+		 * default is a decision, not an omission: a language is not a country,
+		 * and shipping a mapping would make a political claim on a site
+		 * owner's behalf.
+		 *
+		 * Only consulted when the switcher instance has flags switched on.
+		 *
+		 * @since 0.11.0
+		 *
+		 * @param string $flag Flag text. Empty by default.
+		 * @param string $code Language code the flag is for.
+		 */
 		return (string) apply_filters( 'mclogiora_switcher_flag', '', $code );
 	}
 

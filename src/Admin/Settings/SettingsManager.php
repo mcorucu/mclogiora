@@ -34,6 +34,16 @@ final class SettingsManager implements ModuleInterface {
 	 * @return void
 	 */
 	public function register_settings() {
+		/*
+		 * Not yet a public contract, and it carries no @since for that reason.
+		 *
+		 * The concept -- third parties registering settings alongside
+		 * mcLogiora's own -- is real, but there is nothing to register against:
+		 * this passes no registry, and mcLogiora itself registers no setting
+		 * through it. Today it is a private alias for `admin_init`, which
+		 * consumers already have. Deferred until a settings registry exists to
+		 * hand out. See docs/architecture/developer-api.md.
+		 */
 		do_action( 'mclogiora_register_settings' );
 	}
 }

@@ -153,21 +153,29 @@ if ( ! function_exists( 'wp_json_encode' ) ) {
 	/**
 	 * Encodes a value as JSON.
 	 *
+	 * The flag argument is honoured rather than dropped. The portable package
+	 * format fixes its encoding flags deliberately, and a stub that ignored
+	 * them would let a unit test pass on bytes WordPress would never produce.
+	 *
 	 * @param mixed $data Data.
+	 * @param int   $options Encoding flags.
+	 * @param int   $depth Maximum depth.
 	 * @return string
 	 */
-	function wp_json_encode( $data ) {
-		return (string) wp_json_encode_fallback( $data );
+	function wp_json_encode( $data, $options = 0, $depth = 512 ) {
+		return (string) wp_json_encode_fallback( $data, $options, $depth );
 	}
 
 	/**
 	 * JSON encoding helper.
 	 *
 	 * @param mixed $data Data.
+	 * @param int   $options Encoding flags.
+	 * @param int   $depth Maximum depth.
 	 * @return string
 	 */
-	function wp_json_encode_fallback( $data ) {
-		return json_encode( $data ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode -- test stub.
+	function wp_json_encode_fallback( $data, $options = 0, $depth = 512 ) {
+		return json_encode( $data, $options, $depth ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode -- test stub.
 	}
 }
 
@@ -195,6 +203,18 @@ if ( ! function_exists( 'sanitize_key' ) ) {
 	 */
 	function sanitize_key( $key ) {
 		return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( (string) $key ) );
+	}
+}
+
+if ( ! function_exists( 'wp_unslash' ) ) {
+	/**
+	 * Returns test input unchanged, matching WordPress for unslashed values.
+	 *
+	 * @param mixed $value Input value.
+	 * @return mixed
+	 */
+	function wp_unslash( $value ) {
+		return $value;
 	}
 }
 
