@@ -171,6 +171,7 @@ final class ImportApplyService {
 	 */
 	private function rollback_failure( $applied, $skipped, array $operation_results, $operation, $code, $message = 'The import could not be applied.', array $issues = array() ) {
 		$rolled_back = $this->transaction->rollback();
+		$this->clear_runtime_caches();
 		if ( array() === $issues ) {
 			$context = array();
 			if ( $operation instanceof PlannedOperation ) {
@@ -190,6 +191,22 @@ final class ImportApplyService {
 	 */
 	private function failure( array $issues ) {
 		return new ImportApplyResult( false, 0, 0, array(), $issues, false );
+	}
+
+	/**
+	 * Removes repository values written before a rollback.
+	 *
+	 * Repository decorators invalidate after successful writes, but a
+	 * transaction rollback leaves those same values in the request cache. A
+	 * subsequent dry run in the same request would then plan against state that
+	 * no longer exists in the database.
+	 *
+	 * @return void
+	 */
+	private function clear_runtime_caches() {
+		if ( function_exists( 'wp_cache_flush' ) ) {
+			wp_cache_flush();
+		}
 	}
 
 	/**
