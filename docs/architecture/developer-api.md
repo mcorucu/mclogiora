@@ -823,7 +823,8 @@ exposed, and a REST read makes no outbound HTTP request at all.
 Root command `wp mclogiora`. Reads go through the same functions documented
 above; writes go through the same workflow services REST calls. CLI, REST and
 PHP therefore answer the same question the same way and use the same field
-names.
+names. Every mutation the translation domain supports is reachable as a
+command.
 
 Commands register only under WP-CLI. A web or admin request constructs no
 command object and touches no WP-CLI symbol. mcLogiora takes no Composer
@@ -968,12 +969,65 @@ Success: Detached post 77 from its tr translation slot. The post itself was not 
 Repeating an unlink reports `mclogiora_relation_item_not_found`. The source item
 of a group cannot be detached at all.
 
+### `wp mclogiora translation create <object-type> <source-id> <language>`
+
+Creates a new translation. **This is the only command that brings a WordPress
+object into existence.**
+
+| Option | Required | Notes |
+| --- | --- | --- |
+| `--taxonomy=<name>` | terms | The source term's taxonomy |
+| `--name=<name>` | terms | Name for the new term |
+| `--description=<text>` | no | Description for the new term. Empty by default |
+
+There is deliberately no `--title`, `--content`, `--excerpt`, `--status`,
+`--author`, `--parent`, `--slug` or `--meta`. The workflow owns every default,
+and a flag for any of them would make this a clone command wearing a
+translation label.
+
+**Posts.** The new post is always a **draft**, carrying the source's post type,
+title, content, excerpt, menu order and author, with no slug and no parent.
+
+**Terms.** The new term takes your `--name` and `--description` — the
+description is never copied from the source — in the source's taxonomy, with a
+provisional language-scoped slug the workflow derives and a parent only when the
+source's parent is already translated into the same language. WordPress
+uniquifies the slug if it is taken.
+
+The new relation starts at `draft` in both cases.
+
+> **`create` creates. It never adopts an object that already exists.** A term
+> with the same name, or one holding the slug the workflow wanted, results in a
+> new term while the existing one is left untouched. To make an object that
+> already exists the translation, use `wp mclogiora relation link` — a different
+> operation, and the caller has to choose it.
+
+**Nothing is machine-translated.** A created post starts as a copy of the
+source's text and a created term takes the name you gave; no provider is
+contacted.
+
+```
+$ wp mclogiora translation create post 42 tr --user=admin
+Success: Created post 77 as the tr translation, in group 08dd6cb2-….
+
+$ wp mclogiora translation create term 5 tr --taxonomy=category --name=Haberler --user=admin
+```
+
+Repeating an identical create returns `mclogiora_translation_exists` and
+creates nothing. An occupied language slot is refused before anything is
+inserted.
+
+Creation is delegated to the same workflows REST and the admin screens use, and
+those workflows own the compensation if a step fails after the object exists.
+The CLI implements no rollback of its own.
+
 ### Not yet in the CLI
 
-Creating a translation. `create_translation` is reachable over REST for both
-posts and terms and is not exposed as a command yet.
+Nothing from the translation domain. Import/export and diagnostics belong to
+later workstreams, and suggestions stay off every programmatic transport for the
+reason given under REST.
 
 ## Not yet built
 
 Import/export and the System Status and Site Health surfaces are the remaining
-Phase 17 workstreams, along with the WP-CLI creation commands. See ADR 0019.
+Phase 17 workstreams. See ADR 0019.

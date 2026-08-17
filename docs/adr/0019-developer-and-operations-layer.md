@@ -7,9 +7,9 @@ slice 1 the public read API, slice 2 the hook contract review. Workstream B is
 complete for the translation domain: slice 1 the read surface, slice 2 status
 transitions, slice 3 relation membership, slice 4A content creation, slice 4B
 taxonomy creation. All seven domain mutations are reachable over HTTP.
-Workstream C is under way: slice 1 the read-only commands, slice 2 the relation
-and status mutations. CLI creation commands are not built. Workstreams D and E
-are not started.
+Workstream C is complete: slice 1 the read-only commands, slice 2 the relation
+and status mutations, slice 3 creation. Every translation-domain operation is
+reachable from both HTTP and the shell. Workstreams D and E are not started.
 
 ## Context
 
@@ -496,6 +496,45 @@ present in the harness as a development dependency, but nothing dispatches a
 command, so the argument parsing and projections are tested there and the
 dispatch, formatting and exit codes are qualified by running `wp mclogiora …`
 on both WordPress builds.
+
+#### Creation closes the CLI, and it still owns no rules
+
+Slice 3 adds `translation create` for posts and terms, dispatching to the same
+two workflows REST calls. With it, all seven translation-domain mutations plus
+the reads exist on both transports.
+
+The command takes three arguments and, for terms, a taxonomy, a name and an
+optional description — exactly the workflows' own inputs. There is no `--title`,
+`--status`, `--slug`, `--parent` or `--meta`, and adding any of them would have
+turned a translation command into a clone command with a translation record
+attached. The draft-only guarantee for posts and the provisional-slug and
+same-language-parent rules for terms are the workflows', unchanged.
+
+`create` creates. It never adopts a term that already exists, even when the name
+matches or the wanted slug is taken; that is what `relation link` is for, and the
+help says so. A CLI that quietly fell back to linking would make two different
+operations indistinguishable from the outside.
+
+The workflow also returns an edit link. REST drops it and so does the CLI: one
+published vocabulary across transports is worth more than a convenience field on
+one of them.
+
+Rollback stays where it was proven. The CLI contains no compensation logic, and
+a test strips comments from every file in `src/Cli` before asserting that none of
+them names `wp_insert_post`, `wp_delete_post`, `wp_insert_term`, `wp_delete_term`
+or `wpdb` — the first version of that test failed on a docblock explaining the
+rule, which is a fair reminder that an audit should read code.
+
+#### What Workstream C deliberately does not include
+
+The authoritative scope is `wp mclogiora …` wrapping the workflow services, and
+that is now met. Import and export belong to workstream D, status and
+diagnostics to workstream E, and suggestions stay off every programmatic
+transport for the reason recorded under REST: ADR 0018 requires an explicit
+human action per suggestion, and a command would make bulk machine translation
+trivially scriptable. Language configuration, strings, media and settings have
+no CLI requirement in any authoritative source, and inventing commands because
+they would be convenient is how a transport acquires scope nobody asked for.
 
 #### Declared arguments only constrain if a validate_callback says so
 
