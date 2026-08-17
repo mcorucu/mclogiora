@@ -7,8 +7,9 @@ slice 1 the public read API, slice 2 the hook contract review. Workstream B is
 complete for the translation domain: slice 1 the read surface, slice 2 status
 transitions, slice 3 relation membership, slice 4A content creation, slice 4B
 taxonomy creation. All seven domain mutations are reachable over HTTP.
-Workstream C is under way: slice 1, the read-only commands, is built; CLI
-mutations are not. Workstreams D and E are not started.
+Workstream C is under way: slice 1 the read-only commands, slice 2 the relation
+and status mutations. CLI creation commands are not built. Workstreams D and E
+are not started.
 
 ## Context
 
