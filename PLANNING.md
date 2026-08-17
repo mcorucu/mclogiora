@@ -712,7 +712,7 @@ Phase 17: Developer & Operations Layer — in progress
 | --- | --- | --- | --- |
 | A | Developer Extension API | Public read functions, then a reviewed hook contract | Complete |
 | B | REST API | `/mclogiora/v1/…` under permission callbacks | Complete for the translation domain (slices 1–4B). `/import`, `/export` and `/status` belong to workstreams D and E; `/strings`, `/suggestions` and `/switcher` are reassessed below |
-| C | WP-CLI | `wp mclogiora …`, wrapping the workflow services | Slices 1 (reads) and 2 (relation and status mutations) complete; creation commands not started |
+| C | WP-CLI | `wp mclogiora …`, wrapping the workflow services | **Complete** (slices 1–3) |
 | D | Import / Export | Portable packages with a dry run before any write | Not started |
 | E | Diagnostics | System Status screen and Site Health integration | Not started |
 
@@ -756,7 +756,12 @@ Workstream C decomposes into three slices: read-only commands, relation and stat
 - Running `wp` without `--user` leaves no current WordPress user, so every mutation is refused with `mclogiora_cannot_manage_translations`. That is correct rather than a usability defect: assuming an administrator, or adding a `--force` flag, would make shell access silently equivalent to a capability nobody granted. Operators pass `--user=<login|id|email>`; there is no bypass of any kind.
 - Mutation commands are human-first with no `--format`. Read commands render data and keep theirs. `unlink` states in words that the object was not deleted, because the verb invites exactly the wrong assumption.
 - Qualified by running the real binary on WordPress 7.0.4 and 7.1-RC3: the full user matrix (no user, subscriber, editor, administrator), every domain refusal with its code preserved, full post and term fingerprints unchanged across link and unlink, zero objects created or deleted, and zero outbound requests.
-- Next: workstream C slice 3 (content and taxonomy creation commands), or workstream D or E.
+- Workstream C slice 3 added `wp mclogiora translation create` for posts and terms, dispatching to the same two workflows REST calls. The command takes the workflows' own inputs and nothing else — no `--title`, `--status`, `--slug`, `--parent` or `--meta` — because a flag for any of those would turn a translation command into a clone command. Creation never adopts an existing term; `relation link` is that operation, and the help says so.
+- Qualified by running the real binary on WordPress 7.0.4 and 7.1-RC3: the full user matrix for both creation paths, exact object-count deltas, draft-only posts, term name/description/slug/parent read back from WordPress, three-repeat duplication proofs, occupied-slot refusals creating nothing, the same-name and slug-collision boundaries, and zero outbound requests.
+
+**Workstream C is complete.** The authoritative scope — `wp mclogiora …` wrapping the workflow services (section 20, ADR 0010 row 17, ADR 0019) — is met: all seven translation-domain mutations plus the reads exist on both HTTP and the shell. Import/export belongs to workstream D, status and diagnostics to workstream E, and suggestions stay off every programmatic transport for the reason recorded under REST. Language configuration, strings, media and settings have no CLI requirement in any authoritative source.
+
+- Next: workstream D (import/export) or E (diagnostics).
 
 Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
 
