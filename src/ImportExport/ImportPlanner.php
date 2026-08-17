@@ -167,8 +167,9 @@ final class ImportPlanner {
 					PlannedOperation::SKIP,
 					$code,
 					array(
-						'kind'   => 'language',
-						'reason' => 'identical',
+						'kind'     => 'language',
+						'reason'   => 'identical',
+						'language' => $language->to_array(),
 					)
 				);
 
@@ -425,11 +426,14 @@ final class ImportPlanner {
 				PlannedOperation::SKIP,
 				$group->group_key() . ':' . $source->language(),
 				array(
-					'kind'      => 'relation_item',
-					'reason'    => 'source_present',
-					'group_key' => $group->group_key(),
-					'language'  => $source->language(),
-					'object_id' => (int) $source_id,
+					'kind'        => 'relation_item',
+					'reason'      => 'source_present',
+					'group_key'   => $group->group_key(),
+					'object_type' => $source->object_type(),
+					'language'    => $source->language(),
+					'object_id'   => (int) $source_id,
+					'status'      => TranslationStatus::ORIGINAL,
+					'locator'     => null === $source->locator() ? null : $source->locator()->to_array(),
 				)
 			);
 
@@ -676,11 +680,14 @@ final class ImportPlanner {
 				PlannedOperation::SKIP,
 				$key . ':' . $target->language(),
 				array(
-					'kind'      => 'relation_item',
-					'reason'    => 'item_present',
-					'group_key' => $key,
-					'language'  => $target->language(),
-					'object_id' => (int) $object_id,
+					'kind'        => 'relation_item',
+					'reason'      => 'item_present',
+					'group_key'   => $key,
+					'object_type' => $target->object_type(),
+					'language'    => $target->language(),
+					'object_id'   => (int) $object_id,
+					'status'      => $target->status(),
+					'locator'     => null === $target->locator() ? null : $target->locator()->to_array(),
 				)
 			);
 

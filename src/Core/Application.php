@@ -30,11 +30,13 @@ use McLogiora\Compatibility\CompatibilityService;
 use McLogiora\Compatibility\PluginDetector;
 use McLogiora\Compatibility\ThemeDetector;
 use McLogiora\Database\DatabaseVersionManager;
+use McLogiora\Database\DatabaseTransaction;
 use McLogiora\Database\Installer;
 use McLogiora\Database\MigrationRegistry;
 use McLogiora\Database\MigrationRunner;
 use McLogiora\Database\SchemaBuilder;
 use McLogiora\Database\TableNames;
+use McLogiora\Database\TransactionInterface;
 use McLogiora\Database\UuidGenerator;
 use McLogiora\Database\VersionChecker;
 use McLogiora\Editors\BlockEditorPanel;
@@ -51,6 +53,12 @@ use McLogiora\Editors\TranslationStatusPresenter;
 use McLogiora\Health\DatabaseHealthCheck;
 use McLogiora\Health\SeoHealthCheck;
 use McLogiora\ImportExport\ImportPlanner;
+use McLogiora\ImportExport\ImportApplyService;
+use McLogiora\ImportExport\ImportAuthorizationInterface;
+use McLogiora\ImportExport\ImportOperationExecutor;
+use McLogiora\ImportExport\ImportOperationExecutorInterface;
+use McLogiora\ImportExport\ImportPlanPreconditionChecker;
+use McLogiora\ImportExport\ImportPlanVerifier;
 use McLogiora\ImportExport\ObjectLocatorGatewayInterface;
 use McLogiora\ImportExport\PackageEncoder;
 use McLogiora\ImportExport\PackageExporter;
@@ -439,6 +447,13 @@ final class Application {
 		);
 
 		$this->container->set(
+			TransactionInterface::class,
+			static function () use ( $wpdb ) {
+				return new DatabaseTransaction( $wpdb );
+			}
+		);
+
+		$this->container->set(
 			DatabaseVersionManager::class,
 			static function () {
 				return new DatabaseVersionManager();
@@ -632,6 +647,13 @@ final class Application {
 					$container->get( TaxonomyRegistryInterface::class ),
 					$container->get( CapabilityRegistry::class )
 				);
+			}
+		);
+
+		$this->container->set(
+			ImportAuthorizationInterface::class,
+			static function ( Container $container ) {
+				return $container->get( TranslationWorkflowValidator::class );
 			}
 		);
 
@@ -1099,6 +1121,51 @@ final class Application {
 					$container->get( TranslationRelationRepositoryInterface::class ),
 					$container->get( ObjectLocatorGatewayInterface::class ),
 					$container->get( TranslationStatusTransitions::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			ImportPlanPreconditionChecker::class,
+			static function ( Container $container ) {
+				return new ImportPlanPreconditionChecker(
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( TranslationRelationRepositoryInterface::class ),
+					$container->get( ObjectLocatorGatewayInterface::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			ImportPlanVerifier::class,
+			static function ( Container $container ) {
+				return new ImportPlanVerifier(
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( TranslationRelationRepositoryInterface::class ),
+					$container->get( ObjectLocatorGatewayInterface::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			ImportOperationExecutorInterface::class,
+			static function ( Container $container ) {
+				return new ImportOperationExecutor(
+					$container->get( LanguageServiceInterface::class ),
+					$container->get( TranslationRelationServiceInterface::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			ImportApplyService::class,
+			static function ( Container $container ) {
+				return new ImportApplyService(
+					$container->get( ImportAuthorizationInterface::class ),
+					$container->get( ImportPlanPreconditionChecker::class ),
+					$container->get( ImportOperationExecutorInterface::class ),
+					$container->get( ImportPlanVerifier::class ),
+					$container->get( TransactionInterface::class )
 				);
 			}
 		);

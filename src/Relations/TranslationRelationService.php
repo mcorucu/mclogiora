@@ -70,6 +70,17 @@ final class TranslationRelationService implements TranslationRelationServiceInte
 	}
 
 	/**
+	 * Creates a placeholder group with a supplied key.
+	 *
+	 * @param string          $group_key Group key.
+	 * @param TranslationItem $original Original item.
+	 * @return TranslationGroup|\WP_Error
+	 */
+	public function create_group_placeholder_with_key( $group_key, TranslationItem $original ) {
+		return $this->repository->create_group_placeholder_with_key( $group_key, $original );
+	}
+
+	/**
 	 * Creates a group from a source object.
 	 *
 	 * @param string $object_type Object type.

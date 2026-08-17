@@ -2,10 +2,10 @@
 
 ## Status
 
-Accepted for the package contract and the read side. Partially implemented in
-Phase 17, workstream D: slice 1 delivers the package format, export, parsing,
-validation and the dry-run planner. **No import apply exists.** Slice 2 owns
-apply, atomicity and rollback.
+Accepted for the package contract and the read/apply side. Implemented in
+Phase 17, workstream D, slices 1–2: package format, export, parsing,
+validation, dry-run planning, immutable-plan apply, stale protection, atomicity,
+rollback and final verification. No REST, CLI or admin transport is included.
 
 ADR 0019 remains the umbrella for the Phase 17 developer and operations layer
 and names workstream D; this ADR records the decisions that layer could not
@@ -165,6 +165,30 @@ asserted against real WordPress by snapshotting every mcLogiora table plus posts
 postmeta, terms and `mclogiora%` options around repeated planning runs, including
 against a destination full of conflicts.
 
+### Apply is an exact, stale-protected transaction
+
+`ImportApplyService::apply()` accepts an `ImportPlan`, not raw package data. It
+does not call `ImportPlanner` and it does not resolve a locator again. Before
+opening a transaction it checks capability, refuses errors/conflicts/unresolved
+references, and compares every operation with the language, group, slot,
+object-assignment and locator state observed by planning. A mismatch returns
+the stable `import_plan_stale` issue and performs zero writes.
+
+The operation executor calls the language and relation domain services in the
+plan's order. Group creation has an explicit-key domain path so the package
+UUID is preserved. Target status is validated as a legal initial status and is
+passed at item creation; no existing status is changed and no transition
+matrix is duplicated in import.
+
+All writes in this slice are to plugin-owned relational tables and share one
+database transaction. There are no WordPress post or term writes to roll back.
+Operation failure, late invariant failure, verification failure or commit
+failure rolls back and returns a structured result with stable issue codes,
+counts and rollback status. Final verification checks exact language fields,
+group/source identity, link status, skip equivalence and locator identity
+before commit. Tests inject failures through an executor double; production
+has no debug failure flag.
+
 ### Parsing treats input as hostile, and never deserializes objects
 
 `unserialize()` appears nowhere in this layer and must not. PHP object
@@ -194,17 +218,17 @@ scope nobody reviewed.
 
 ### Nothing in this layer is a transport
 
-The exporter, parser, validator and planner are application services registered
-in the container and hooked to nothing. No REST route, no WP-CLI command, no
-admin screen, no upload handler. A site that never imports anything runs no
-extra code, and the first transport to arrive will consume services that already
-have a proven contract instead of growing one inside a controller.
+The exporter, parser, validator, planner and apply service are application
+services registered in the container and hooked to nothing. No REST route, no
+WP-CLI command, no admin screen, no upload handler. A site that never imports
+anything runs no extra code, and a future transport will consume this service
+instead of growing package interpretation inside a controller.
 
 ## Consequences
 
-- A site can produce a package, read one, and see exactly what importing it
-  would do, before any code exists that could write it. The security requirement
-  in section 17 is met by construction rather than by discipline.
+- A site can produce a package, read one, see exactly what importing it would
+  do, and apply only that reviewed plan. The security requirement in section 17
+  is met by construction rather than by discipline.
 - The plan is a reviewable artefact with stable machine codes, so a later
   transport can react to a specific conflict without matching translated prose.
 - Packages are portable between sites, and honest about where portability ends.

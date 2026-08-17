@@ -68,6 +68,20 @@ final class CachedTranslationRelationRepository implements TranslationRelationRe
 	}
 
 	/**
+	 * Creates a placeholder group with a supplied key.
+	 *
+	 * @param string          $group_key Group key.
+	 * @param TranslationItem $original Original item.
+	 * @return TranslationGroup|\WP_Error
+	 */
+	public function create_group_placeholder_with_key( $group_key, TranslationItem $original ) {
+		$result = $this->repository->create_group_placeholder_with_key( $group_key, $original );
+		$this->invalidate_after_write( $result, $group_key );
+
+		return $result;
+	}
+
+	/**
 	 * Finds a group by its key.
 	 *
 	 * @param string $group_key Group key.
