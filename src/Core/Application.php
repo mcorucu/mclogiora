@@ -39,6 +39,9 @@ use McLogiora\Database\TableNames;
 use McLogiora\Database\TransactionInterface;
 use McLogiora\Database\UuidGenerator;
 use McLogiora\Database\VersionChecker;
+use McLogiora\Diagnostics\DiagnosticsService;
+use McLogiora\Diagnostics\SiteHealthIntegration;
+use McLogiora\Admin\SystemStatusDashboard;
 use McLogiora\Editors\BlockEditorPanel;
 use McLogiora\Editors\ClassicEditorMetabox;
 use McLogiora\Editors\SuggestionEditorController;
@@ -272,6 +275,8 @@ final class Application {
 		$modules->add( new SuggestionEditorController() );
 		$modules->add( new SuggestionAdminController() );
 		$modules->add( new CompatibilityDashboard() );
+		$modules->add( new SystemStatusDashboard() );
+		$modules->add( new SiteHealthIntegration() );
 		$modules->add( new AdminMenu() );
 		$modules->register();
 
@@ -1060,6 +1065,28 @@ final class Application {
 				return new SeoHealthCheck(
 					$container->get( LanguageRepositoryInterface::class ),
 					$container->get( SeoCompatibilityManager::class )
+				);
+			}
+		);
+
+		$this->container->set(
+			DiagnosticsService::class,
+			static function ( Container $container ) {
+				return new DiagnosticsService(
+					$container->get( Constants::class ),
+					$container->get( RuntimeReadiness::class ),
+					$container->get( DatabaseVersionManager::class ),
+					$container->get( SchemaBuilder::class ),
+					$container->get( TableNames::class ),
+					$container->get( MigrationRunner::class ),
+					$container->get( LanguageRepositoryInterface::class ),
+					$container->get( TranslationRelationRepositoryInterface::class ),
+					$container->get( RoutingSettings::class ),
+					$container->get( SuggestionSettings::class ),
+					$container->get( ProviderRegistry::class ),
+					$container->get( ProviderReadiness::class ),
+					$container->get( EditorDetector::class ),
+					$container->get( BuilderCompatibilityRegistry::class )
 				);
 			}
 		);
