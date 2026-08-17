@@ -714,7 +714,7 @@ Phase 17: Developer & Operations Layer — in progress
 | B | REST API | `/mclogiora/v1/…` under permission callbacks | Complete for the translation domain (slices 1–4B). `/import`, `/export` and `/status` belong to workstreams D and E; `/strings`, `/suggestions` and `/switcher` are reassessed below |
 | C | WP-CLI | `wp mclogiora …`, wrapping the workflow services | **Complete** (slices 1–3) |
 | D | Import / Export | Portable packages with a dry run before any write | **Complete** (slices 1–3: package, export, parser, validation, immutable-plan apply, stale protection, atomicity, rollback, persistent-cache-safe invalidation, final verification). No operator transport required |
-| E | Diagnostics | System Status screen and Site Health integration | Not started |
+| E | Diagnostics | System Status screen and Site Health integration | **Complete** (read-only diagnostics, native Site Health integration, no REST `/status` route required) |
 
 - Workstream A slice 1 delivered six `mclogiora_`-prefixed read functions returning plain arrays, documented in `docs/architecture/developer-api.md` alongside the three template tags that have shipped since 0.11.0. Nothing writes and no hook was added.
 - Domain objects deliberately do not cross the boundary. Callers receive projections, so the repositories, the value objects, the container, and the source-change fields behind the needs-update detector stay free to change.
@@ -739,7 +739,7 @@ Phase 17: Developer & Operations Layer — in progress
 | Sketched route | Disposition |
 | --- | --- |
 | `/import`, `/export` | Workstream D owns the package and dry-run requirement in section 17. The Slice 3 transport audit found no operator route required for closure; no REST, CLI or admin import/export surface is added. |
-| `/status` | Workstream E owns this, alongside the System Status screen and Site Health integration. |
+| `/status` | Historical sketch only. Workstream E closes with the System Status screen and Site Health integration; no REST status transport is required. |
 | `/strings` | No REST need identified. String translation is an admin-screen workflow with its own AJAX surface; a public REST projection would need the same per-object authorisation analysis the relation routes deferred, with no caller asking for it. Revisit only if a concrete consumer appears. |
 | `/suggestions` | Deliberately not built. ADR 0018 requires an explicit human action per suggestion and forbids background sending of site content; the existing admin AJAX surface already enforces that. A REST endpoint would make bulk machine translation trivially scriptable, which is the outcome Phase 16 was designed to prevent. |
 | `/switcher` | Superseded. Section 14 wanted a public cacheable switcher endpoint; `GET /languages` already serves that data publicly, including each language's home URL, and the switcher itself renders server-side. |
@@ -775,7 +775,9 @@ Workstream D decomposes into three slices, in this order and for the reason sect
 - Slice 3 audited rollback under a persistent WordPress Object Cache model. `ImportRollbackCacheInvalidator` deletes the language-list cache, relation-group list cache and plan-named group caches through `CacheInterface`, so persistent entries are removed without flushing unrelated cache families.
 - Qualified on WordPress 7.0.4 and 7.1-RC3, and on a real installation through `wp eval` against the workstream C fixture site: two exports byte-identical apart from `created_at`, the plan repeatable, zero outbound requests, and every mcLogiora table, post, term and option hash unchanged.
 
-- Next: Workstream E (diagnostics). Phase 18 remains out of scope.
+- Workstream E delivered one transport-neutral `DiagnosticsService` projection, a capability-gated read-only System Status screen, one sanitized native WordPress Site Health debug-information section, and actionable direct tests for default language, schema, permalinks, and enabled-but-incomplete suggestions. Collection performs no writes, cache resets, provider requests, telemetry, or expensive full-table relation scans; missing subsystems become degraded findings. The historical `/mclogiora/v1/status` route remains unregistered because the authoritative Workstream E deliverable is the admin/System Status and Site Health surfaces, not a REST transport. See `docs/architecture/system-status.md` and ADR 0021.
+
+**Workstream E is complete.** Phase 17 feature workstreams A, B, C, D, and E are complete. Phase 17 itself remains unmerged and unclosed; the dedicated closure session is the next scope. Phase 18 remains out of scope.
 
 Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
 

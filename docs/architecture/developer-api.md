@@ -6,6 +6,11 @@ without notice.
 
 The decision record is [ADR 0019](../adr/0019-developer-and-operations-layer.md).
 
+Workstream E diagnostics are intentionally not added to this public PHP API.
+`DiagnosticsService` is an internal transport-neutral source shared by the
+read-only System Status screen and native WordPress Site Health integration;
+the sanitized output shapes are not a third-party extension contract.
+
 ## Stability policy
 
 - Public API is `mclogiora_`-prefixed, returns plain arrays and scalars, and

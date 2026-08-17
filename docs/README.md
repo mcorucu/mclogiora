@@ -4,7 +4,7 @@ This directory contains planning, architecture, and decision records for mcLogio
 
 Current phase: Phase 17, Developer & Operations Layer, in progress. Phases 02 through 16 are complete; the last release is v0.15.0.
 
-Language management and relation records persist. Translation workflows cover posts, pages, public custom post types, public taxonomies, interface strings, media metadata, navigation menus, and supported widgets. Phase 12 decides which of them a given front-end request renders, Phase 13 describes that decision to search engines, Phases 14 and 15 provide the editor and builder surfaces, and Phase 16 adds review-only translation suggestions over bring-your-own provider credentials. Phase 17 is adding the developer and operations layer: the public read API and hook contracts exist, and REST endpoints, WP-CLI, import/export, and System Status remain future work.
+Language management and relation records persist. Translation workflows cover posts, pages, public custom post types, public taxonomies, interface strings, media metadata, navigation menus, and supported widgets. Phase 12 decides which of them a given front-end request renders, Phase 13 describes that decision to search engines, Phases 14 and 15 provide the editor and builder surfaces, and Phase 16 adds review-only translation suggestions over bring-your-own provider credentials. Phase 17 adds the developer and operations layer: the public read API, hook contracts, REST endpoints, WP-CLI, import/export, and read-only System Status/Site Health diagnostics are complete; Phase 17 closure remains separate.
 
 ## Product model
 
