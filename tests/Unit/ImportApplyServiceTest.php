@@ -15,6 +15,7 @@ use McLogiora\ImportExport\ImportOperationExecutorInterface;
 use McLogiora\ImportExport\ImportPlan;
 use McLogiora\ImportExport\ImportPlanPreconditionChecker;
 use McLogiora\ImportExport\ImportPlanVerifier;
+use McLogiora\ImportExport\ImportRollbackCacheInvalidator;
 use McLogiora\ImportExport\ObjectLocator;
 use McLogiora\ImportExport\PlanIssue;
 use McLogiora\ImportExport\PlannedOperation;
@@ -30,6 +31,7 @@ use McLogiora\Relations\TranslationStatus;
 use McLogiora\Tests\Support\FakeLanguageService;
 use McLogiora\Tests\Support\FakeObjectLocatorGateway;
 use McLogiora\Tests\Support\FakeRelationRepository;
+use McLogiora\Tests\Support\ArrayCache;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -232,6 +234,27 @@ final class ImportApplyServiceTest extends TestCase {
 	}
 
 	/**
+	 * Deletes only the mcLogiora cache families involved in an import rollback.
+	 *
+	 * @return void
+	 */
+	public function test_rollback_cache_invalidation_reaches_persistent_backend_keys() {
+		$cache = new ArrayCache();
+		$invalidator = new ImportRollbackCacheInvalidator( $cache );
+
+		$invalidator->invalidate( $this->plan() );
+
+		$this->assertSame(
+			array(
+				'languages_all',
+				'translation_groups_all',
+				'translation_group_' . md5( '11111111-1111-4111-8111-111111111111' ),
+			),
+			$cache->deleted
+		);
+	}
+
+	/**
 	 * A re-apply of the old plan is stale while a fresh dry run is all skips.
 	 *
 	 * @return void
@@ -275,13 +298,15 @@ final class ImportApplyServiceTest extends TestCase {
 		$authorization = new class implements ImportAuthorizationInterface {
 			public function validate_manage_capability() { return true; }
 		};
+		$rollback_cache = new ImportRollbackCacheInvalidator( new ArrayCache() );
 
 		return new ImportApplyService(
 			$authorization,
 			new ImportPlanPreconditionChecker( $languages, $relations, $objects ),
 			$executor,
 			new ImportPlanVerifier( $languages, $relations, $objects ),
-			$transaction
+			$transaction,
+			$rollback_cache
 		);
 	}
 

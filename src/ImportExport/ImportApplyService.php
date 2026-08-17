@@ -46,6 +46,12 @@ final class ImportApplyService {
 	 * @var TransactionInterface
 	 */
 	private $transaction;
+	/**
+	 * Rollback cache invalidator.
+	 *
+	 * @var ImportRollbackCacheInvalidator
+	 */
+	private $rollback_cache;
 
 	/**
 	 * Constructor.
@@ -55,13 +61,15 @@ final class ImportApplyService {
 	 * @param ImportOperationExecutorInterface $executor Operation executor.
 	 * @param ImportPlanVerifier               $verifier Final verifier.
 	 * @param TransactionInterface             $transaction Transaction boundary.
+	 * @param ImportRollbackCacheInvalidator   $rollback_cache Rollback cache invalidator.
 	 */
-	public function __construct( ImportAuthorizationInterface $authorization, ImportPlanPreconditionChecker $preconditions, ImportOperationExecutorInterface $executor, ImportPlanVerifier $verifier, TransactionInterface $transaction ) {
-		$this->authorization = $authorization;
-		$this->preconditions = $preconditions;
-		$this->executor      = $executor;
-		$this->verifier      = $verifier;
-		$this->transaction   = $transaction;
+	public function __construct( ImportAuthorizationInterface $authorization, ImportPlanPreconditionChecker $preconditions, ImportOperationExecutorInterface $executor, ImportPlanVerifier $verifier, TransactionInterface $transaction, ImportRollbackCacheInvalidator $rollback_cache ) {
+		$this->authorization  = $authorization;
+		$this->preconditions  = $preconditions;
+		$this->executor       = $executor;
+		$this->verifier       = $verifier;
+		$this->transaction    = $transaction;
+		$this->rollback_cache = $rollback_cache;
 	}
 
 	/**
@@ -134,11 +142,11 @@ final class ImportApplyService {
 			try {
 				$result = $this->executor->execute( $operation );
 			} catch ( \Throwable $exception ) {
-				return $this->rollback_failure( $applied, $skipped, $operation_results, $operation, 'import_apply_failed' );
+				return $this->rollback_failure( $plan, $applied, $skipped, $operation_results, $operation, 'import_apply_failed' );
 			}
 
 			if ( is_wp_error( $result ) ) {
-				return $this->rollback_failure( $applied, $skipped, $operation_results, $operation, $result->get_error_code(), $result->get_error_message() );
+				return $this->rollback_failure( $plan, $applied, $skipped, $operation_results, $operation, $result->get_error_code(), $result->get_error_message() );
 			}
 
 			++$applied;
@@ -147,11 +155,11 @@ final class ImportApplyService {
 
 		$verification_issues = $this->verifier->verify( $plan );
 		if ( array() !== $verification_issues ) {
-			return $this->rollback_failure( $applied, $skipped, $operation_results, null, 'import_apply_verification_failed', 'The applied import did not produce the exact planned state.', $verification_issues );
+			return $this->rollback_failure( $plan, $applied, $skipped, $operation_results, null, 'import_apply_verification_failed', 'The applied import did not produce the exact planned state.', $verification_issues );
 		}
 
 		if ( ! $this->transaction->commit() ) {
-			return $this->rollback_failure( $applied, $skipped, $operation_results, null, 'import_transaction_commit_failed' );
+			return $this->rollback_failure( $plan, $applied, $skipped, $operation_results, null, 'import_transaction_commit_failed' );
 		}
 
 		return new ImportApplyResult( true, $applied, $skipped, $operation_results, array(), false );
@@ -160,6 +168,7 @@ final class ImportApplyService {
 	/**
 	 * Rolls back and creates a structured operation failure.
 	 *
+	 * @param ImportPlan                     $plan Immutable plan.
 	 * @param int                            $applied Applied operation count.
 	 * @param int                            $skipped Skipped operation count.
 	 * @param array<int,array<string,mixed>> $operation_results Results.
@@ -169,9 +178,9 @@ final class ImportApplyService {
 	 * @param PlanIssue[]                    $issues Existing issues.
 	 * @return ImportApplyResult
 	 */
-	private function rollback_failure( $applied, $skipped, array $operation_results, $operation, $code, $message = 'The import could not be applied.', array $issues = array() ) {
+	private function rollback_failure( ImportPlan $plan, $applied, $skipped, array $operation_results, $operation, $code, $message = 'The import could not be applied.', array $issues = array() ) {
 		$rolled_back = $this->transaction->rollback();
-		$this->clear_runtime_caches();
+		$this->rollback_cache->invalidate( $plan );
 		if ( array() === $issues ) {
 			$context = array();
 			if ( $operation instanceof PlannedOperation ) {
@@ -193,21 +202,6 @@ final class ImportApplyService {
 		return new ImportApplyResult( false, 0, 0, array(), $issues, false );
 	}
 
-	/**
-	 * Removes repository values written before a rollback.
-	 *
-	 * Repository decorators invalidate after successful writes, but a
-	 * transaction rollback leaves those same values in the request cache. A
-	 * subsequent dry run in the same request would then plan against state that
-	 * no longer exists in the database.
-	 *
-	 * @return void
-	 */
-	private function clear_runtime_caches() {
-		if ( function_exists( 'wp_cache_flush' ) ) {
-			wp_cache_flush();
-		}
-	}
 
 	/**
 	 * Projects issues into a nested result context.
