@@ -83,6 +83,16 @@ final class RelationsController {
 	 * @return void
 	 */
 	public function register_routes( $namespace_v1 ) {
+		$language_arg = array(
+			'language' => array(
+				'description'       => __( 'Language code of the translation.', 'mclogiora' ),
+				'type'              => 'string',
+				'required'          => true,
+				'validate_callback' => 'rest_validate_request_arg',
+				'sanitize_callback' => 'sanitize_key',
+			),
+		);
+
 		register_rest_route(
 			$namespace_v1,
 			self::RELATIONS_ROUTE,
@@ -93,17 +103,27 @@ final class RelationsController {
 					'permission_callback' => array( $this, 'permissions_check' ),
 					'args'                => $this->object_args(),
 				),
-			)
-		);
+				array(
 
-		$language_arg = array(
-			'language' => array(
-				'description'       => __( 'Language code of the translation.', 'mclogiora' ),
-				'type'              => 'string',
-				'required'          => true,
-				'validate_callback' => 'rest_validate_request_arg',
-				'sanitize_callback' => 'sanitize_key',
-			),
+					/*
+					 * The resource is the relation, so POST here adds a
+					 * membership and DELETE removes one. Neither creates nor
+					 * destroys the post or term itself -- that distinction is
+					 * the whole reason these live under /relations rather than
+					 * under a content path.
+					 */
+					'methods'             => 'POST',
+					'callback'            => array( $this, 'create_relation_membership' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
+					'args'                => array_merge( $this->link_args(), $language_arg ),
+				),
+				array(
+					'methods'             => 'DELETE',
+					'callback'            => array( $this, 'delete_relation_membership' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
+					'args'                => array_merge( $this->membership_args(), $language_arg ),
+				),
+			)
 		);
 
 		register_rest_route(
@@ -177,19 +197,31 @@ final class RelationsController {
 			return RestErrors::relation_not_found();
 		}
 
+		return rest_ensure_response( $this->project_group( $group, $taxonomy ) );
+	}
+
+	/**
+	 * Projects a translation group onto the REST shape.
+	 *
+	 * One implementation, shared by the read and by a successful link, so a
+	 * caller that links and a caller that reads see the same resource.
+	 *
+	 * @param array<string,mixed> $group Group projection.
+	 * @param string              $taxonomy Taxonomy name, for term URLs.
+	 * @return array<string,mixed>
+	 */
+	private function project_group( array $group, $taxonomy ) {
 		$translations = array();
 
 		foreach ( $group['translations'] as $code => $item ) {
 			$translations[ (string) $code ] = $this->project_item( $item, $taxonomy );
 		}
 
-		return rest_ensure_response(
-			array(
-				'group_key'    => (string) $group['group_key'],
-				'object_type'  => (string) $group['object_type'],
-				'source'       => null === $group['source'] ? null : $this->project_item( $group['source'], $taxonomy ),
-				'translations' => $translations,
-			)
+		return array(
+			'group_key'    => (string) $group['group_key'],
+			'object_type'  => (string) $group['object_type'],
+			'source'       => null === $group['source'] ? null : $this->project_item( $group['source'], $taxonomy ),
+			'translations' => $translations,
 		);
 	}
 
@@ -231,6 +263,118 @@ final class RelationsController {
 				'language'    => $language,
 				'source'      => null === $group['source'] ? null : $this->project_item( $group['source'], $taxonomy ),
 				'translation' => $this->project_item( $group['translations'][ $language ], $taxonomy ),
+			)
+		);
+	}
+
+	/**
+	 * Links an existing object into a translation group.
+	 *
+	 * Adds relation membership and nothing else. No post and no term is
+	 * created, and neither the source nor the target object is edited: the
+	 * workflow attaches a relation record over content that already belongs to
+	 * the user.
+	 *
+	 * Posts and terms share this transport but not a code path. The two
+	 * workflows validate different things -- post type against post type,
+	 * taxonomy against taxonomy -- and collapsing them into one generic
+	 * repository call to save a branch here would discard exactly the checks
+	 * that stop a category becoming the translation of a page.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|\WP_Error
+	 */
+	public function create_relation_membership( WP_REST_Request $request ) {
+		if ( ! $this->workflows instanceof TranslationWorkflowService ) {
+			return RestErrors::relation_not_found();
+		}
+
+		$object_type = $this->membership_object_type( $request );
+
+		if ( is_wp_error( $object_type ) ) {
+			return $object_type;
+		}
+
+		$language = (string) $request->get_param( 'language' );
+
+		if ( ! $this->is_configured_language( $language ) ) {
+			return RestErrors::unknown_language();
+		}
+
+		$source_id = (int) $request->get_param( 'source_id' );
+		$target_id = (int) $request->get_param( 'target_id' );
+		$taxonomy  = (string) $request->get_param( 'taxonomy' );
+
+		if ( ContentType::TERM === $object_type ) {
+			if ( '' === $taxonomy ) {
+				return RestErrors::missing_taxonomy();
+			}
+
+			$result = $this->workflows->taxonomy()->link_existing( $source_id, $taxonomy, $target_id, $language );
+		} else {
+			$result = $this->workflows->content()->link_existing( $source_id, $target_id, $language );
+		}
+
+		if ( is_wp_error( $result ) ) {
+			return RestErrors::from_workflow( $result );
+		}
+
+		$group = $this->api->translation_group( $source_id, $object_type );
+
+		if ( null === $group ) {
+			return RestErrors::relation_not_found();
+		}
+
+		return rest_ensure_response( $this->project_group( $group, $taxonomy ) );
+	}
+
+	/**
+	 * Detaches an object from its translation group.
+	 *
+	 * **This removes relation membership. It does not delete the WordPress post
+	 * or term.** The object keeps its content, meta, status, revisions and
+	 * assignments, and is never trashed. Deleting content is WordPress's own
+	 * job and is deliberately not reachable from this namespace.
+	 *
+	 * The source item of a group cannot be detached; the domain refuses it
+	 * because doing so would orphan every translation hanging off it.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|\WP_Error
+	 */
+	public function delete_relation_membership( WP_REST_Request $request ) {
+		if ( ! $this->workflows instanceof TranslationWorkflowService ) {
+			return RestErrors::relation_not_found();
+		}
+
+		$object_type = $this->membership_object_type( $request );
+
+		if ( is_wp_error( $object_type ) ) {
+			return $object_type;
+		}
+
+		$language = (string) $request->get_param( 'language' );
+
+		if ( ! $this->is_configured_language( $language ) ) {
+			return RestErrors::unknown_language();
+		}
+
+		$object_id = (int) $request->get_param( 'object_id' );
+
+		$result = ContentType::TERM === $object_type
+			? $this->workflows->taxonomy()->unlink( $object_id, $language )
+			: $this->workflows->content()->unlink( $object_id, $language );
+
+		if ( is_wp_error( $result ) ) {
+			return RestErrors::from_workflow( $result );
+		}
+
+		return rest_ensure_response(
+			array(
+				'object_type' => $object_type,
+				'object_id'   => $object_id,
+				'language'    => $language,
+				'detached'    => true,
 			)
 		);
 	}
@@ -385,6 +529,89 @@ final class RelationsController {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns the object types that can hold relation membership.
+	 *
+	 * Only posts and terms have link and unlink workflows. This is not REST
+	 * narrowing the domain vocabulary; it is REST declaring which of the
+	 * domain's operations exist.
+	 *
+	 * @return string[]
+	 */
+	private function membership_types() {
+		return array( ContentType::POST, ContentType::TERM );
+	}
+
+	/**
+	 * Returns the validated object type for a membership request.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return string|\WP_Error
+	 */
+	private function membership_object_type( WP_REST_Request $request ) {
+		$requested = (string) $request->get_param( 'object_type' );
+
+		if ( ! in_array( $requested, $this->membership_types(), true ) ) {
+			return RestErrors::invalid_object_type( $this->membership_types() );
+		}
+
+		return $requested;
+	}
+
+	/**
+	 * Returns the arguments identifying an existing membership.
+	 *
+	 * @return array<string,array<string,mixed>>
+	 */
+	private function membership_args() {
+		$args = $this->object_args();
+
+		$args['object_type']['enum'] = $this->membership_types();
+
+		unset( $args['taxonomy'] );
+
+		return $args;
+	}
+
+	/**
+	 * Returns the arguments for creating a membership.
+	 *
+	 * `source_id` and `target_id` replace `object_id`: linking names two
+	 * objects, and calling either of them "the object" would leave a caller
+	 * guessing which one moves.
+	 *
+	 * @return array<string,array<string,mixed>>
+	 */
+	private function link_args() {
+		$args = $this->object_args();
+
+		$args['object_type']['enum'] = $this->membership_types();
+
+		unset( $args['object_id'] );
+
+		$args['source_id'] = array(
+			'description'       => __( 'Identifier of the source object whose group the target joins.', 'mclogiora' ),
+			'type'              => 'integer',
+			'required'          => true,
+			'minimum'           => 1,
+			'validate_callback' => array( $this, 'validate_object_id' ),
+			'sanitize_callback' => 'absint',
+		);
+
+		$args['target_id'] = array(
+			'description'       => __( 'Identifier of the existing object to link as a translation.', 'mclogiora' ),
+			'type'              => 'integer',
+			'required'          => true,
+			'minimum'           => 1,
+			'validate_callback' => array( $this, 'validate_object_id' ),
+			'sanitize_callback' => 'absint',
+		);
+
+		$args['taxonomy']['description'] = __( 'Taxonomy name. Required when linking terms.', 'mclogiora' );
+
+		return $args;
 	}
 
 	/**
