@@ -9,6 +9,7 @@ namespace McLogiora\Cli;
 
 use McLogiora\Api\PublicApi;
 use McLogiora\Relations\ContentType;
+use McLogiora\Relations\TranslationStatus;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -143,6 +144,52 @@ final class CliProjection {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Returns a validated translation status, or exits with an error.
+	 *
+	 * Only the canonical vocabulary is accepted. Friendlier aliases such as
+	 * "done" or "approved" are deliberately absent: a status that exists on one
+	 * transport and not another is how an operator learns two vocabularies for
+	 * one concept.
+	 *
+	 * Being a real status does not make a transition legal. That is the
+	 * workflow's answer, and this only checks the word.
+	 *
+	 * @param string $value Raw value.
+	 * @return string
+	 */
+	public function status( $value ) {
+		$value = sanitize_key( (string) $value );
+
+		if ( ! TranslationStatus::is_valid( $value ) ) {
+			$this->fail(
+				sprintf(
+					/* translators: 1: supplied status, 2: comma-separated list of valid statuses. */
+					__( 'Unknown status "%1$s". Expected one of: %2$s.', 'mclogiora' ),
+					$value,
+					implode( ', ', TranslationStatus::all() )
+				)
+			);
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Aborts with a workflow refusal, keeping the domain code visible.
+	 *
+	 * The message is written for a person, but the code is appended so the same
+	 * refusal stays identifiable whether it arrives from CLI, REST or an admin
+	 * screen. Workflow messages name no table, class, query or path, so they are
+	 * safe to print as they are.
+	 *
+	 * @param \WP_Error $error Workflow error.
+	 * @return void
+	 */
+	public function fail_from_workflow( \WP_Error $error ) {
+		$this->fail( $error->get_error_message() . ' (' . $error->get_error_code() . ')' );
 	}
 
 	/**

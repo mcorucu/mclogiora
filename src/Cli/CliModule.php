@@ -11,6 +11,7 @@ use McLogiora\Api\PublicApi;
 use McLogiora\Contracts\ModuleInterface;
 use McLogiora\Core\Container;
 use McLogiora\Core\RuntimeReadiness;
+use McLogiora\Workflows\TranslationWorkflowService;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -52,9 +53,19 @@ final class CliModule implements ModuleInterface {
 
 		$api = new PublicApi( $container );
 
+		/*
+		 * Mutation commands call the same workflow services REST calls. The
+		 * workflows own every rule and every permission check, so the commands
+		 * stay a transport: nothing under src/Cli writes through a repository
+		 * or $wpdb.
+		 */
+		$workflows = $container->has( TranslationWorkflowService::class )
+			? $container->get( TranslationWorkflowService::class )
+			: null;
+
 		$this->add( 'language', new LanguageCommand( $api ) );
-		$this->add( 'relation', new RelationCommand( $api ) );
-		$this->add( 'translation', new TranslationCommand( $api ) );
+		$this->add( 'relation', new RelationCommand( $api, $workflows ) );
+		$this->add( 'translation', new TranslationCommand( $api, $workflows ) );
 	}
 
 	/**
