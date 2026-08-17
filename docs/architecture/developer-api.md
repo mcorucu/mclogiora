@@ -19,8 +19,7 @@ the sanitized output shapes are not a third-party extension contract.
   cannot change.
 - A published array shape only ever gains keys. Removing or renaming one is a
   breaking change and gets a major-version note in `CHANGELOG.md`.
-- `@since x.x.x` in the source means "the next release"; the placeholder is
-  replaced when the release version is chosen. A hook's `@since` records when the
+- The Phase 17 read functions carry `@since 0.16.0`. A hook's `@since` records when the
   hook was introduced, not when it was documented, so several supported hooks
   carry earlier versions than the read API.
 - A supported hook carries an `@since` tag at its invocation. An unsupported one
@@ -1028,14 +1027,13 @@ Creation is delegated to the same workflows REST and the admin screens use, and
 those workflows own the compensation if a step fails after the object exists.
 The CLI implements no rollback of its own.
 
-### Not yet in the CLI
+### Not in the CLI
 
-Nothing from the translation domain. Import/export and diagnostics belong to
-later workstreams, and suggestions stay off every programmatic transport for the
-reason given under REST.
+Import/export and diagnostics are intentionally not CLI transports. Suggestions
+stay off every programmatic transport for the reason given under REST.
 
-## Not yet built
+## Diagnostics boundary
 
-The System Status and Site Health surfaces are the remaining Phase 17
-workstream. Import/export is complete as a transport-neutral package and
+The System Status and Site Health surfaces are intentionally outside this
+developer API. Import/export is complete as a transport-neutral package and
 apply contract; see ADR 0020.

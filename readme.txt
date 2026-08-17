@@ -4,7 +4,7 @@ Tags: multilingual, translation, localization, language
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.15.0
+Stable tag: 0.16.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -64,9 +64,17 @@ A translated URL with no translation behind it returns a normal 404 rather than 
 
 mcLogiora never guesses your visitors' language from their location and never redirects them automatically. Flags are off by default, because a language is not a country.
 
-This release adds optional Translation Suggestions. If you switch them on and supply your own API key, mcLogiora can ask OpenAI, Anthropic, Google Gemini or DeepL to draft a translation of one field at a time, which you review before anything changes. The feature is off until you configure it, and translating by hand is unaffected. See "External Services" below for exactly what is sent and when.
+This release adds the developer and operations layer as well as optional Translation Suggestions. If you switch suggestions on and supply your own API key, mcLogiora can ask OpenAI, Anthropic, Google Gemini or DeepL to draft a translation of one field at a time, which you review before anything changes. The feature is off until you configure it, and translating by hand is unaffected. See "External Services" below for exactly what is sent and when.
 
-It does not include REST endpoints for translation management yet, and it does not machine-translate post bodies or page-builder layouts. See "What Translation Suggestions do not translate" below.
+Developer and operations surfaces:
+
+* Read-only `mclogiora_` functions and documented extension hooks for themes and other plugins.
+* Authenticated REST routes for translation reads, status changes, relation membership, and translation creation.
+* `wp mclogiora` commands for language, relation, and translation reads and workflow mutations.
+* Portable translation packages with deterministic export, dry-run planning, additive atomic apply, rollback, and stale-plan protection. No import/export transport is exposed.
+* A read-only System Status screen and native Site Health diagnostics with redacted output and no provider network calls.
+
+The REST layer does not expose strings, suggestions, switcher, import/export, or status routes, and it does not machine-translate post bodies or page-builder layouts. See "What Translation Suggestions do not translate" below.
 
 == Privacy ==
 
@@ -247,6 +255,14 @@ No. If Yoast SEO, Rank Math, All in One SEO, The SEO Framework, or Slim SEO is a
 Each translation points at itself. Sending every language back to the default one would tell search engines your translations are duplicates to ignore, which is the opposite of what translating a site is for.
 
 == Changelog ==
+
+= 0.16.0 =
+
+* Added the public read API and reviewed developer hook contracts.
+* Added authenticated REST translation reads and workflow mutations, plus matching `wp mclogiora` language, relation, and translation commands.
+* Added portable translation package export, parsing, validation, dry-run planning, additive atomic apply, stale-plan protection, rollback, and targeted cache invalidation. No operator transport is exposed.
+* Added read-only System Status and native Site Health diagnostics with redacted output and no automatic provider network calls.
+* WordPress 7.1 final compatibility and live provider qualification remain separate open gates; `Tested up to` remains 7.0.
 
 = 0.15.0 =
 

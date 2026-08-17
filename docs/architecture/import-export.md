@@ -50,7 +50,7 @@ The package carries `format_version`, an integer, currently `1`.
 It is **not** the plugin version and must never be set from it. A release that
 changes nothing about serialization must not invalidate every package a site has
 already taken, and two different plugin versions that both speak format 1
-produce interchangeable files. `0.15.0` is not a serialization schema.
+produce interchangeable files. `0.16.0` is not a serialization schema.
 
 A package whose `format_version` this build does not support is refused with
 `mclogiora_package_unsupported_version`. A package whose *plugin* version differs
@@ -65,7 +65,7 @@ normally. Format compatibility is the authority.
     "format": "mclogiora/translation-package",
     "format_version": 1,
     "generator": "mclogiora",
-    "generator_version": "0.15.0",
+    "generator_version": "0.16.0",
     "created_at": "2026-01-01T00:00:00Z",
     "sections": ["languages", "relations"],
     "counts": { "languages": 2, "relation_groups": 1, "relation_items": 2 }

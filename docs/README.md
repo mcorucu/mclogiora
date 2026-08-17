@@ -2,9 +2,9 @@
 
 This directory contains planning, architecture, and decision records for mcLogiora.
 
-Current phase: Phase 17, Developer & Operations Layer, in progress. Phases 02 through 16 are complete; the last release is v0.15.0.
+Current phase: Phase 17, Developer & Operations Layer, complete. Phases 02 through 17 are complete; the release carrying Phase 17 is v0.16.0. Phase 18 is not started.
 
-Language management and relation records persist. Translation workflows cover posts, pages, public custom post types, public taxonomies, interface strings, media metadata, navigation menus, and supported widgets. Phase 12 decides which of them a given front-end request renders, Phase 13 describes that decision to search engines, Phases 14 and 15 provide the editor and builder surfaces, and Phase 16 adds review-only translation suggestions over bring-your-own provider credentials. Phase 17 adds the developer and operations layer: the public read API, hook contracts, REST endpoints, WP-CLI, import/export, and read-only System Status/Site Health diagnostics are complete; Phase 17 closure remains separate.
+Language management and relation records persist. Translation workflows cover posts, pages, public custom post types, public taxonomies, interface strings, media metadata, navigation menus, and supported widgets. Phase 12 decides which of them a given front-end request renders, Phase 13 describes that decision to search engines, Phases 14 and 15 provide the editor and builder surfaces, and Phase 16 adds review-only translation suggestions over bring-your-own provider credentials. Phase 17 adds the developer and operations layer: the public read API, hook contracts, REST endpoints, WP-CLI, import/export, and read-only System Status/Site Health diagnostics.
 
 ## Product model
 
@@ -20,4 +20,4 @@ mcLogiora is permanently free and fully open source under a GPL-compatible licen
 | `development/` | Contributor workflow and code standards documentation |
 | `design/` | Design system authority status |
 
-The reconciled development roadmap, including verified phase history and the remaining Phase 17 workstreams and Phase 18, lives in `../PLANNING.md` section 20. The published developer contract is `architecture/developer-api.md`.
+The reconciled development roadmap, including verified phase history and the Phase 18 scope, lives in `../PLANNING.md` section 20. The published developer contract is `architecture/developer-api.md`.

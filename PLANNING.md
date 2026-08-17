@@ -1,6 +1,6 @@
 # mcLogiora Planning
 
-Current phase: Phase 17 in progress (Developer & Operations Layer). Phase 16 is complete (Translation Suggestions, v0.15.0), and the version header still reads 0.15.0: the release carrying Phase 17 is chosen at Phase 17 closure, not at its start. The release header still declares `Tested up to: 7.0`; raising it to 7.1 is a separate compatibility gate once WordPress 7.1 ships final.
+Current phase: Phase 17 complete (Developer & Operations Layer, v0.16.0). Phase 16 is complete (Translation Suggestions, v0.15.0). The release header still declares `Tested up to: 7.0`; raising it to 7.1 is a separate compatibility gate once WordPress 7.1 ships final. Phase 18 is not started.
 
 This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 
@@ -611,7 +611,7 @@ The core should expose adapter contracts that make these integrations possible l
 
 ## 20. Development Phases
 
-The original twelve-phase sequence in this document drifted from what was actually built: two persistence phases were inserted during execution, which shifted every later number. The list below is the reconciled roadmap. Phases 01-09 are historical fact, verified against `CHANGELOG.md`, the plugin version header, the ADR set, and the source tree. Phases 10-18 are planned and not yet started.
+The original twelve-phase sequence in this document drifted from what was actually built: two persistence phases were inserted during execution, which shifted every later number. The list below is the reconciled roadmap. Phases 01-17 are historical fact, verified against `CHANGELOG.md`, the plugin version header, the ADR set, and the source tree. Phase 18 is planned and not yet started.
 
 ### Completed phases (verified against repository evidence)
 
@@ -681,7 +681,7 @@ Phase 15: Extended Builder Compatibility - v0.14.0
 
 - Ten builders assessed against running copies rather than remembered meta keys. Kadence Blocks, GenerateBlocks and Spectra store their layout as ordinary block content and need no code; Beaver Builder needs a payload adapter and now has one, written against its own `FLBuilderModel` API; SeedProd needs nothing. Bricks, Divi, WPBakery, Oxygen and Avada are commercial, were not legitimately available, and are recorded as unverified rather than claimed. Fixed Beaver Builder and SeedProd never being detected. Added a builder compatibility CI job. See `docs/adr/0017-extended-builder-compatibility.md` and `docs/architecture/builder-compatibility-matrix.md`.
 
-### Planned phases
+### Reconciled phase notes
 
 - hreflang output, canonical handling, OpenGraph and JSON-LD compatibility, sitemap integration, and coexistence with established SEO plugins.
 
@@ -703,7 +703,7 @@ Phase 16: Translation Suggestions — complete (v0.15.0)
 - A REST suggestion workflow was not built; the surfaces use admin AJAX. REST belongs with the Phase 17 developer layer.
 - Live provider qualification has not been performed. All qualification used a deterministic local transport double.
 
-Phase 17: Developer & Operations Layer — in progress
+Phase 17: Developer & Operations Layer — complete (v0.16.0)
 
 - REST API, import/export with dry-run, WP-CLI commands, System Status, Site Health integration, and the public developer API.
 - Decomposed into five workstreams, deliberately sequential rather than parallel. Workstream A comes first because section 15 of this document requires a stable developer API before third-party extension is encouraged, and because B through E are each a consumer of A's resolver. See `docs/adr/0019-developer-and-operations-layer.md`.
@@ -777,7 +777,7 @@ Workstream D decomposes into three slices, in this order and for the reason sect
 
 - Workstream E delivered one transport-neutral `DiagnosticsService` projection, a capability-gated read-only System Status screen, one sanitized native WordPress Site Health debug-information section, and actionable direct tests for default language, schema, permalinks, and enabled-but-incomplete suggestions. Collection performs no writes, cache resets, provider requests, telemetry, or expensive full-table relation scans; missing subsystems become degraded findings. The historical `/mclogiora/v1/status` route remains unregistered because the authoritative Workstream E deliverable is the admin/System Status and Site Health surfaces, not a REST transport. See `docs/architecture/system-status.md` and ADR 0021.
 
-**Workstream E is complete.** Phase 17 feature workstreams A, B, C, D, and E are complete. Phase 17 itself remains unmerged and unclosed; the dedicated closure session is the next scope. Phase 18 remains out of scope.
+**Phase 17 is complete.** Feature workstreams A, B, C, D, and E, the closure audit, final qualification, and the merged-main verification are complete. Phase 18 remains out of scope and not started.
 
 Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
 
@@ -816,9 +816,9 @@ These notes record the Phase 01 discovery environment. They are historical conte
 
 ## Next Phase
 
-Phases 02 through 16 are complete. **Phase 17: Developer & Operations Layer** is in progress; its workstream decomposition and current slice status are in section 20.
+Phases 02 through 17 are complete. **Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation** is not started; its scope is in section 20.
 
-Two items are carried forward rather than resolved in Phase 16, and Phase 17 does not resolve them:
+Two items are carried forward from Phase 16 and remain open after Phase 17:
 
 - Raising `Tested up to` from 7.0 to 7.1 is a separate compatibility gate, to be run once WordPress 7.1 ships final. Phase 16 qualified against 7.1-RC3 and deliberately did not change the release header on the strength of a release candidate.
 - Live provider qualification with real credentials, per provider, including one representative failure per normalized error category.

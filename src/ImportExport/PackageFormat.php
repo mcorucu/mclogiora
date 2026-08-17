@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  * The single source of truth for the portable package contract.
  *
  * The format version is deliberately an integer of its own, and never the
- * plugin version. A package produced by 0.15.0 and a package produced by
+ * plugin version. A package produced by 0.16.0 and a package produced by
  * 1.4.0 are interchangeable as long as both say `format_version: 1`, and a
  * plugin release that changes nothing about serialization must not invalidate
  * every package a site has already exported. Plugin releases and wire
