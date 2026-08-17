@@ -16,7 +16,14 @@ use McLogiora\Languages\LanguageRepositoryInterface;
 use McLogiora\Languages\LanguageStatus;
 use McLogiora\Media\MediaTranslationService;
 use McLogiora\Menus\MenuTranslationWorkflow;
+use McLogiora\Editors\Payload\PayloadAdapterRegistry;
+use McLogiora\Editors\Payload\TranslationPayloadAdapterInterface;
+use McLogiora\Languages\LanguageServiceInterface;
 use McLogiora\Relations\ContentType;
+use McLogiora\Relations\TranslationRelationServiceInterface;
+use McLogiora\Workflows\ContentTranslationWorkflow;
+use McLogiora\Workflows\TranslationWorkflowValidator;
+use McLogiora\WordPress\ContentGatewayInterface;
 use McLogiora\Widgets\WidgetTranslationService;
 use McLogiora\Workflows\TranslationWorkflowService;
 use WP_UnitTestCase;
@@ -475,5 +482,137 @@ final class TranslationWorkflowIntegrationTest extends WP_UnitTestCase {
 
 		$this->assertNotNull( $group );
 		$this->assertCount( 1, $group->items(), 'Only the source should remain in the group.' );
+	}
+
+	/**
+	 * Asserts a failure after the draft exists leaves no orphan behind.
+	 *
+	 * `create_translation()` inserts a real post and only then writes the
+	 * relation and lets builder adapters prepare the payload. Both of those can
+	 * fail, and the workflow compensates by deleting the post it just made. The
+	 * compensation has been in the code since Phase 14 with a comment
+	 * explaining itself and no test proving it, which is the state in which a
+	 * guarantee quietly stops being true.
+	 *
+	 * The failure is injected through `mclogiora_register_payload_adapters`,
+	 * the plugin's own supported extension point, so nothing is stubbed and
+	 * nothing in production is altered to make the test possible. A site whose
+	 * builder adapter fails is exactly the situation being modelled.
+	 *
+	 * @return void
+	 */
+	public function test_a_failed_payload_step_leaves_no_orphan_draft() {
+		global $wpdb;
+
+		$source = self::factory()->post->create(
+			array(
+				'post_title'  => 'Rollback source',
+				'post_status' => 'publish',
+			)
+		);
+
+		$failing = new class() implements TranslationPayloadAdapterInterface {
+			/**
+			 * {@inheritDoc}
+			 *
+			 * @return string
+			 */
+			public function id() {
+				return 'mclogiora_failing_payload';
+			}
+
+			/**
+			 * {@inheritDoc}
+			 *
+			 * @return bool
+			 */
+			public function is_available() {
+				return true;
+			}
+
+			/**
+			 * {@inheritDoc}
+			 *
+			 * @param int $source_id Source post identifier.
+			 * @return bool
+			 */
+			public function applies_to( $source_id ) {
+				unset( $source_id );
+
+				return true;
+			}
+
+			/**
+			 * {@inheritDoc}
+			 *
+			 * @param int $source_id Source post identifier.
+			 * @param int $target_id Newly created translation identifier.
+			 * @return true|\WP_Error
+			 */
+			public function copy( $source_id, $target_id ) {
+				unset( $source_id, $target_id );
+
+				return new \WP_Error( 'mclogiora_test_payload_failed', 'Injected builder failure.' );
+			}
+		};
+
+		$callback = static function ( $adapters ) use ( $failing ) {
+			$adapters[] = $failing;
+
+			return $adapters;
+		};
+
+		add_filter( 'mclogiora_register_payload_adapters', $callback );
+
+		$workflow = new ContentTranslationWorkflow(
+			$this->container->get( ContentGatewayInterface::class ),
+			$this->container->get( TranslationRelationServiceInterface::class ),
+			$this->container->get( LanguageServiceInterface::class ),
+			$this->container->get( TranslationWorkflowValidator::class ),
+			PayloadAdapterRegistry::with_core_adapters()
+		);
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- counting rows is the assertion.
+		$posts_before = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->posts}" );
+
+		$result = $workflow->create_translation( $source, 'tr' );
+
+		remove_filter( 'mclogiora_register_payload_adapters', $callback );
+
+		$this->assertWPError( $result, 'A failing payload adapter must fail the whole operation.' );
+		$this->assertSame( 'mclogiora_test_payload_failed', $result->get_error_code() );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- counting rows is the assertion.
+		$posts_after = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->posts}" );
+
+		$this->assertSame( $posts_before, $posts_after, 'The draft created before the failure must be removed.' );
+		$this->assertSame( 'publish', get_post_status( $source ), 'The source must be untouched.' );
+
+		$relations = $this->container->get( TranslationRelationServiceInterface::class );
+		$group     = $relations->get_translation_set_for_object( ContentType::POST, (string) $source );
+
+		/*
+		 * The group itself survives, holding only its source. That is the same
+		 * state a group reaches when its last translation is unlinked, and it
+		 * is created before the post is inserted because the slot-free check
+		 * needs it. What must not survive is a record pointing at a post that
+		 * no longer exists, so every remaining item is resolved back to a real
+		 * object rather than merely counted.
+		 */
+		$this->assertNotNull( $group );
+
+		$languages = array();
+
+		foreach ( $group->items() as $item ) {
+			$languages[] = $item->language_code();
+
+			$this->assertInstanceOf(
+				'WP_Post',
+				get_post( (int) $item->object_id() ),
+				'No relation item may outlive the object it points at.'
+			);
+		}
+
+		$this->assertSame( array( 'en' ), $languages, 'The target language slot must be free again.' );
 	}
 }
