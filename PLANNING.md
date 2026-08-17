@@ -713,7 +713,7 @@ Phase 17: Developer & Operations Layer — in progress
 | A | Developer Extension API | Public read functions, then a reviewed hook contract | Complete |
 | B | REST API | `/mclogiora/v1/…` under permission callbacks | Complete for the translation domain (slices 1–4B). `/import`, `/export` and `/status` belong to workstreams D and E; `/strings`, `/suggestions` and `/switcher` are reassessed below |
 | C | WP-CLI | `wp mclogiora …`, wrapping the workflow services | **Complete** (slices 1–3) |
-| D | Import / Export | Portable packages with a dry run before any write | Slice 2 complete (package, export, parser, validation, immutable-plan apply, stale protection, atomicity, rollback, final verification). No operator transport |
+| D | Import / Export | Portable packages with a dry run before any write | **Complete** (slices 1–3: package, export, parser, validation, immutable-plan apply, stale protection, atomicity, rollback, persistent-cache-safe invalidation, final verification). No operator transport required |
 | E | Diagnostics | System Status screen and Site Health integration | Not started |
 
 - Workstream A slice 1 delivered six `mclogiora_`-prefixed read functions returning plain arrays, documented in `docs/architecture/developer-api.md` alongside the three template tags that have shipped since 0.11.0. Nothing writes and no hook was added.
@@ -738,7 +738,7 @@ Phase 17: Developer & Operations Layer — in progress
 
 | Sketched route | Disposition |
 | --- | --- |
-| `/import`, `/export` | Workstream D owns these, together with the dry-run requirement in section 17. Not REST-first: the packages and validation come before any transport. Slice 1 built the package layer and deliberately no transport; whether either route is needed at all is decided in a later workstream D slice. |
+| `/import`, `/export` | Workstream D owns the package and dry-run requirement in section 17. The Slice 3 transport audit found no operator route required for closure; no REST, CLI or admin import/export surface is added. |
 | `/status` | Workstream E owns this, alongside the System Status screen and Site Health integration. |
 | `/strings` | No REST need identified. String translation is an admin-screen workflow with its own AJAX surface; a public REST projection would need the same per-object authorisation analysis the relation routes deferred, with no caller asking for it. Revisit only if a concrete consumer appears. |
 | `/suggestions` | Deliberately not built. ADR 0018 requires an explicit human action per suggestion and forbids background sending of site content; the existing admin AJAX surface already enforces that. A REST endpoint would make bulk machine translation trivially scriptable, which is the outcome Phase 16 was designed to prevent. |
@@ -761,7 +761,7 @@ Workstream C decomposes into three slices: read-only commands, relation and stat
 
 **Workstream C is complete.** The authoritative scope — `wp mclogiora …` wrapping the workflow services (section 20, ADR 0010 row 17, ADR 0019) — is met: all seven translation-domain mutations plus the reads exist on both HTTP and the shell. Import/export belongs to workstream D, status and diagnostics to workstream E, and suggestions stay off every programmatic transport for the reason recorded under REST. Language configuration, strings, media and settings have no CLI requirement in any authoritative source.
 
-Workstream D decomposes into three slices, in this order and for the reason section 17 gives: the dry run is listed among the security requirements, beside prepared SQL and capability checks, which makes an inspection path a precondition for a write path rather than a preview feature. Slice 1 is the package, the reader and the plan. Slice 2 is apply, atomicity and rollback. Slice 3 is an operator transport and closure, if an authoritative source turns out to require one.
+Workstream D decomposes into three slices, in this order and for the reason section 17 gives: the dry run is listed among the security requirements, beside prepared SQL and capability checks, which makes an inspection path a precondition for a write path rather than a preview feature. Slice 1 is the package, the reader and the plan. Slice 2 is apply, atomicity and rollback. Slice 3 is the authoritative transport decision, rollback-cache persistence audit and closure; the audit found no operator transport required.
 
 - Workstream D slices 1–2 deliver a portable JSON package covering two sections, `languages` and `relations`, plus the parser, destination validator, dry-run planner and transport-neutral immutable-plan apply service. Apply accepts `ImportPlan`, never raw JSON and never silently re-plans. See `docs/adr/0020-portable-import-export.md` and `docs/architecture/import-export.md`.
 - The package carries its own `format_version`, an integer, currently 1. It is never derived from the plugin version: a release that changes nothing about serialization must not invalidate every package a site has already taken. An unsupported format version is refused; a differing plugin version is a warning and never a refusal.
@@ -771,10 +771,11 @@ Workstream D decomposes into three slices, in this order and for the reason sect
 - The dry run is the plan a later apply executes, carrying resolved destination identifiers. Slice 2 consumes that operation list; it does not re-read the package and decide again. Building a plan performs zero inserts, updates and deletes, proven by snapshotting every mcLogiora table plus posts, postmeta, terms and `mclogiora%` options around repeated planning runs. Export is read-only on the same evidence, and neither export, parse, validate nor plan makes an outbound request.
 - Apply performs a full pre-write stale gate for languages, groups, slots, object grouping and exact locators. Any drift returns `import_plan_stale` with zero writes; an old applied plan is stale and a fresh dry run produces skips. Language and relation writes share one plugin-table transaction, failure and late verification rollback atomically, and final verification runs before commit. Failure injection is a test executor double, never a production flag. No WordPress posts or terms are created, deleted or modified by this slice.
 - Strings, media metadata, menus, widgets and settings are outside format version 1. Each is a separate portability problem rather than an oversight; settings in particular need a per-setting audit, since `url_strategy` reshapes every permalink on the destination.
-- Nothing in the layer is a transport. The services are registered in the container and hooked to nothing — no REST route, no CLI command, no admin screen, no upload handling — so a site that never imports anything runs no extra code. `/import` and `/export` remain unbuilt and belong only to a future closure slice.
+- Nothing in the layer is a transport. The services are registered in the container and hooked to nothing — no REST route, no CLI command, no admin screen, no upload handling — so a site that never imports anything runs no extra code. The authoritative closure audit deliberately adds no `/import` or `/export` transport.
+- Slice 3 audited rollback under a persistent WordPress Object Cache model. `ImportRollbackCacheInvalidator` deletes the language-list cache, relation-group list cache and plan-named group caches through `CacheInterface`, so persistent entries are removed without flushing unrelated cache families.
 - Qualified on WordPress 7.0.4 and 7.1-RC3, and on a real installation through `wp eval` against the workstream C fixture site: two exports byte-identical apart from `created_at`, the plan repeatable, zero outbound requests, and every mcLogiora table, post, term and option hash unchanged.
 
-- Next: workstream D slice 3 (operator transport and closure, if still required), or workstream E (diagnostics).
+- Next: Workstream E (diagnostics). Phase 18 remains out of scope.
 
 Phase 18: Hardening, Performance, Accessibility & WordPress.org Release Preparation
 

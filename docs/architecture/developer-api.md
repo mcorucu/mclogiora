@@ -814,7 +814,9 @@ which objects exist by telling a 403 from a 404.
 ### Not yet in REST
 
 `/strings`, `/suggestions`, `/switcher`, `/import`, `/export` and `/status` are
-sketched in the plan and are not registered. Nothing about suggestions is
+sketched in the plan and are not registered. Import/export is deliberately
+transport-neutral: the Workstream D closure audit found no operator transport
+required. Nothing about suggestions is
 reachable over REST: no provider credential, setting, preview or model cache is
 exposed, and a REST read makes no outbound HTTP request at all.
 
@@ -1029,5 +1031,6 @@ reason given under REST.
 
 ## Not yet built
 
-Import/export and the System Status and Site Health surfaces are the remaining
-Phase 17 workstreams. See ADR 0019.
+The System Status and Site Health surfaces are the remaining Phase 17
+workstream. Import/export is complete as a transport-neutral package and
+apply contract; see ADR 0020.
