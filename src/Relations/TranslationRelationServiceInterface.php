@@ -29,6 +29,15 @@ interface TranslationRelationServiceInterface {
 	public function create_group_placeholder( TranslationItem $original );
 
 	/**
+	 * Creates a placeholder group with a supplied key.
+	 *
+	 * @param string          $group_key Group key.
+	 * @param TranslationItem $original Original item.
+	 * @return TranslationGroup|\WP_Error
+	 */
+	public function create_group_placeholder_with_key( $group_key, TranslationItem $original );
+
+	/**
 	 * Creates a group from a source object.
 	 *
 	 * @param string $object_type Object type.

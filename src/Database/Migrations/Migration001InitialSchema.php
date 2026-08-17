@@ -107,7 +107,7 @@ final class Migration001InitialSchema implements MigrationInterface {
 			KEY status (status),
 			KEY sort_order (sort_order),
 			KEY updated_at (updated_at)
-		) {$charset};";
+		) {$charset} ENGINE=InnoDB;";
 	}
 
 	/**
@@ -134,7 +134,7 @@ final class Migration001InitialSchema implements MigrationInterface {
 			KEY source_language (source_language),
 			KEY status (status),
 			KEY updated_at (updated_at)
-		) {$charset};";
+		) {$charset} ENGINE=InnoDB;";
 	}
 
 	/**
@@ -167,6 +167,6 @@ final class Migration001InitialSchema implements MigrationInterface {
 			KEY status (status),
 			KEY updated_at (updated_at),
 			UNIQUE KEY content_language (content_type, content_id, language_code)
-		) {$charset};";
+		) {$charset} ENGINE=InnoDB;";
 	}
 }

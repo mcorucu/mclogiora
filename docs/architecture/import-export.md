@@ -1,12 +1,12 @@
 # Portable Import / Export
 
 This document describes the portable package mcLogiora writes and reads, and the
-import path that inspects one without applying it.
+import path that plans and applies one through a reviewed immutable plan.
 
-Status as of Phase 17, workstream D, slice 1: a site can **produce** a package,
-**read** one, **validate** one against itself, and **plan** what importing it
-would do. Nothing applies a plan. There is no code in the plugin that writes a
-package's contents into a site, and no flag that turns the planner into one.
+Status as of Phase 17, workstream D, slice 2: a site can **produce** a package,
+**read** one, **validate** one against itself, **plan** what importing it would
+do, and apply that immutable plan through a transport-neutral application
+service. No REST, CLI or admin transport is included.
 
 ## 1. What a package is
 
@@ -453,18 +453,63 @@ plan — same operations in the same order, same issues, same counts. Locator
 resolution is memoised for the lifetime of one plan, so one plan gets one view
 of the destination.
 
-## 10. What does not exist yet
+## 10. Applying a plan
 
-- No apply. No commit mode. No `dry_run=false`. No rollback, because nothing writes.
+`ImportApplyService::apply(ImportPlan $plan)` accepts the plan object itself.
+It does not accept raw JSON, a package array or a package and then silently
+re-plan it. The operation list, subjects, resolved IDs and order are the only
+instructions it executes.
+
+Before opening a transaction, apply checks the translation-management
+capability, refuses plan errors/conflicts/unresolved references, rejects
+unsupported operation types, and checks every operation against current
+language, relation and locator state. That includes language metadata, group
+identity, occupied slots, object grouping and exact locator fields. Any
+mismatch returns the stable error `import_plan_stale` and performs zero writes.
+A stale plan is never repaired by resolving its locator again.
+
+The executor preserves operation order: languages first, then each group's
+source/group creation and target links. It calls `LanguageService` and the
+relation domain service, including explicit-key group creation. It does not
+write WordPress posts or terms, create or delete content, update existing
+language metadata, or overwrite existing relation statuses.
+
+Target status is supplied at relation-item creation after validation against
+the canonical status vocabulary. This is an initial status, not a transition
+of an existing item; existing status changes remain governed by
+`TranslationStatusTransitions`, and the planner emits no status-update
+operation.
+
+### Atomicity and rollback
+
+All language and relation-table writes in one apply run inside one database
+transaction. This slice writes only plugin-owned relational tables, so the
+transaction boundary does not claim to roll back WordPress post or term
+writes: none are attempted. The plugin tables must use a transactional engine
+for this guarantee.
+
+If an operation fails, a late domain invariant rejects a write, final
+verification fails, or commit fails, the service rolls back and returns a
+structured `ImportApplyResult` with stable issue codes, operation summaries,
+applied/skipped counts and rollback status. Failure injection belongs in a
+test executor double, not in a production debug flag.
+
+Before commit, final verification reads every planned postcondition: exact
+language fields, preserved group UUID and source, exact linked
+object/language/status, skip equivalence and locator identity. A verification
+mismatch rolls back just like a write failure.
+
+## 11. What does not exist yet
+
 - No REST route, no WP-CLI command, no admin screen. The package layer is
   transport-neutral on purpose; the services are registered in the container and
   hooked to nothing, so a site that never imports anything runs no extra code.
 - No remote or scheduled imports, and no upload handling.
 
-Slice 2 owns apply, atomicity and rollback, and consumes the operation list
-above unchanged.
+Workstream D slice 3 owns any future operator transport and closure. It must
+consume this service rather than add package interpretation of its own.
 
-## 11. Classes
+## 12. Classes
 
 | Class | Role |
 | --- | --- |
@@ -477,3 +522,7 @@ above unchanged.
 | `ObjectLocatorGatewayInterface`, `WordPressObjectLocatorGateway` | The only WordPress content lookup in the layer; read-only |
 | `LocatorResolver`, `LocatorResolution` | Locator to zero, one or several objects |
 | `ImportPlanner`, `ImportPlan`, `PlannedOperation`, `PlanIssue` | The dry run, and the plan a later apply executes |
+| `ImportPlanPreconditionChecker` | Full pre-write stale-plan gate |
+| `ImportOperationExecutor`, `ImportApplyService`, `ImportApplyResult` | Ordered domain-backed apply and structured outcome |
+| `ImportPlanVerifier` | Exact postcondition verification before commit |
+| `TransactionInterface`, `DatabaseTransaction` | Injectable transaction boundary for plugin-owned tables |

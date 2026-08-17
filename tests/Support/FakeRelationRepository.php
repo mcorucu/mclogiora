@@ -68,6 +68,23 @@ final class FakeRelationRepository implements TranslationRelationRepositoryInter
 
 	/**
 	 * {@inheritDoc}
+	 */
+	public function create_group_placeholder_with_key( $group_key, TranslationItem $original ) {
+		$group_key = (string) $group_key;
+
+		if ( isset( $this->groups[ $group_key ] ) ) {
+			return new \WP_Error( 'mclogiora_group_exists', 'Group already exists.' );
+		}
+
+		$this->groups[ $group_key ] = array();
+
+		return $this->add_item_to_group( $group_key, $original ) instanceof \WP_Error
+			? new \WP_Error( 'mclogiora_group_failed', 'Group creation failed.' )
+			: new TranslationGroup( $group_key, $this->groups[ $group_key ] );
+	}
+
+	/**
+	 * {@inheritDoc}
 	 *
 	 * @param string $group_key Group key.
 	 * @return TranslationGroup|null

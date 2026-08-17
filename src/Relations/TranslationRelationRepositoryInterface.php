@@ -29,6 +29,18 @@ interface TranslationRelationRepositoryInterface {
 	public function create_group_placeholder( TranslationItem $original );
 
 	/**
+	 * Creates a placeholder group while preserving a supplied group key.
+	 *
+	 * Import is allowed to restore the package identity, but it still enters
+	 * through the same repository invariants as every other group creation.
+	 *
+	 * @param string          $group_key Group key.
+	 * @param TranslationItem $original Original item.
+	 * @return TranslationGroup|\WP_Error
+	 */
+	public function create_group_placeholder_with_key( $group_key, TranslationItem $original );
+
+	/**
 	 * Finds a group by its key.
 	 *
 	 * @param string $group_key Group key.
