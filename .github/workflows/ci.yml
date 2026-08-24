@@ -311,14 +311,27 @@ jobs:
           set -e
           cat plugin-check-results.json
           echo "Plugin Check exit status: ${status}"
-          exit 0
+
+      - name: Classify documented Plugin Check false positives
+        run: |
+          npx wp-env run cli wp plugin check mclogiora --format=json \
+            --ignore-codes=WordPress.DB.PreparedSQL.NotPrepared,WordPressVIPMinimum.Performance.WPQueryParams.SuppressFilters_suppress_filters \
+            --require=./wp-content/plugins/plugin-check/cli.php \
+            > plugin-check-disposition.json
+          cat plugin-check-disposition.json
+          if grep -q '"type":"ERROR"' plugin-check-disposition.json; then
+            echo "::error::Plugin Check reported an unclassified error after the documented disposition.";
+            exit 1;
+          fi
 
       - name: Upload Plugin Check evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mclogiora-plugin-check-wp71-final
-          path: plugin-check-results.json
+          path: |
+            plugin-check-results.json
+            plugin-check-disposition.json
 
   hygiene:
     name: Repository hygiene
