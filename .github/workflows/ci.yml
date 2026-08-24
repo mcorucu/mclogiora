@@ -279,7 +279,7 @@ jobs:
               port: 8880,
               testsPort: 8881,
               mappings: { "wp-content/plugins/mclogiora": process.cwd() }
-            }, null, 2) + "\\n");
+            }, null, 2) + "\n");
           '
           cat .wp-env.json
           npm -g --no-fund i @wordpress/env
