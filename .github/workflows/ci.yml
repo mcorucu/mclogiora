@@ -129,7 +129,7 @@ jobs:
       - name: Report the WordPress build under test
         run: |
           set -e
-          version="$(grep -oE "\\$wp_version = '[^']+'" /tmp/wordpress/wp-includes/version.php | cut -d"'" -f2)"
+          version="$(php -r 'include "/tmp/wordpress/wp-includes/version.php"; echo $wp_version;')"
           echo "WordPress under test: ${version}"
           echo "### WordPress under test: \`${version}\`" >> "$GITHUB_STEP_SUMMARY"
           test "$version" = "$WP_TARGET_VERSION" \
@@ -182,7 +182,7 @@ jobs:
       - name: Report the WordPress build under test
         run: |
           set -e
-          version="$(grep -oE "\\\$wp_version = '[^']+'" /tmp/wordpress/wp-includes/version.php | cut -d"'" -f2)"
+          version="$(php -r 'include "/tmp/wordpress/wp-includes/version.php"; echo $wp_version;')"
           echo "WordPress under test: ${version}"
           echo "### WordPress under test: \`${version}\`" >> "$GITHUB_STEP_SUMMARY"
 
