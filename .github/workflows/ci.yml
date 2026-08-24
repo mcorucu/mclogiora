@@ -255,6 +255,67 @@ jobs:
           tests/Integration/BuilderContentIntegrationTest.php
           tests/Integration/OptionalBuilderPluginTest.php
 
+  plugin-check:
+    # Official Plugin Check is run against a disposable, real WordPress 7.1
+    # install. Findings are captured for release classification; this job does
+    # not use provider credentials or enable AI-assisted checks.
+    name: Official Plugin Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Configure exact WordPress 7.1 environment
+        run: |
+          node -e '
+            const fs = require("fs");
+            fs.writeFileSync(".wp-env.json", JSON.stringify({
+              core: "https://wordpress.org/wordpress-7.1.zip",
+              port: 8880,
+              testsPort: 8881,
+              mappings: { "wp-content/plugins/mclogiora": process.cwd() }
+            }, null, 2) + "\\n");
+          '
+          cat .wp-env.json
+          npm -g --no-fund i @wordpress/env
+
+      - name: Start WordPress 7.1
+        run: |
+          npx wp-env start --update
+          version="$(npx wp-env run cli wp core version)"
+          echo "WordPress under test: ${version}"
+          test "$version" = '7.1' \
+            || { echo "::error::Expected WordPress 7.1, found ${version}."; exit 1; }
+
+      - name: Install and activate Plugin Check 2.1.0
+        run: |
+          npx wp-env run cli wp plugin install plugin-check --version=2.1.0 --activate
+          npx wp-env run cli wp plugin activate mclogiora
+
+      - name: Run static and runtime Plugin Check
+        run: |
+          set +e
+          npx wp-env run cli wp plugin check mclogiora --format=json \
+            --require=./wp-content/plugins/plugin-check/cli.php \
+            > plugin-check-results.json
+          status=$?
+          set -e
+          cat plugin-check-results.json
+          echo "Plugin Check exit status: ${status}"
+          exit 0
+
+      - name: Upload Plugin Check evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mclogiora-plugin-check-wp71-final
+          path: plugin-check-results.json
+
   hygiene:
     name: Repository hygiene
     runs-on: ubuntu-latest
