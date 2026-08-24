@@ -6,7 +6,8 @@
 - Added authenticated REST translation reads and workflow mutations, plus matching `wp mclogiora` language, relation, and translation commands.
 - Added portable translation package export, parsing, validation, dry-run planning, additive atomic apply, stale-plan protection, rollback, and targeted cache invalidation. No operator transport is exposed.
 - Added read-only System Status and native Site Health diagnostics with redacted output and no automatic provider network calls.
-- WordPress 7.1 final compatibility and live provider qualification remain separate open gates; `Tested up to` remains 7.0.
+- Qualified the plugin against WordPress 7.1 Final, including the Block Editor, routing, multilingual SEO, REST, WP-CLI, import/export, diagnostics, and database-backed integration suite. `Tested up to` is 7.1.
+- Live provider qualification was not performed because provider credentials were unavailable. The optional provider adapters and contracts remain statically and integration qualified; manual multilingual functionality is independent of those services.
 
 ## 0.15.0
 
