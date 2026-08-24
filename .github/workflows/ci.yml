@@ -89,6 +89,10 @@ jobs:
   integration:
     name: WordPress integration tests
     runs-on: ubuntu-latest
+    env:
+      # Keep the pre-release regression baseline explicit after the current
+      # stable WordPress line advances beyond 7.0.
+      WP_TARGET_VERSION: '7.0.4'
     services:
       mysql:
         image: mysql:8.0
@@ -120,21 +124,28 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y subversion
 
       - name: Install the WordPress test suite
-        run: bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 latest
+        run: bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 "$WP_TARGET_VERSION"
+
+      - name: Report the WordPress build under test
+        run: |
+          set -e
+          version="$(grep -oE "\\$wp_version = '[^']+'" /tmp/wordpress/wp-includes/version.php | cut -d"'" -f2)"
+          echo "WordPress under test: ${version}"
+          echo "### WordPress under test: \`${version}\`" >> "$GITHUB_STEP_SUMMARY"
+          test "$version" = "$WP_TARGET_VERSION" \
+            || { echo "::error::Expected ${WP_TARGET_VERSION}, found ${version}."; exit 1; }
 
       - name: Run integration tests
         run: composer test:integration
 
   wordpress-71:
-    # Pinned on purpose. mcLogiora must be qualified against a WordPress build
-    # that can be downloaded again unchanged, so this never follows trunk or a
-    # nightly. Moving to the final release is a one-line change here once 7.1
-    # ships; the stable integration job above keeps covering current WordPress
-    # in the meantime.
+    # Pinned on purpose. mcLogiora must be qualified against the exact final
+    # WordPress 7.1 build, never against an RC, trunk, nightly, or floating
+    # latest version.
     name: WordPress 7.1 compatibility
     runs-on: ubuntu-latest
     env:
-      WP_TARGET_VERSION: '7.1-RC3'
+      WP_TARGET_VERSION: '7.1'
     services:
       mysql:
         image: mysql:8.0
@@ -175,10 +186,8 @@ jobs:
           echo "WordPress under test: ${version}"
           echo "### WordPress under test: \`${version}\`" >> "$GITHUB_STEP_SUMMARY"
 
-          case "$version" in
-            "$WP_TARGET_VERSION"*) ;;
-            *) echo "::error::Expected ${WP_TARGET_VERSION}, found ${version}."; exit 1 ;;
-          esac
+          test "$version" = "$WP_TARGET_VERSION" \
+            || { echo "::error::Expected ${WP_TARGET_VERSION}, found ${version}."; exit 1; }
 
           # The release tarball ships built assets. The develop-src tree does
           # not, and core then reports its own stylesheets as missing through
