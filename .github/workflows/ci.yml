@@ -272,13 +272,17 @@ jobs:
 
       - name: Configure exact WordPress 7.1 environment
         run: |
+          rm -rf /tmp/mclogiora-package
+          mkdir -p /tmp/mclogiora-package
+          git archive HEAD | tar -x -C /tmp/mclogiora-package
+          export PACKAGE_DIR=/tmp/mclogiora-package
           node -e '
             const fs = require("fs");
             fs.writeFileSync(".wp-env.json", JSON.stringify({
               core: "https://wordpress.org/wordpress-7.1.zip",
               port: 8880,
               testsPort: 8881,
-              mappings: { "wp-content/plugins/mclogiora": process.cwd() }
+              mappings: { "wp-content/plugins/mclogiora": process.env.PACKAGE_DIR }
             }, null, 2) + "\n");
           '
           cat .wp-env.json
