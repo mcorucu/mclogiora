@@ -5,7 +5,7 @@
  * Description:       A modern multilingual platform foundation for WordPress.
  * Version:           0.16.0
  * Requires at least: 6.5
- * Tested up to:      7.0
+ * Tested up to:      7.1
  * Requires PHP:      7.4
  * Author:            Mehmet Can Orucu
  * Author URI:        https://mcorucu.com

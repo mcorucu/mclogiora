@@ -2,7 +2,7 @@
 Contributors: mcorucu
 Tags: multilingual, translation, localization, language
 Requires at least: 6.5
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
 Stable tag: 0.16.0
 License: GPLv2 or later
@@ -81,6 +81,16 @@ The REST layer does not expose strings, suggestions, switcher, import/export, or
 mcLogiora does not track users, does not collect telemetry, does not send beacon requests, and contains no analytics of any kind.
 
 mcLogiora contacts an external service only if you switch on Translation Suggestions, choose a provider and save your own API key, and then click a button that asks for a suggestion. Nothing is sent when a page loads, when the plugin is activated, when an editor opens, or when a visitor views your site. There is no mcLogiora server in the path: requests go from your site directly to the provider you chose.
+
+== Screenshots ==
+
+1. Translation Manager for reviewing translation relations and explicit actions.
+2. Define the default language and manage active site languages.
+3. Search and manage interface strings in String Translation.
+4. Configure language URL prefixes and the presentation of the language switcher.
+5. Optional translation suggestions stay off until explicitly enabled and are reviewed before applying.
+6. Read-only System Status diagnostics show environment readiness without provider requests.
+7. Compatibility overview for editors, builders, plugins, themes, and multilingual SEO.
 
 == External Services ==
 
@@ -262,7 +272,8 @@ Each translation points at itself. Sending every language back to the default on
 * Added authenticated REST translation reads and workflow mutations, plus matching `wp mclogiora` language, relation, and translation commands.
 * Added portable translation package export, parsing, validation, dry-run planning, additive atomic apply, stale-plan protection, rollback, and targeted cache invalidation. No operator transport is exposed.
 * Added read-only System Status and native Site Health diagnostics with redacted output and no automatic provider network calls.
-* WordPress 7.1 final compatibility and live provider qualification remain separate open gates; `Tested up to` remains 7.0.
+* Qualified the plugin against WordPress 7.1 Final, including the Block Editor, routing, multilingual SEO, REST, WP-CLI, import/export, diagnostics, and database-backed integration suite. `Tested up to` is 7.1.
+* Live provider qualification was not performed because provider credentials were unavailable. The optional provider adapters and contracts remain statically and integration qualified; manual multilingual functionality is independent of those services.
 
 = 0.15.0 =
 

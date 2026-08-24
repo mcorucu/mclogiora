@@ -7,6 +7,10 @@
 
 namespace McLogiora\Core;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use McLogiora\Admin\AdminMenu;
 use McLogiora\Admin\AdminScreenRegistry;
 use McLogiora\Api\Rest\RestApiModule;
