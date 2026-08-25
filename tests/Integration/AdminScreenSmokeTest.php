@@ -63,6 +63,12 @@ final class AdminScreenSmokeTest extends WP_UnitTestCase {
 
 			$this->assertStringContainsString( $heading, $html, $slug . ' did not render its expected heading.' );
 			$this->assertStringNotContainsString( 'Fatal error', $html, $slug . ' rendered a fatal error.' );
+
+			if ( 'mclogiora-setup' === $slug ) {
+				$this->assertStringContainsString( 'data-mclogiora-setup-wizard', $html, 'Setup Wizard did not render its semantic root.' );
+				$this->assertStringContainsString( 'Welcome', $html, 'Setup Wizard did not render a concrete first step.' );
+				$this->assertStringContainsString( 'Start setup', $html, 'Setup Wizard did not render its primary action.' );
+			}
 		}
 
 		$menu = new AdminMenu();
