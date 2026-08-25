@@ -48,6 +48,12 @@ final class SetupWizard implements ModuleInterface {
 	 */
 	private $routing_settings = null;
 
+	/** Notice collected while handling an invalid mutation before output.
+	 *
+	 * @var array<string,string>|null
+	 */
+	private $request_notice = null;
+
 	/** Ordered server-rendered steps.
 	 *
 	 * @var string[]
@@ -90,6 +96,7 @@ final class SetupWizard implements ModuleInterface {
 
 		if ( is_admin() ) {
 			add_action( 'admin_init', array( $this, 'maybe_redirect_after_activation' ), 1 );
+			add_action( 'admin_init', array( $this, 'handle_post' ), 2 );
 		}
 	}
 
@@ -154,7 +161,7 @@ final class SetupWizard implements ModuleInterface {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'mclogiora' ) );
 		}
 
-		$notice  = $this->maybe_handle_post();
+		$notice  = $this->request_notice;
 		$default = $this->default_language();
 		$step    = $this->current_step( $default );
 
@@ -166,7 +173,7 @@ final class SetupWizard implements ModuleInterface {
 
 		?>
 		<div class="wrap mclogiora-admin mclogiora-setup-wizard">
-			<section class="mclogiora-panel" aria-labelledby="mclogiora-setup-title">
+			<section class="mclogiora-panel" aria-labelledby="mclogiora-setup-title" data-mclogiora-setup-wizard>
 				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Setup Wizard', 'mclogiora' ); ?></p>
 				<h1 id="mclogiora-setup-title"><?php echo esc_html( $is_review ? __( 'Review your setup', 'mclogiora' ) : __( 'Set up mcLogiora', 'mclogiora' ) ); ?></h1>
 				<p class="mclogiora-lede"><?php echo esc_html( $is_review ? __( 'Review the languages and URL choices currently used by your site. Nothing is reset by revisiting this screen.', 'mclogiora' ) : __( 'A few focused choices will prepare mcLogiora for your multilingual content. You can change them later in the dedicated settings screens.', 'mclogiora' ) ); ?></p>
@@ -203,11 +210,18 @@ final class SetupWizard implements ModuleInterface {
 	/**
 	 * Handles posted setup actions.
 	 *
-	 * @return array<string,string>|null
+	 * This runs on admin_init, before WordPress emits the admin header. Keeping
+	 * mutations here preserves Post/Redirect/Get; the page callback only renders.
+	 *
+	 * @return void
 	 */
-	private function maybe_handle_post() {
+	public function handle_post() {
+		if ( ! is_admin() || self::PAGE_SLUG !== $this->requested_page() ) {
+			return;
+		}
+
 		if ( empty( $_POST['mclogiora_setup_action'] ) ) {
-			return null;
+			return;
 		}
 
 		if ( ! Security::current_user_can( $this->capability ) ) {
@@ -217,7 +231,8 @@ final class SetupWizard implements ModuleInterface {
 		$nonce = isset( $_POST[ self::NONCE_FIELD ] ) ? sanitize_text_field( wp_unslash( $_POST[ self::NONCE_FIELD ] ) ) : '';
 
 		if ( ! Security::verify_nonce( $nonce, self::NONCE_ACTION ) ) {
-			return $this->notice( 'error', __( 'Security check failed. Please try again.', 'mclogiora' ) );
+			$this->request_notice = $this->notice( 'error', __( 'Security check failed. Please try again.', 'mclogiora' ) );
+			return;
 		}
 
 		$action = sanitize_key( wp_unslash( $_POST['mclogiora_setup_action'] ) );
@@ -228,7 +243,8 @@ final class SetupWizard implements ModuleInterface {
 		}
 
 		if ( ! $this->language_service instanceof LanguageServiceInterface || ! $this->routing_settings instanceof RoutingSettings ) {
-			return $this->notice( 'error', __( 'Setup services are not available. Please try again later.', 'mclogiora' ) );
+			$this->request_notice = $this->notice( 'error', __( 'Setup services are not available. Please try again later.', 'mclogiora' ) );
+			return;
 		}
 
 		switch ( $action ) {
@@ -242,7 +258,8 @@ final class SetupWizard implements ModuleInterface {
 				$existing = $this->language_service->get_language_by_code( $code );
 
 				if ( $existing instanceof Language ) {
-					return $this->notice( 'success', __( 'That language is already available. Continue when you are ready.', 'mclogiora' ) );
+					$this->request_notice = $this->notice( 'success', __( 'That language is already available. Continue when you are ready.', 'mclogiora' ) );
+					return;
 				}
 
 				$result = $this->language_service->create_language(
@@ -258,7 +275,8 @@ final class SetupWizard implements ModuleInterface {
 				);
 
 				if ( is_wp_error( $result ) ) {
-					return $this->notice( 'error', $this->friendly_language_error( $result ) );
+					$this->request_notice = $this->notice( 'error', $this->friendly_language_error( $result ) );
+					return;
 				}
 
 				$this->redirect_to( $this->step_url( 'languages' ) );
@@ -266,7 +284,8 @@ final class SetupWizard implements ModuleInterface {
 
 			case 'continue_languages':
 				if ( empty( $this->language_service->get_languages() ) ) {
-					return $this->notice( 'error', __( 'Add at least one language before choosing the default.', 'mclogiora' ) );
+					$this->request_notice = $this->notice( 'error', __( 'Add at least one language before choosing the default.', 'mclogiora' ) );
+					return;
 				}
 
 				SetupState::begin();
@@ -277,7 +296,8 @@ final class SetupWizard implements ModuleInterface {
 				$result = $this->language_service->set_default_language( $this->posted_code() );
 
 				if ( is_wp_error( $result ) ) {
-					return $this->notice( 'error', $this->friendly_language_error( $result ) );
+					$this->request_notice = $this->notice( 'error', $this->friendly_language_error( $result ) );
+					return;
 				}
 
 				$this->redirect_to( $this->step_url( 'url_format' ) );
@@ -299,7 +319,8 @@ final class SetupWizard implements ModuleInterface {
 				);
 
 				if ( is_wp_error( $result ) ) {
-					return $this->notice( 'error', $this->friendly_language_error( $result ) );
+					$this->request_notice = $this->notice( 'error', $this->friendly_language_error( $result ) );
+					return;
 				}
 
 				$this->redirect_to( $this->step_url( 'url_format' ) );
@@ -307,7 +328,8 @@ final class SetupWizard implements ModuleInterface {
 
 			case 'save_routing':
 				if ( ! $this->default_language() instanceof Language ) {
-					return $this->notice( 'error', __( 'Choose a default language before saving URL settings.', 'mclogiora' ) );
+					$this->request_notice = $this->notice( 'error', __( 'Choose a default language before saving URL settings.', 'mclogiora' ) );
+					return;
 				}
 
 				$input  = array(
@@ -325,7 +347,8 @@ final class SetupWizard implements ModuleInterface {
 
 			case 'finish_setup':
 				if ( ! $this->default_language() instanceof Language ) {
-					return $this->notice( 'error', __( 'Choose a default language before finishing setup.', 'mclogiora' ) );
+					$this->request_notice = $this->notice( 'error', __( 'Choose a default language before finishing setup.', 'mclogiora' ) );
+					return;
 				}
 
 				SetupState::complete();
@@ -333,10 +356,9 @@ final class SetupWizard implements ModuleInterface {
 				break;
 
 			default:
-				return $this->notice( 'error', __( 'That setup action is not available. Please try again.', 'mclogiora' ) );
+				$this->request_notice = $this->notice( 'error', __( 'That setup action is not available. Please try again.', 'mclogiora' ) );
+				return;
 		}
-
-		return null;
 	}
 
 	/**

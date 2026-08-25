@@ -48,6 +48,8 @@ final class OnboardingIntegrationTest extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function tear_down() {
+		$_GET  = array();
+		$_POST = array();
 		delete_option( SetupState::OPTION_NAME );
 		parent::tear_down();
 	}
@@ -115,5 +117,80 @@ final class OnboardingIntegrationTest extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'Nothing is reset by revisiting this screen.', $html );
 		$this->assertCount( 2, $languages->all() );
 		$this->assertSame( 'en', $languages->default_language()->code() );
+	}
+
+	/**
+	 * A real first mutation uses PRG before the admin header is emitted.
+	 *
+	 * @return void
+	 */
+	public function test_first_language_mutation_redirects_before_rendering_admin_output() {
+		$_GET  = array(
+			'page' => SetupWizard::PAGE_SLUG,
+			'step' => 'languages',
+		);
+		$_POST = array(
+			'mclogiora_setup_action' => 'add_language',
+			SetupWizard::NONCE_FIELD => wp_create_nonce( SetupWizard::NONCE_ACTION ),
+			'language_code'          => 'en',
+			'locale'                => 'en_US',
+			'native_name'           => 'English',
+			'english_name'          => 'English',
+			'direction'             => 'ltr',
+		);
+
+		$wizard = new SetupWizard();
+		$wizard->register( $this->container );
+		$location = null;
+		$redirect = static function ( $url ) use ( &$location ) {
+			$location = $url;
+
+			throw new \RuntimeException( 'Captured redirect.' );
+		};
+
+		add_filter( 'wp_redirect', $redirect, 10, 1 );
+
+		try {
+			do_action( 'admin_init' );
+			$this->fail( 'The first language mutation did not redirect.' );
+		} catch ( \RuntimeException $exception ) {
+			$this->assertSame( 'Captured redirect.', $exception->getMessage() );
+		} finally {
+			remove_filter( 'wp_redirect', $redirect, 10 );
+		}
+
+		$this->assertSame( admin_url( 'admin.php?page=' . SetupWizard::PAGE_SLUG . '&step=languages' ), $location );
+		$this->assertNotNull( $this->container->get( LanguageRepositoryInterface::class )->find_by_code( 'en' ) );
+
+		$_POST = array();
+		ob_start();
+		$wizard->render();
+		$html = ob_get_clean();
+
+		$this->assertStringContainsString( 'data-mclogiora-setup-wizard', $html );
+		$this->assertStringContainsString( 'Languages', $html );
+		$this->assertStringContainsString( 'Continue to default language', $html );
+	}
+
+	/**
+	 * Invalid explicit steps recover to a visible, safe first step.
+	 *
+	 * @return void
+	 */
+	public function test_invalid_step_never_renders_an_empty_callback() {
+		$_GET = array(
+			'page' => SetupWizard::PAGE_SLUG,
+			'step' => 'not-a-real-step',
+		);
+
+		$wizard = new SetupWizard();
+		$wizard->register( $this->container );
+		ob_start();
+		$wizard->render();
+		$html = ob_get_clean();
+
+		$this->assertStringContainsString( 'data-mclogiora-setup-wizard', $html );
+		$this->assertStringContainsString( 'Welcome to mcLogiora', $html );
+		$this->assertStringContainsString( 'Start setup', $html );
 	}
 }
