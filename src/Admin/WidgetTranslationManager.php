@@ -94,7 +94,7 @@ final class WidgetTranslationManager implements ModuleInterface {
 			<section class="mclogiora-panel" aria-labelledby="mclogiora-menus-widgets-title">
 				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Translation Data', 'mclogiora' ); ?></p>
 				<h1 id="mclogiora-menus-widgets-title"><?php esc_html_e( 'Menus & Widgets', 'mclogiora' ); ?></h1>
-				<p class="mclogiora-lede"><?php esc_html_e( 'Create translated navigation menus and review which widget types mcLogiora can translate. Which menu or widget text appears on the front end is decided in a later phase.', 'mclogiora' ); ?></p>
+				<p class="mclogiora-lede"><?php esc_html_e( 'Create translated navigation menus and review which widget types mcLogiora can translate. Front-end display follows the menu and widget settings you choose in WordPress.', 'mclogiora' ); ?></p>
 
 				<?php $this->render_notice(); ?>
 				<?php $this->render_menu_panel( $languages ); ?>

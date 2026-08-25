@@ -48,10 +48,6 @@ final class SetupWizard implements ModuleInterface {
 	private $steps = array(
 		'welcome',
 		'default_language',
-		'additional_languages',
-		'url_format',
-		'switcher',
-		'finish',
 	);
 
 	/**
@@ -99,7 +95,7 @@ final class SetupWizard implements ModuleInterface {
 			<section class="mclogiora-panel" aria-labelledby="mclogiora-setup-title">
 				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Setup Wizard', 'mclogiora' ); ?></p>
 				<h1 id="mclogiora-setup-title"><?php esc_html_e( 'mcLogiora Setup', 'mclogiora' ); ?></h1>
-				<p class="mclogiora-lede"><?php esc_html_e( 'The first setup steps now persist the default language. Later wizard steps remain placeholders until their phases arrive.', 'mclogiora' ); ?></p>
+				<p class="mclogiora-lede"><?php esc_html_e( 'Set the default language first. You can then add more languages and configure URLs from the Languages and Settings screens.', 'mclogiora' ); ?></p>
 
 				<?php $this->render_notice( $notice ); ?>
 				<?php $this->render_steps( $step ); ?>
@@ -213,7 +209,7 @@ final class SetupWizard implements ModuleInterface {
 		?>
 		<div class="mclogiora-table-card">
 			<h2><?php esc_html_e( 'Welcome', 'mclogiora' ); ?></h2>
-			<p><?php esc_html_e( 'Start by choosing the default language for this site. This is the only setup decision saved in Phase 07.', 'mclogiora' ); ?></p>
+			<p><?php esc_html_e( 'Choose the language used for your existing content and site-wide defaults. This gives mcLogiora a clear starting point for multilingual routing.', 'mclogiora' ); ?></p>
 			<a class="button button-primary mclogiora-button" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-setup&step=default_language' ) ); ?>"><?php esc_html_e( 'Choose Default Language', 'mclogiora' ); ?></a>
 		</div>
 		<?php
@@ -353,13 +349,9 @@ final class SetupWizard implements ModuleInterface {
 	 * @return string
 	 */
 	private function description_for_step( $step, $available ) {
-		if ( ! $available ) {
-			return __( 'Placeholder for a future phase.', 'mclogiora' );
-		}
-
 		$descriptions = array(
 			'welcome'          => __( 'Introduce mcLogiora and confirm the setup path.', 'mclogiora' ),
-			'default_language' => __( 'Persist the default language in the language table.', 'mclogiora' ),
+			'default_language' => __( 'Choose or create the default language for this site.', 'mclogiora' ),
 		);
 
 		return isset( $descriptions[ $step ] ) ? $descriptions[ $step ] : '';

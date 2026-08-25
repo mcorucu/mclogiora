@@ -141,7 +141,7 @@ final class TranslationManager implements ModuleInterface {
 				<?php $this->render_action_notice(); ?>
 				<?php $this->render_create_translation_panel( $languages ); ?>
 
-				<div class="mclogiora-filter-bar" aria-label="<?php esc_attr_e( 'Translation manager filters', 'mclogiora' ); ?>">
+				<div class="mclogiora-filter-bar mclogiora-filter-bar--disabled" aria-label="<?php esc_attr_e( 'Translation manager filters', 'mclogiora' ); ?>" aria-describedby="mclogiora-translation-manager-empty-state">
 					<label>
 						<span><?php esc_html_e( 'Content type', 'mclogiora' ); ?></span>
 						<select disabled>
@@ -174,15 +174,15 @@ final class TranslationManager implements ModuleInterface {
 					</label>
 					<label>
 						<span><?php esc_html_e( 'Search', 'mclogiora' ); ?></span>
-						<input type="search" placeholder="<?php esc_attr_e( 'Search relations later', 'mclogiora' ); ?>" disabled>
+						<input type="search" placeholder="<?php esc_attr_e( 'Search relations', 'mclogiora' ); ?>" disabled>
 					</label>
 				</div>
 
 				<div class="mclogiora-status-card mclogiora-status-card--notice">
 					<span class="mclogiora-status-card__icon" aria-hidden="true">i</span>
 					<div>
-						<h2><?php esc_html_e( 'Excluded Integrations', 'mclogiora' ); ?></h2>
-						<p><?php esc_html_e( 'WooCommerce and LMS support are planned as future free compatibility modules. This foundation focuses on posts, pages, public custom post types, categories, tags, and public custom taxonomies.', 'mclogiora' ); ?></p>
+						<h2><?php esc_html_e( 'Current content scope', 'mclogiora' ); ?></h2>
+						<p><?php esc_html_e( 'mcLogiora manages posts, pages, eligible public post types, categories, tags, and eligible public taxonomies. WooCommerce and LMS content is not included in this site configuration.', 'mclogiora' ); ?></p>
 					</div>
 				</div>
 
@@ -206,7 +206,7 @@ final class TranslationManager implements ModuleInterface {
 
 				<div class="mclogiora-table-card">
 					<h2><?php esc_html_e( 'Translation Status Table', 'mclogiora' ); ?></h2>
-					<p><?php esc_html_e( 'Relation records are read from the persistence layer. Actions remain placeholders until reviewed admin write flows are introduced.', 'mclogiora' ); ?></p>
+					<p id="mclogiora-translation-manager-empty-state"><?php echo empty( $groups ) ? esc_html__( 'Your translation relationships will appear here after you create the first one.', 'mclogiora' ) : esc_html__( 'Review each relationship and use explicit actions to update its status or unlink a translation.', 'mclogiora' ); ?></p>
 					<div class="mclogiora-table-scroll">
 						<table class="widefat striped mclogiora-language-table">
 							<thead>
@@ -217,7 +217,7 @@ final class TranslationManager implements ModuleInterface {
 									<th scope="col"><?php esc_html_e( 'Targets', 'mclogiora' ); ?></th>
 									<th scope="col"><?php esc_html_e( 'Missing Languages', 'mclogiora' ); ?></th>
 									<th scope="col"><?php esc_html_e( 'Outdated', 'mclogiora' ); ?></th>
-									<th scope="col"><?php esc_html_e( 'Future Actions', 'mclogiora' ); ?></th>
+									<th scope="col"><?php esc_html_e( 'Actions', 'mclogiora' ); ?></th>
 								</tr>
 							</thead>
 							<tbody>
@@ -250,7 +250,7 @@ final class TranslationManager implements ModuleInterface {
 		?>
 		<article class="mclogiora-info-card">
 			<h2><?php esc_html_e( 'Post/Page/CPT Support Overview', 'mclogiora' ); ?></h2>
-			<p><?php esc_html_e( 'These content types are prepared for future translation workflows.', 'mclogiora' ); ?></p>
+			<p><?php esc_html_e( 'These content types can be used in translation relationships on this site.', 'mclogiora' ); ?></p>
 			<ul class="mclogiora-inline-list">
 				<?php foreach ( $content_types as $type ) : ?>
 					<?php if ( $type instanceof TranslatableContentType ) : ?>
@@ -286,7 +286,7 @@ final class TranslationManager implements ModuleInterface {
 		?>
 		<article class="mclogiora-info-card">
 			<h2><?php esc_html_e( 'Taxonomy Support Overview', 'mclogiora' ); ?></h2>
-			<p><?php esc_html_e( 'These taxonomies are prepared for future translation workflows.', 'mclogiora' ); ?></p>
+			<p><?php esc_html_e( 'These taxonomies can be used in translation relationships on this site.', 'mclogiora' ); ?></p>
 			<ul class="mclogiora-inline-list">
 				<?php foreach ( $taxonomies as $taxonomy ) : ?>
 					<?php if ( $taxonomy instanceof TranslatableTaxonomy ) : ?>
@@ -587,10 +587,15 @@ final class TranslationManager implements ModuleInterface {
 	 */
 	private function render_create_translation_panel( array $languages ) {
 		if ( empty( $languages ) ) {
-			printf(
-				'<div class="notice notice-warning"><p>%s</p></div>',
-				esc_html__( 'Add and activate at least one language before creating translations.', 'mclogiora' )
-			);
+			?>
+			<div class="mclogiora-empty-state" role="status">
+				<div>
+					<h2><?php esc_html_e( 'Translations need a configured language', 'mclogiora' ); ?></h2>
+					<p><?php esc_html_e( 'Add and activate at least one language before creating or reviewing translation relationships.', 'mclogiora' ); ?></p>
+				</div>
+				<a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-languages' ) ); ?>"><?php esc_html_e( 'Configure Languages', 'mclogiora' ); ?></a>
+			</div>
+			<?php
 
 			return;
 		}

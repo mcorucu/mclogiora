@@ -59,15 +59,15 @@ final class ContentExclusionRules {
 		$post_type = sanitize_key( $post_type );
 
 		if ( 'attachment' === $post_type ) {
-			return __( 'Media translation is handled by a later dedicated module.', 'mclogiora' );
+			return __( 'Media translation is not available for this content type.', 'mclogiora' );
 		}
 
 		if ( in_array( $post_type, $this->woocommerce_types, true ) || 0 === strpos( $post_type, 'wc_' ) ) {
-			return __( 'WooCommerce content is planned for a future free compatibility module.', 'mclogiora' );
+			return __( 'WooCommerce content is not currently supported by mcLogiora.', 'mclogiora' );
 		}
 
 		if ( in_array( $post_type, $this->lms_types, true ) || false !== strpos( $post_type, 'learndash' ) || false !== strpos( $post_type, 'lifter' ) || false !== strpos( $post_type, 'sensei' ) ) {
-			return __( 'LMS content is planned for a future free compatibility module.', 'mclogiora' );
+			return __( 'LMS content is not currently supported by mcLogiora.', 'mclogiora' );
 		}
 
 		return '';
