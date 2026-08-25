@@ -175,6 +175,13 @@ final class TranslationActionController implements ModuleInterface {
 			$this->redirect_with_error( $result );
 		}
 
+		$edit_link = isset( $result['edit_link'] ) ? (string) $result['edit_link'] : '';
+
+		if ( '' !== $edit_link ) {
+			wp_safe_redirect( $edit_link );
+			exit;
+		}
+
 		$this->redirect_with_notice( 'created' );
 	}
 

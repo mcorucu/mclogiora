@@ -38,6 +38,13 @@ final class TranslationRelationService implements TranslationRelationServiceInte
 	private $language_service;
 
 	/**
+	 * Request-local index of active groups by object key.
+	 *
+	 * @var array<string,TranslationGroup>|null
+	 */
+	private $object_group_index = null;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param TranslationRelationRepositoryInterface $repository Relation repository.
@@ -66,7 +73,9 @@ final class TranslationRelationService implements TranslationRelationServiceInte
 	 * @return TranslationGroup|\WP_Error
 	 */
 	public function create_group_placeholder( TranslationItem $original ) {
-		return $this->repository->create_group_placeholder( $original );
+		$result                   = $this->repository->create_group_placeholder( $original );
+		$this->object_group_index = null;
+		return $result;
 	}
 
 	/**
@@ -77,7 +86,9 @@ final class TranslationRelationService implements TranslationRelationServiceInte
 	 * @return TranslationGroup|\WP_Error
 	 */
 	public function create_group_placeholder_with_key( $group_key, TranslationItem $original ) {
-		return $this->repository->create_group_placeholder_with_key( $group_key, $original );
+		$result                   = $this->repository->create_group_placeholder_with_key( $group_key, $original );
+		$this->object_group_index = null;
+		return $result;
 	}
 
 	/**
@@ -115,7 +126,7 @@ final class TranslationRelationService implements TranslationRelationServiceInte
 			$status = TranslationStatus::DRAFT;
 		}
 
-		return $this->repository->add_item_to_group(
+		$result                   = $this->repository->add_item_to_group(
 			$group_key,
 			new TranslationItem(
 				$object_type,
@@ -125,6 +136,8 @@ final class TranslationRelationService implements TranslationRelationServiceInte
 				false
 			)
 		);
+		$this->object_group_index = null;
+		return $result;
 	}
 
 	/**
@@ -136,7 +149,9 @@ final class TranslationRelationService implements TranslationRelationServiceInte
 	 * @return bool|\WP_Error
 	 */
 	public function detach_item_safely( $object_type, $object_id, $language_code ) {
-		return $this->repository->detach_item( $object_type, $object_id, $language_code );
+		$result                   = $this->repository->detach_item( $object_type, $object_id, $language_code );
+		$this->object_group_index = null;
+		return $result;
 	}
 
 	/**
@@ -147,15 +162,28 @@ final class TranslationRelationService implements TranslationRelationServiceInte
 	 * @return TranslationGroup|null
 	 */
 	public function get_translation_set_for_object( $object_type, $object_id ) {
-		foreach ( $this->repository->all() as $group ) {
-			foreach ( $group->items() as $item ) {
-				if ( $item->object_type() === sanitize_key( $object_type ) && $item->object_id() === sanitize_text_field( (string) $object_id ) ) {
-					return $group;
-				}
-			}
+		$this->prime_object_group_index();
+		$key = sanitize_key( $object_type ) . ':' . sanitize_text_field( (string) $object_id );
+
+		return isset( $this->object_group_index[ $key ] ) ? $this->object_group_index[ $key ] : null;
+	}
+
+	/**
+	 * Primes the request-local object index with one bounded repository read.
+	 *
+	 * @return void
+	 */
+	private function prime_object_group_index() {
+		if ( is_array( $this->object_group_index ) ) {
+			return;
 		}
 
-		return null;
+		$this->object_group_index = array();
+		foreach ( $this->repository->all() as $group ) {
+			foreach ( $group->items() as $item ) {
+				$this->object_group_index[ $item->object_type() . ':' . $item->object_id() ] = $group;
+			}
+		}
 	}
 
 	/**
@@ -185,7 +213,9 @@ final class TranslationRelationService implements TranslationRelationServiceInte
 	 * @return TranslationItem|\WP_Error
 	 */
 	public function mark_status( $object_type, $object_id, $language_code, $status ) {
-		return $this->repository->update_item_status( $object_type, $object_id, $language_code, $status );
+		$result = $this->repository->update_item_status( $object_type, $object_id, $language_code, $status );
+		$this->object_group_index = null;
+		return $result;
 	}
 
 	/**
