@@ -139,6 +139,7 @@ final class OnboardingIntegrationTest extends WP_UnitTestCase {
 			'direction'             => 'ltr',
 		);
 
+		set_current_screen( 'dashboard' );
 		$wizard = new SetupWizard();
 		$wizard->register( $this->container );
 		$location = null;
@@ -157,6 +158,7 @@ final class OnboardingIntegrationTest extends WP_UnitTestCase {
 			$this->assertSame( 'Captured redirect.', $exception->getMessage() );
 		} finally {
 			remove_filter( 'wp_redirect', $redirect, 10 );
+			set_current_screen( 'front' );
 		}
 
 		$this->assertSame( admin_url( 'admin.php?page=' . SetupWizard::PAGE_SLUG . '&step=languages' ), $location );
