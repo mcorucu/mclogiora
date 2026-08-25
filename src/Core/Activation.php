@@ -8,6 +8,7 @@
 namespace McLogiora\Core;
 
 use McLogiora\Database\InstallerFactory;
+use McLogiora\Setup\SetupState;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -47,6 +48,7 @@ final class Activation {
 			InstallationFailure::record( $installed );
 		} else {
 			InstallationFailure::clear();
+			SetupState::mark_activation_pending();
 		}
 
 		/**

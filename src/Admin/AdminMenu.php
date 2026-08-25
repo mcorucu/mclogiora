@@ -176,10 +176,10 @@ final class AdminMenu implements ModuleInterface {
 				<?php if ( ! $default instanceof Language ) : ?>
 					<div class="mclogiora-onboarding" role="status">
 						<div>
-							<strong><?php esc_html_e( 'Start with your site language', 'mclogiora' ); ?></strong>
+							<strong><?php esc_html_e( 'Finish setting up your languages', 'mclogiora' ); ?></strong>
 							<p><?php esc_html_e( 'Choose a default language before configuring translated URLs or creating translation relationships.', 'mclogiora' ); ?></p>
 						</div>
-						<a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-setup' ) ); ?>"><?php esc_html_e( 'Run Setup Wizard', 'mclogiora' ); ?></a>
+						<a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-setup' ) ); ?>"><?php esc_html_e( 'Finish setup', 'mclogiora' ); ?></a>
 					</div>
 				<?php endif; ?>
 
