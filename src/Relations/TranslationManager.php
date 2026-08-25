@@ -146,6 +146,7 @@ final class TranslationManager implements ModuleInterface {
 				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Translation Relations', 'mclogiora' ); ?></p>
 				<h1 id="mclogiora-translation-manager-title"><?php esc_html_e( 'Translation Manager', 'mclogiora' ); ?></h1>
 				<p class="mclogiora-lede"><?php esc_html_e( 'Review translation relations and run translation actions. Every action is explicit: nothing is translated automatically, and unlinking never deletes content.', 'mclogiora' ); ?></p>
+				<p class="mclogiora-muted-line"><a href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-manual&article=translation-manager' ) ); ?>"><?php esc_html_e( 'Learn more about Translation Manager', 'mclogiora' ); ?></a></p>
 
 				<?php $this->render_action_notice(); ?>
 				<?php $this->render_create_translation_panel( $languages ); ?>

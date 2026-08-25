@@ -117,6 +117,17 @@ if ( ! function_exists( '__' ) ) {
 	}
 }
 
+if ( ! function_exists( 'get_locale' ) ) {
+	/**
+	 * Returns the deterministic test site locale.
+	 *
+	 * @return string
+	 */
+	function get_locale() {
+		return 'en_US';
+	}
+}
+
 if ( ! function_exists( '_n' ) ) {
 	/**
 	 * Returns the singular or plural string.

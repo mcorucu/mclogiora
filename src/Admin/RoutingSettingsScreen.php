@@ -93,6 +93,7 @@ final class RoutingSettingsScreen implements ModuleInterface {
 				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Multilingual URLs', 'mclogiora' ); ?></p>
 				<h1 id="mclogiora-routing-title"><?php esc_html_e( 'Languages & URLs', 'mclogiora' ); ?></h1>
 				<p class="mclogiora-lede"><?php esc_html_e( 'Controls how languages appear in your URLs and how the language switcher is presented.', 'mclogiora' ); ?></p>
+				<p class="mclogiora-muted-line"><a href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-manual&article=language-urls' ) ); ?>"><?php esc_html_e( 'Learn more about language URLs', 'mclogiora' ); ?></a></p>
 
 				<?php $this->render_notice(); ?>
 

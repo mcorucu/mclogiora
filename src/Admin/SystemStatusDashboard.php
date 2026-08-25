@@ -76,6 +76,7 @@ final class SystemStatusDashboard implements ModuleInterface {
 				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Diagnostics', 'mclogiora' ); ?></p>
 				<h1 id="mclogiora-system-status-title"><?php esc_html_e( 'System Status', 'mclogiora' ); ?></h1>
 				<p class="mclogiora-lede"><?php esc_html_e( 'A read-only view of mcLogiora configuration and runtime prerequisites. It performs no repairs, cache resets, provider requests, or other writes.', 'mclogiora' ); ?></p>
+				<p class="mclogiora-muted-line"><a href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-manual&article=troubleshooting' ) ); ?>"><?php esc_html_e( 'Learn more about troubleshooting', 'mclogiora' ); ?></a></p>
 				<div class="mclogiora-status-card <?php echo esc_attr( $status_class ); ?>" role="status" data-diagnostic-status="<?php echo esc_attr( $status ); ?>">
 					<div>
 						<span class="mclogiora-status-card__label"><?php esc_html_e( 'Status', 'mclogiora' ); ?></span>

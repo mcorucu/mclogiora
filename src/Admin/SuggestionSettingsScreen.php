@@ -173,6 +173,7 @@ final class SuggestionSettingsScreen implements ModuleInterface {
 				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Optional', 'mclogiora' ); ?></p>
 				<h1 id="mclogiora-suggestions-title"><?php esc_html_e( 'Translation Suggestions', 'mclogiora' ); ?></h1>
 				<p class="mclogiora-lede">
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-manual&article=suggestions-and-providers' ) ); ?>"><?php esc_html_e( 'Learn more about suggestions and providers', 'mclogiora' ); ?></a>
 					<?php esc_html_e( 'Ask a translation provider you already pay for to draft a translation, which you then review before anything changes.', 'mclogiora' ); ?>
 				</p>
 

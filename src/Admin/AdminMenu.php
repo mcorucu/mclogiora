@@ -192,8 +192,11 @@ final class AdminMenu implements ModuleInterface {
 						<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-routing' ) ); ?>"><?php esc_html_e( 'Configure URLs', 'mclogiora' ); ?></a>
 						<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-suggestions' ) ); ?>"><?php esc_html_e( 'Translation Suggestions', 'mclogiora' ); ?></a>
 						<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-system-status' ) ); ?>"><?php esc_html_e( 'System Status', 'mclogiora' ); ?></a>
+						<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-manual' ) ); ?>"><?php esc_html_e( 'Open Manual', 'mclogiora' ); ?></a>
 					</nav>
 				</div>
+
+				<div class="mclogiora-help-entry" role="note"><div><strong><?php esc_html_e( 'Need help?', 'mclogiora' ); ?></strong><p><?php esc_html_e( 'The local mcLogiora Manual explains setup, translation relationships, URLs, suggestions, and common troubleshooting states.', 'mclogiora' ); ?></p></div><a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-manual' ) ); ?>"><?php esc_html_e( 'Read the Manual', 'mclogiora' ); ?></a></div>
 			</section>
 		</div>
 		<?php
@@ -220,6 +223,7 @@ final class AdminMenu implements ModuleInterface {
 					<?php $this->render_settings_link_card( 'mclogiora-routing', __( 'Languages & URLs', 'mclogiora' ), __( 'Configure language directories and the language switcher used on the front end.', 'mclogiora' ) ); ?>
 					<?php $this->render_settings_link_card( 'mclogiora-suggestions', __( 'Translation Suggestions', 'mclogiora' ), __( 'Keep optional provider suggestions disabled or configure your own provider credentials.', 'mclogiora' ) ); ?>
 					<?php $this->render_settings_link_card( 'mclogiora-compatibility', __( 'Compatibility', 'mclogiora' ), __( 'Review the editors, builders, plugins, and theme detected on this site.', 'mclogiora' ) ); ?>
+					<?php $this->render_settings_link_card( 'mclogiora-manual', __( 'Manual', 'mclogiora' ), __( 'Read the local, searchable guide for everyday multilingual work.', 'mclogiora' ) ); ?>
 				</div>
 			</section>
 		</div>
