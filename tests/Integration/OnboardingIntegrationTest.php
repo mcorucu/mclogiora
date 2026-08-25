@@ -37,6 +37,7 @@ final class OnboardingIntegrationTest extends WP_UnitTestCase {
 
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
 		$this->container = Application::instance( dirname( __DIR__, 2 ) . '/mclogiora.php' )->container();
+		delete_option( 'mclogiora_db_version' );
 		$this->container->get( Installer::class )->install();
 		delete_option( SetupState::OPTION_NAME );
 	}
