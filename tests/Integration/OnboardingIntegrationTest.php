@@ -151,7 +151,8 @@ final class OnboardingIntegrationTest extends WP_UnitTestCase {
 		add_filter( 'wp_redirect', $redirect, 10, 1 );
 
 		try {
-			do_action( 'admin_init' );
+			$this->assertSame( 2, has_action( 'admin_init', array( $wizard, 'handle_post' ) ) );
+			$wizard->handle_post();
 			$this->fail( 'The first language mutation did not redirect.' );
 		} catch ( \RuntimeException $exception ) {
 			$this->assertSame( 'Captured redirect.', $exception->getMessage() );
