@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       mcLogiora
  * Plugin URI:        https://mcorucu.com/
- * Description:       A modern multilingual platform foundation for WordPress.
+ * Description:       A multilingual translation and language management plugin for WordPress.
  * Version:           0.16.0
  * Requires at least: 6.5
  * Tested up to:      7.1

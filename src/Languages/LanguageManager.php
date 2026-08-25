@@ -85,7 +85,7 @@ final class LanguageManager implements ModuleInterface {
 			<section class="mclogiora-panel" aria-labelledby="mclogiora-languages-title">
 				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Language Manager', 'mclogiora' ); ?></p>
 				<h1 id="mclogiora-languages-title"><?php esc_html_e( 'Languages', 'mclogiora' ); ?></h1>
-				<p class="mclogiora-lede"><?php esc_html_e( 'Add and manage the site languages mcLogiora will use in later translation workflows.', 'mclogiora' ); ?></p>
+				<p class="mclogiora-lede"><?php esc_html_e( 'Add and manage the languages used by translated content, language-aware URLs, and the language switcher.', 'mclogiora' ); ?></p>
 
 				<?php $this->render_notice( $notice ); ?>
 
@@ -260,6 +260,7 @@ final class LanguageManager implements ModuleInterface {
 				<p><?php echo esc_html( sprintf( '%s / %s', $language->code(), $language->locale() ) ); ?></p>
 			<?php else : ?>
 				<p><?php esc_html_e( 'No default language has been configured yet.', 'mclogiora' ); ?></p>
+				<a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-setup' ) ); ?>"><?php esc_html_e( 'Run Setup Wizard', 'mclogiora' ); ?></a>
 			<?php endif; ?>
 		</article>
 		<?php
@@ -318,7 +319,7 @@ final class LanguageManager implements ModuleInterface {
 		?>
 		<div class="mclogiora-table-card">
 			<h2><?php esc_html_e( 'Display Order', 'mclogiora' ); ?></h2>
-			<p><?php esc_html_e( 'Lower numbers appear first in future language lists and setup choices.', 'mclogiora' ); ?></p>
+			<p><?php esc_html_e( 'Lower numbers appear first in language lists and switcher choices.', 'mclogiora' ); ?></p>
 			<form class="mclogiora-order-form" method="post">
 				<?php echo Security::nonce_field( self::NONCE_ACTION, self::NONCE_FIELD ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<input type="hidden" name="mclogiora_language_action" value="reorder">
@@ -346,7 +347,7 @@ final class LanguageManager implements ModuleInterface {
 		?>
 		<div class="mclogiora-table-card">
 			<h2><?php esc_html_e( 'Language Directory', 'mclogiora' ); ?></h2>
-			<p><?php esc_html_e( 'Language data is now persisted in the mcLogiora language table. Translation workflows remain intentionally unavailable.', 'mclogiora' ); ?></p>
+			<p><?php esc_html_e( 'These languages are stored by mcLogiora and are available to its translation and routing features.', 'mclogiora' ); ?></p>
 			<div class="mclogiora-table-scroll">
 				<table class="widefat striped mclogiora-language-table">
 					<thead>

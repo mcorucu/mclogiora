@@ -18,7 +18,7 @@ use McLogiora\Health\SeoHealthCheck;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Registers a read-only compatibility and editor foundation screen.
+ * Registers a read-only compatibility and editor screen.
  */
 final class CompatibilityDashboard implements ModuleInterface {
 	/**
@@ -86,9 +86,9 @@ final class CompatibilityDashboard implements ModuleInterface {
 		?>
 		<div class="wrap mclogiora-admin">
 			<section class="mclogiora-panel" aria-labelledby="mclogiora-compatibility-title">
-				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Compatibility foundation', 'mclogiora' ); ?></p>
+				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Compatibility', 'mclogiora' ); ?></p>
 				<h1 id="mclogiora-compatibility-title"><?php esc_html_e( 'Editors and compatibility', 'mclogiora' ); ?></h1>
-				<p class="mclogiora-lede"><?php esc_html_e( 'This read-only overview identifies the current environment. Editor integrations remain dormant until their dedicated workflow phases.', 'mclogiora' ); ?></p>
+				<p class="mclogiora-lede"><?php esc_html_e( 'Review the editors, builders, plugins, and theme detected on this site. Translation controls appear in supported post and page editing contexts.', 'mclogiora' ); ?></p>
 
 				<div class="mclogiora-card-grid mclogiora-card-grid--four">
 					<?php $this->render_list_card( __( 'Detected Editors', 'mclogiora' ), $editors, 'editor' ); ?>
@@ -113,15 +113,9 @@ final class CompatibilityDashboard implements ModuleInterface {
 				<div class="mclogiora-status-card mclogiora-status-card--notice">
 					<span class="mclogiora-status-card__icon" aria-hidden="true">i</span>
 					<div>
-						<h2><?php esc_html_e( 'Editor integrations are intentionally dormant', 'mclogiora' ); ?></h2>
-						<p><?php esc_html_e( 'No editor scripts, metaboxes, sidebars, panels, content mutations, REST routes, or AJAX handlers are registered in this phase.', 'mclogiora' ); ?></p>
+						<h2><?php esc_html_e( 'Use the native editor controls', 'mclogiora' ); ?></h2>
+						<p><?php esc_html_e( 'Block Editor and Classic Editor translation controls stay in WordPress editing screens. mcLogiora does not replace the editor or change content without an explicit action.', 'mclogiora' ); ?></p>
 					</div>
-				</div>
-
-				<div class="mclogiora-card-grid">
-					<?php $this->render_placeholder_card( __( 'Classic Editor metabox', 'mclogiora' ) ); ?>
-					<?php $this->render_placeholder_card( __( 'Block Editor sidebar', 'mclogiora' ) ); ?>
-					<?php $this->render_placeholder_card( __( 'Elementor panel', 'mclogiora' ) ); ?>
 				</div>
 			</section>
 
@@ -200,22 +194,6 @@ final class CompatibilityDashboard implements ModuleInterface {
 					<?php endforeach; ?>
 				</ul>
 			<?php endif; ?>
-		</article>
-		<?php
-	}
-
-	/**
-	 * Renders a future editor surface placeholder.
-	 *
-	 * @param string $title Placeholder title.
-	 * @return void
-	 */
-	private function render_placeholder_card( $title ) {
-		?>
-		<article class="mclogiora-info-card">
-			<h2><?php echo esc_html( $title ); ?></h2>
-			<p><span class="mclogiora-pill"><?php esc_html_e( 'Architecture ready', 'mclogiora' ); ?></span></p>
-			<p><?php esc_html_e( 'The future surface will use the shared editor context and relation services. No editor UI is registered yet.', 'mclogiora' ); ?></p>
 		</article>
 		<?php
 	}

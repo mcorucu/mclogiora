@@ -9,15 +9,16 @@ namespace McLogiora\Admin;
 
 use McLogiora\Assets\AssetLoader;
 use McLogiora\Capabilities\CapabilityRegistry;
-use McLogiora\Content\ContentTranslationServiceInterface;
 use McLogiora\Contracts\ModuleInterface;
 use McLogiora\Core\Container;
-use McLogiora\Taxonomies\TaxonomyTranslationServiceInterface;
+use McLogiora\Languages\Language;
+use McLogiora\Languages\LanguageServiceInterface;
+use McLogiora\Relations\TranslationRelationServiceInterface;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Registers mcLogiora admin pages with placeholder content.
+ * Registers the main mcLogiora admin pages.
  */
 final class AdminMenu implements ModuleInterface {
 	/**
@@ -28,7 +29,7 @@ final class AdminMenu implements ModuleInterface {
 	private $capability = 'manage_options';
 
 	/**
-	 * Planned capability identifier.
+	 * Capability identifier.
 	 *
 	 * @var string
 	 */
@@ -56,18 +57,18 @@ final class AdminMenu implements ModuleInterface {
 	private $capability_registry = null;
 
 	/**
-	 * Content translation foundation service.
+	 * Language service.
 	 *
-	 * @var ContentTranslationServiceInterface|null
+	 * @var LanguageServiceInterface|null
 	 */
-	private $content_service = null;
+	private $language_service = null;
 
 	/**
-	 * Taxonomy translation foundation service.
+	 * Translation relation service.
 	 *
-	 * @var TaxonomyTranslationServiceInterface|null
+	 * @var TranslationRelationServiceInterface|null
 	 */
-	private $taxonomy_service = null;
+	private $relation_service = null;
 
 	/**
 	 * Registers admin menu hooks.
@@ -79,15 +80,15 @@ final class AdminMenu implements ModuleInterface {
 		$this->asset_loader        = $container->get( AssetLoader::class );
 		$this->screen_registry     = $container->get( AdminScreenRegistry::class );
 		$this->capability_registry = $container->get( CapabilityRegistry::class );
-		$this->content_service     = $container->get( ContentTranslationServiceInterface::class );
-		$this->taxonomy_service    = $container->get( TaxonomyTranslationServiceInterface::class );
+		$this->language_service    = $container->get( LanguageServiceInterface::class );
+		$this->relation_service    = $container->get( TranslationRelationServiceInterface::class );
 		$this->capability          = $this->capability_registry->resolve( $this->planned_capability );
 
 		add_action( 'admin_menu', array( $this, 'register_pages' ) );
 	}
 
 	/**
-	 * Registers placeholder admin pages.
+	 * Registers admin pages.
 	 *
 	 * @return void
 	 */
@@ -135,7 +136,7 @@ final class AdminMenu implements ModuleInterface {
 	}
 
 	/**
-	 * Renders the foundation dashboard placeholder.
+	 * Renders the product overview dashboard.
 	 *
 	 * @return void
 	 */
@@ -144,15 +145,62 @@ final class AdminMenu implements ModuleInterface {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'mclogiora' ) );
 		}
 
-		$this->render_page(
-			__( 'mcLogiora Core Kernel', 'mclogiora' ),
-			__( 'Phase 05 is active. Content and taxonomy translation foundations are available as read-only registries without persistence.', 'mclogiora' ),
-			true
-		);
+		$languages = $this->language_service instanceof LanguageServiceInterface ? $this->language_service->get_active_languages() : array();
+		$default   = $this->language_service instanceof LanguageServiceInterface ? $this->language_service->get_default_language() : null;
+		$groups    = $this->relation_service instanceof TranslationRelationServiceInterface ? $this->relation_service->get_placeholder_groups() : array();
+
+		?>
+		<div class="wrap mclogiora-admin">
+			<section class="mclogiora-panel mclogiora-dashboard" aria-labelledby="mclogiora-page-title">
+				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Overview', 'mclogiora' ); ?></p>
+				<h1 id="mclogiora-page-title"><?php esc_html_e( 'mcLogiora', 'mclogiora' ); ?></h1>
+				<p class="mclogiora-lede"><?php esc_html_e( 'Manage your site languages, translation relationships, multilingual URLs, strings, and optional translation suggestions from one place.', 'mclogiora' ); ?></p>
+
+				<div class="mclogiora-dashboard-summary" aria-label="<?php esc_attr_e( 'Site translation summary', 'mclogiora' ); ?>">
+					<article class="mclogiora-summary-card">
+						<span class="mclogiora-summary-card__label"><?php esc_html_e( 'Languages', 'mclogiora' ); ?></span>
+						<strong><?php echo esc_html( (string) count( $languages ) ); ?></strong>
+						<?php if ( $default instanceof Language ) : ?>
+							<span><?php echo esc_html( sprintf( '%s (%s)', $default->english_name(), $default->code() ) ); ?></span>
+						<?php else : ?>
+							<span><?php esc_html_e( 'No default language configured', 'mclogiora' ); ?></span>
+						<?php endif; ?>
+					</article>
+					<article class="mclogiora-summary-card">
+						<span class="mclogiora-summary-card__label"><?php esc_html_e( 'Translation groups', 'mclogiora' ); ?></span>
+						<strong><?php echo esc_html( (string) count( $groups ) ); ?></strong>
+						<span><?php esc_html_e( 'Explicit relationships managed by the plugin', 'mclogiora' ); ?></span>
+					</article>
+				</div>
+
+				<?php if ( ! $default instanceof Language ) : ?>
+					<div class="mclogiora-onboarding" role="status">
+						<div>
+							<strong><?php esc_html_e( 'Start with your site language', 'mclogiora' ); ?></strong>
+							<p><?php esc_html_e( 'Choose a default language before configuring translated URLs or creating translation relationships.', 'mclogiora' ); ?></p>
+						</div>
+						<a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-setup' ) ); ?>"><?php esc_html_e( 'Run Setup Wizard', 'mclogiora' ); ?></a>
+					</div>
+				<?php endif; ?>
+
+				<div class="mclogiora-quick-actions">
+					<h2><?php esc_html_e( 'Quick actions', 'mclogiora' ); ?></h2>
+					<nav aria-label="<?php esc_attr_e( 'mcLogiora quick actions', 'mclogiora' ); ?>">
+						<a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-languages' ) ); ?>"><?php esc_html_e( 'Manage Languages', 'mclogiora' ); ?></a>
+						<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-translation-manager' ) ); ?>"><?php esc_html_e( 'Translation Manager', 'mclogiora' ); ?></a>
+						<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-string-translation' ) ); ?>"><?php esc_html_e( 'String Translation', 'mclogiora' ); ?></a>
+						<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-routing' ) ); ?>"><?php esc_html_e( 'Configure URLs', 'mclogiora' ); ?></a>
+						<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-suggestions' ) ); ?>"><?php esc_html_e( 'Translation Suggestions', 'mclogiora' ); ?></a>
+						<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-system-status' ) ); ?>"><?php esc_html_e( 'System Status', 'mclogiora' ); ?></a>
+					</nav>
+				</div>
+			</section>
+		</div>
+		<?php
 	}
 
 	/**
-	 * Renders the settings placeholder.
+	 * Renders the settings overview.
 	 *
 	 * @return void
 	 */
@@ -161,77 +209,38 @@ final class AdminMenu implements ModuleInterface {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'mclogiora' ) );
 		}
 
-		$this->render_page(
-			__( 'Settings Framework', 'mclogiora' ),
-			__( 'No settings are registered in Phase 05. This screen exists only as the future settings framework entry point.', 'mclogiora' )
-		);
-	}
-
-	/**
-	 * Renders a Skylearn-aligned placeholder page.
-	 *
-	 * @param string $title Page title.
-	 * @param string $message Page message.
-	 * @param bool   $show_dashboard_cards Whether to show dashboard cards.
-	 * @return void
-	 */
-	private function render_page( $title, $message, $show_dashboard_cards = false ) {
 		?>
 		<div class="wrap mclogiora-admin">
-			<section class="mclogiora-panel" aria-labelledby="mclogiora-page-title">
-				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Foundation', 'mclogiora' ); ?></p>
-				<h1 id="mclogiora-page-title"><?php echo esc_html( $title ); ?></h1>
-				<p class="mclogiora-lede"><?php echo esc_html( $message ); ?></p>
-				<div class="mclogiora-status-card">
-					<span class="mclogiora-status-card__icon" aria-hidden="true">OK</span>
-					<div>
-						<h2><?php esc_html_e( 'Ready for Prompt 06', 'mclogiora' ); ?></h2>
-						<p><?php esc_html_e( 'Content and taxonomy support foundations are registered. No translations or content changes are created yet.', 'mclogiora' ); ?></p>
-					</div>
+			<section class="mclogiora-panel" aria-labelledby="mclogiora-settings-title">
+				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Configuration', 'mclogiora' ); ?></p>
+				<h1 id="mclogiora-settings-title"><?php esc_html_e( 'Settings', 'mclogiora' ); ?></h1>
+				<p class="mclogiora-lede"><?php esc_html_e( 'Choose a mcLogiora area to configure. Each screen saves only the settings it owns and explains the effect before you change it.', 'mclogiora' ); ?></p>
+				<div class="mclogiora-card-grid mclogiora-card-grid--two">
+					<?php $this->render_settings_link_card( 'mclogiora-languages', __( 'Languages', 'mclogiora' ), __( 'Add languages, choose the default, and control the active language list.', 'mclogiora' ) ); ?>
+					<?php $this->render_settings_link_card( 'mclogiora-routing', __( 'Languages & URLs', 'mclogiora' ), __( 'Configure language directories and the language switcher used on the front end.', 'mclogiora' ) ); ?>
+					<?php $this->render_settings_link_card( 'mclogiora-suggestions', __( 'Translation Suggestions', 'mclogiora' ), __( 'Keep optional provider suggestions disabled or configure your own provider credentials.', 'mclogiora' ) ); ?>
+					<?php $this->render_settings_link_card( 'mclogiora-compatibility', __( 'Compatibility', 'mclogiora' ), __( 'Review the editors, builders, plugins, and theme detected on this site.', 'mclogiora' ) ); ?>
 				</div>
-
-				<?php if ( $show_dashboard_cards ) : ?>
-					<?php $this->render_dashboard_cards(); ?>
-				<?php endif; ?>
 			</section>
 		</div>
 		<?php
 	}
 
 	/**
-	 * Renders Phase 05 dashboard cards.
+	 * Renders one settings navigation card.
 	 *
+	 * @param string $slug Destination page slug.
+	 * @param string $title Card title.
+	 * @param string $description Card description.
 	 * @return void
 	 */
-	private function render_dashboard_cards() {
-		$content_overview  = $this->content_service instanceof ContentTranslationServiceInterface ? $this->content_service->get_support_overview() : array();
-		$taxonomy_overview = $this->taxonomy_service instanceof TaxonomyTranslationServiceInterface ? $this->taxonomy_service->get_support_overview() : array();
-		$content_count     = isset( $content_overview['translatable'] ) ? absint( $content_overview['translatable'] ) : 0;
-		$taxonomy_count    = isset( $taxonomy_overview['translatable'] ) ? absint( $taxonomy_overview['translatable'] ) : 0;
-		$excluded_count    = ( isset( $content_overview['excluded'] ) ? absint( $content_overview['excluded'] ) : 0 ) + ( isset( $taxonomy_overview['excluded'] ) ? absint( $taxonomy_overview['excluded'] ) : 0 );
+	private function render_settings_link_card( $slug, $title, $description ) {
 		?>
-		<div class="mclogiora-card-grid mclogiora-card-grid--four">
-			<article class="mclogiora-info-card">
-				<h2><?php esc_html_e( 'Translatable Content Types', 'mclogiora' ); ?></h2>
-				<p class="mclogiora-card-value"><?php echo esc_html( (string) $content_count ); ?></p>
-				<p><?php esc_html_e( 'Posts, pages, and eligible public custom post types are prepared for future workflows.', 'mclogiora' ); ?></p>
-			</article>
-			<article class="mclogiora-info-card">
-				<h2><?php esc_html_e( 'Translatable Taxonomies', 'mclogiora' ); ?></h2>
-				<p class="mclogiora-card-value"><?php echo esc_html( (string) $taxonomy_count ); ?></p>
-				<p><?php esc_html_e( 'Categories, tags, and eligible public custom taxonomies are prepared for future workflows.', 'mclogiora' ); ?></p>
-			</article>
-			<article class="mclogiora-info-card">
-				<h2><?php esc_html_e( 'Excluded Integrations', 'mclogiora' ); ?></h2>
-				<p class="mclogiora-card-value"><?php echo esc_html( (string) $excluded_count ); ?></p>
-				<p><?php esc_html_e( 'WooCommerce and LMS support are planned as future free compatibility modules and are not part of this foundation yet.', 'mclogiora' ); ?></p>
-			</article>
-			<article class="mclogiora-info-card">
-				<h2><?php esc_html_e( 'Future Editor Support', 'mclogiora' ); ?></h2>
-				<p class="mclogiora-card-value"><?php echo esc_html( '4' ); ?></p>
-				<p><?php esc_html_e( 'Gutenberg, Classic Editor, Elementor, and ACF remain planned adapter foundations.', 'mclogiora' ); ?></p>
-			</article>
-		</div>
+		<article class="mclogiora-info-card mclogiora-link-card">
+			<h2><?php echo esc_html( $title ); ?></h2>
+			<p><?php echo esc_html( $description ); ?></p>
+			<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=' . $slug ) ); ?>"><?php esc_html_e( 'Open settings', 'mclogiora' ); ?></a>
+		</article>
 		<?php
 	}
 }

@@ -67,18 +67,24 @@ final class SystemStatusDashboard implements ModuleInterface {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'mclogiora' ) );
 		}
 
-		$report = $this->diagnostics instanceof DiagnosticsService ? $this->diagnostics->collect() : array();
-		$status = isset( $report['meta']['overall'] ) ? (string) $report['meta']['overall'] : DiagnosticsService::CRITICAL;
+		$report       = $this->diagnostics instanceof DiagnosticsService ? $this->diagnostics->collect() : array();
+		$status       = isset( $report['meta']['overall'] ) ? (string) $report['meta']['overall'] : DiagnosticsService::CRITICAL;
+		$status_class = DiagnosticsService::CRITICAL === $status ? 'mclogiora-status-card--action-required' : 'mclogiora-status-card--notice';
 		?>
 		<div class="wrap mclogiora-admin">
 			<section class="mclogiora-panel" aria-labelledby="mclogiora-system-status-title">
 				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Diagnostics', 'mclogiora' ); ?></p>
 				<h1 id="mclogiora-system-status-title"><?php esc_html_e( 'System Status', 'mclogiora' ); ?></h1>
 				<p class="mclogiora-lede"><?php esc_html_e( 'A read-only view of mcLogiora configuration and runtime prerequisites. It performs no repairs, cache resets, provider requests, or other writes.', 'mclogiora' ); ?></p>
-				<p class="mclogiora-status-card mclogiora-status-card--notice" role="status">
-					<strong><?php esc_html_e( 'Overall status:', 'mclogiora' ); ?></strong>
-					<?php echo esc_html( $this->status_label( $status ) ); ?>
-				</p>
+				<div class="mclogiora-status-card <?php echo esc_attr( $status_class ); ?>" role="status" data-diagnostic-status="<?php echo esc_attr( $status ); ?>">
+					<div>
+						<span class="mclogiora-status-card__label"><?php esc_html_e( 'Status', 'mclogiora' ); ?></span>
+						<strong><?php echo esc_html( $this->status_label( $status ) ); ?></strong>
+					</div>
+					<?php if ( DiagnosticsService::CRITICAL === $status ) : ?>
+						<p><?php esc_html_e( 'Review the first action-required finding below before relying on translated routing.', 'mclogiora' ); ?></p>
+					<?php endif; ?>
+				</div>
 			</section>
 
 			<?php $this->render_findings( isset( $report['findings'] ) && is_array( $report['findings'] ) ? $report['findings'] : array() ); ?>
@@ -105,11 +111,14 @@ final class SystemStatusDashboard implements ModuleInterface {
 			<h2 id="mclogiora-findings-title"><?php esc_html_e( 'Findings', 'mclogiora' ); ?></h2>
 			<ul>
 				<?php foreach ( $findings as $finding ) : ?>
-					<li>
+					<li class="mclogiora-finding mclogiora-finding--<?php echo esc_attr( isset( $finding['status'] ) ? $finding['status'] : DiagnosticsService::INFORMATIONAL ); ?>">
 						<strong><?php echo esc_html( isset( $finding['label'] ) ? $finding['label'] : '' ); ?></strong>
 						<span> — <?php echo esc_html( $this->status_label( isset( $finding['status'] ) ? $finding['status'] : DiagnosticsService::INFORMATIONAL ) ); ?></span>
 						<?php if ( ! empty( $finding['detail'] ) ) : ?>
 							<span>: <?php echo esc_html( $finding['detail'] ); ?></span>
+						<?php endif; ?>
+						<?php if ( isset( $finding['id'], $finding['status'] ) && 'default_language' === $finding['id'] && DiagnosticsService::CRITICAL === $finding['status'] ) : ?>
+							<a class="button button-small" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-setup&step=default_language' ) ); ?>"><?php esc_html_e( 'Configure languages', 'mclogiora' ); ?></a>
 						<?php endif; ?>
 					</li>
 				<?php endforeach; ?>
@@ -234,7 +243,7 @@ final class SystemStatusDashboard implements ModuleInterface {
 		$labels = array(
 			DiagnosticsService::GOOD          => __( 'Good', 'mclogiora' ),
 			DiagnosticsService::RECOMMENDED   => __( 'Recommended', 'mclogiora' ),
-			DiagnosticsService::CRITICAL      => __( 'Critical', 'mclogiora' ),
+			DiagnosticsService::CRITICAL      => __( 'Action required', 'mclogiora' ),
 			DiagnosticsService::INFORMATIONAL => __( 'Informational', 'mclogiora' ),
 		);
 

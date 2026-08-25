@@ -8,11 +8,11 @@ Stable tag: 0.16.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-A modern multilingual platform foundation for WordPress.
+A multilingual translation and language management plugin for WordPress.
 
 == Description ==
 
-mcLogiora is planned as a modular multilingual platform for WordPress.
+mcLogiora is a modular multilingual platform for WordPress.
 
 mcLogiora is fully free and fully open source. There is no premium edition, no paid tier, no licence key, and no feature paywall. Every feature it ships is available to every user.
 
@@ -23,15 +23,15 @@ This release brings translation into the editing experience itself:
 * Core application and service container.
 * Module loader.
 * Environment validation.
-* Foundation contracts.
+* Stable plugin contracts.
 * Conditional admin assets.
 * Functional language manager for plugin language data.
 * Database-backed translation group and item relation records.
-* Editor-independent Classic Editor, Block Editor, and Elementor adapter foundations.
+* Editor-independent Classic Editor, Block Editor, and Elementor compatibility adapters.
 * Read-only compatibility detection for editors, builders, known plugins, and the active theme.
 * Setup wizard welcome and default language steps.
 * Localization and project metadata structure.
-* Migration-based database schema for language and relation foundations.
+* Migration-based database schema for language and relation data.
 
 Translation workflows:
 
@@ -216,7 +216,7 @@ Machine translation is a draft. Read it before you publish it.
 
 1. Upload the `mclogiora` folder to `/wp-content/plugins/`.
 2. Activate the plugin from the WordPress Plugins screen.
-3. Open the mcLogiora admin menu to confirm the foundation screen loads.
+3. Open the mcLogiora admin menu to confirm the overview screen loads.
 
 == Frequently Asked Questions ==
 

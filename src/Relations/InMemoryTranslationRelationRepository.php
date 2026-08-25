@@ -261,7 +261,7 @@ final class InMemoryTranslationRelationRepository implements TranslationRelation
 		}
 
 		if ( $item->is_original() && TranslationStatus::ORIGINAL !== $status ) {
-			return new \WP_Error( 'mclogiora_relation_original_status_locked', __( 'The original item status cannot be changed in this phase.', 'mclogiora' ) );
+			return new \WP_Error( 'mclogiora_relation_original_status_locked', __( 'The original item status cannot be changed from this screen.', 'mclogiora' ) );
 		}
 
 		if ( ! $item->is_original() && TranslationStatus::ORIGINAL === $status ) {
@@ -443,7 +443,7 @@ final class InMemoryTranslationRelationRepository implements TranslationRelation
 		}
 
 		if ( $item->is_original() ) {
-			return new \WP_Error( 'mclogiora_relation_detach_original', __( 'The original item cannot be detached in this phase.', 'mclogiora' ) );
+			return new \WP_Error( 'mclogiora_relation_detach_original', __( 'The original item cannot be detached from its translation relationship.', 'mclogiora' ) );
 		}
 
 		$this->remove_item( $item );
