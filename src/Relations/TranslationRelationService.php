@@ -73,7 +73,7 @@ final class TranslationRelationService implements TranslationRelationServiceInte
 	 * @return TranslationGroup|\WP_Error
 	 */
 	public function create_group_placeholder( TranslationItem $original ) {
-		$result = $this->repository->create_group_placeholder( $original );
+		$result                   = $this->repository->create_group_placeholder( $original );
 		$this->object_group_index = null;
 		return $result;
 	}
@@ -86,7 +86,7 @@ final class TranslationRelationService implements TranslationRelationServiceInte
 	 * @return TranslationGroup|\WP_Error
 	 */
 	public function create_group_placeholder_with_key( $group_key, TranslationItem $original ) {
-		$result = $this->repository->create_group_placeholder_with_key( $group_key, $original );
+		$result                   = $this->repository->create_group_placeholder_with_key( $group_key, $original );
 		$this->object_group_index = null;
 		return $result;
 	}
@@ -126,7 +126,7 @@ final class TranslationRelationService implements TranslationRelationServiceInte
 			$status = TranslationStatus::DRAFT;
 		}
 
-		$result = $this->repository->add_item_to_group(
+		$result                   = $this->repository->add_item_to_group(
 			$group_key,
 			new TranslationItem(
 				$object_type,
@@ -149,7 +149,7 @@ final class TranslationRelationService implements TranslationRelationServiceInte
 	 * @return bool|\WP_Error
 	 */
 	public function detach_item_safely( $object_type, $object_id, $language_code ) {
-		$result = $this->repository->detach_item( $object_type, $object_id, $language_code );
+		$result                   = $this->repository->detach_item( $object_type, $object_id, $language_code );
 		$this->object_group_index = null;
 		return $result;
 	}
@@ -213,7 +213,9 @@ final class TranslationRelationService implements TranslationRelationServiceInte
 	 * @return TranslationItem|\WP_Error
 	 */
 	public function mark_status( $object_type, $object_id, $language_code, $status ) {
-		return $this->repository->update_item_status( $object_type, $object_id, $language_code, $status );
+		$result = $this->repository->update_item_status( $object_type, $object_id, $language_code, $status );
+		$this->object_group_index = null;
+		return $result;
 	}
 
 	/**

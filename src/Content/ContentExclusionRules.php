@@ -49,10 +49,23 @@ final class ContentExclusionRules {
 		'lp_quiz',
 	);
 
-	/** @var string[] WordPress-owned or internal object types. */
+	/**
+	 * WordPress-owned or internal object types.
+	 *
+	 * @var string[]
+	 */
 	private $internal_types = array(
-		'revision', 'nav_menu_item', 'custom_css', 'customize_changeset', 'oembed_cache', 'user_request',
-		'wp_block', 'wp_template', 'wp_template_part', 'wp_global_styles', 'wp_navigation',
+		'revision',
+		'nav_menu_item',
+		'custom_css',
+		'customize_changeset',
+		'oembed_cache',
+		'user_request',
+		'wp_block',
+		'wp_template',
+		'wp_template_part',
+		'wp_global_styles',
+		'wp_navigation',
 	);
 
 	/**

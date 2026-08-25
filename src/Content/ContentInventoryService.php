@@ -26,27 +26,48 @@ defined( 'ABSPATH' ) || exit;
  * relation group.
  */
 final class ContentInventoryService {
-	/** @var ContentTypeRegistryInterface */
+	/**
+	 * Content type registry.
+	 *
+	 * @var ContentTypeRegistryInterface
+	 */
 	private $content_types;
 
-	/** @var TaxonomyRegistryInterface */
+	/**
+	 * Taxonomy registry.
+	 *
+	 * @var TaxonomyRegistryInterface
+	 */
 	private $taxonomies;
 
-	/** @var TranslationRelationServiceInterface */
+	/**
+	 * Relation service.
+	 *
+	 * @var TranslationRelationServiceInterface
+	 */
 	private $relations;
 
-	/** @var LanguageServiceInterface */
+	/**
+	 * Language service.
+	 *
+	 * @var LanguageServiceInterface
+	 */
 	private $languages;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param ContentTypeRegistryInterface       $content_types Content registry.
-	 * @param TaxonomyRegistryInterface          $taxonomies Taxonomy registry.
+	 * @param ContentTypeRegistryInterface        $content_types Content registry.
+	 * @param TaxonomyRegistryInterface           $taxonomies Taxonomy registry.
 	 * @param TranslationRelationServiceInterface $relations Relation service.
 	 * @param LanguageServiceInterface            $languages Language service.
 	 */
-	public function __construct( ContentTypeRegistryInterface $content_types, TaxonomyRegistryInterface $taxonomies, TranslationRelationServiceInterface $relations, LanguageServiceInterface $languages ) {
+	public function __construct(
+		ContentTypeRegistryInterface $content_types,
+		TaxonomyRegistryInterface $taxonomies,
+		TranslationRelationServiceInterface $relations,
+		LanguageServiceInterface $languages
+	) {
 		$this->content_types = $content_types;
 		$this->taxonomies    = $taxonomies;
 		$this->relations     = $relations;
@@ -134,7 +155,13 @@ final class ContentInventoryService {
 			$taxonomy = isset( $allowed[0] ) ? $allowed[0] : '';
 		}
 		if ( '' === $taxonomy ) {
-			return array( 'items' => array(), 'total' => 0, 'total_pages' => 0, 'page' => $page, 'per_page' => $per_page );
+			return array(
+				'items'       => array(),
+				'total'       => 0,
+				'total_pages' => 0,
+				'page'        => $page,
+				'per_page'    => $per_page,
+			);
 		}
 
 		$terms = get_terms(
@@ -148,8 +175,16 @@ final class ContentInventoryService {
 				'order'      => 'ASC',
 			)
 		);
-		$total = wp_count_terms( $taxonomy, array( 'hide_empty' => false, 'search' => $search ) );
-		$total = is_wp_error( $total ) ? 0 : (int) $total;
+		$total_terms = get_terms(
+			array(
+				'taxonomy'   => $taxonomy,
+				'hide_empty' => false,
+				'number'     => 0,
+				'search'     => $search,
+				'fields'     => 'ids',
+			)
+		);
+		$total = is_wp_error( $total_terms ) ? 0 : count( $total_terms );
 		$items = array();
 
 		foreach ( is_array( $terms ) ? $terms : array() as $term ) {
@@ -159,7 +194,13 @@ final class ContentInventoryService {
 			$items[] = $this->object_row( ContentType::TERM, (string) $term->term_id, $term->taxonomy, $term->name, get_edit_term_link( $term->term_id, $term->taxonomy ), 'term' );
 		}
 
-		return array( 'items' => $items, 'total' => $total, 'total_pages' => (int) ceil( $total / $per_page ), 'page' => $page, 'per_page' => $per_page );
+		return array(
+			'items'       => $items,
+			'total'       => $total,
+			'total_pages' => (int) ceil( $total / $per_page ),
+			'page'        => $page,
+			'per_page'    => $per_page,
+		);
 	}
 
 	/**
@@ -194,7 +235,9 @@ final class ContentInventoryService {
 				}
 				if ( ! $item->is_original() && $item->object_type() === $object_type ) {
 					$targets[ $item->language_code() ] = array(
-						'id' => (int) $item->object_id(), 'status' => $item->status(), 'edit_url' => $this->edit_link( $object_type, $item->object_id(), $subtype ),
+						'id'       => (int) $item->object_id(),
+						'status'   => $item->status(),
+						'edit_url' => $this->edit_link( $object_type, $item->object_id(), $subtype ),
 					);
 				}
 			}

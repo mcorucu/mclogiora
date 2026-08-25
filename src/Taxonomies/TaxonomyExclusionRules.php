@@ -42,7 +42,11 @@ final class TaxonomyExclusionRules {
 		'ld_lesson_tag',
 	);
 
-	/** @var string[] WordPress-owned or internal taxonomies. */
+	/**
+	 * WordPress-owned or internal taxonomies.
+	 *
+	 * @var string[]
+	 */
 	private $internal_taxonomies = array( 'nav_menu', 'link_category', 'post_format', 'wp_theme' );
 
 	/**

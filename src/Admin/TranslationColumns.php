@@ -51,7 +51,11 @@ final class TranslationColumns implements ModuleInterface {
 	 */
 	private $content_types = null;
 
-	/** @var TaxonomyRegistryInterface|null */
+	/**
+	 * Taxonomy registry.
+	 *
+	 * @var TaxonomyRegistryInterface|null
+	 */
 	private $taxonomies = null;
 
 	/**
@@ -213,17 +217,17 @@ final class TranslationColumns implements ModuleInterface {
 	 * @param string $column Column key.
 	 * @param int    $term_id Term ID.
 	 * @param string $taxonomy Taxonomy name.
-	 * @return void
+	 * @return string
 	 */
 	public function render_term_column( $column, $term_id, $taxonomy ) {
 		if ( self::COLUMN_KEY !== $column ) {
 			return $column;
 		}
 		ob_start();
-		$term = get_term( (int) $term_id, $taxonomy );
+		$term      = get_term( (int) $term_id, $taxonomy );
 		$languages = $this->languages->get_active_languages();
-		$group = $this->relations->get_translation_set_for_object( ContentType::TERM, (string) $term_id );
-		$items = $group instanceof TranslationGroup ? $group->items() : array();
+		$group     = $this->relations->get_translation_set_for_object( ContentType::TERM, (string) $term_id );
+		$items     = $group instanceof TranslationGroup ? $group->items() : array();
 		echo '<ul class="mclogiora-language-column">';
 		foreach ( $languages as $language ) {
 			if ( ! $language instanceof Language ) {
@@ -268,12 +272,32 @@ final class TranslationColumns implements ModuleInterface {
 	 */
 	private function render_missing_action( $source_id, Language $language, $title, $term, $taxonomy ) {
 		$action = $term ? 'mclogiora_create_term_translation' : 'mclogiora_create_translation';
-		$label  = sprintf( __( 'Add %s translation for %s', 'mclogiora' ), strtoupper( $language->code() ), $title );
-		printf( '<form method="post" action="%1$s" class="mclogiora-inline-form"><input type="hidden" name="action" value="%2$s"><input type="hidden" name="source_id" value="%3$d">', esc_url( admin_url( 'admin-post.php' ) ), esc_attr( $action ), (int) $source_id );
+		/* translators: 1: target language code, 2: source title. */
+		$label = sprintf( __( 'Add %1$s translation for %2$s', 'mclogiora' ), strtoupper( $language->code() ), $title );
+
+		printf(
+			'<form method="post" action="%1$s" class="mclogiora-inline-form"><input type="hidden" name="action" value="%2$s"><input type="hidden" name="source_id" value="%3$d">',
+			esc_url( admin_url( 'admin-post.php' ) ),
+			esc_attr( $action ),
+			(int) $source_id
+		);
+
 		if ( $term ) {
-			printf( '<input type="hidden" name="taxonomy" value="%1$s"><input type="hidden" name="translated_name" value="%2$s"><input type="hidden" name="translated_description" value="">', esc_attr( $taxonomy ), esc_attr( $title ) );
+			printf(
+				'<input type="hidden" name="taxonomy" value="%1$s"><input type="hidden" name="translated_name" value="%2$s"><input type="hidden" name="translated_description" value="">',
+				esc_attr( $taxonomy ),
+				esc_attr( $title )
+			);
 		}
-		printf( '<input type="hidden" name="target_language" value="%1$s">%2$s<button type="submit" class="button-link" aria-label="%3$s">+ %4$s</button></form>', esc_attr( $language->code() ), wp_nonce_field( TranslationActionController::NONCE_ACTION, TranslationActionController::NONCE_NAME, true, false ), esc_attr( $label ), esc_html( strtoupper( $language->code() ) ) );
+
+		$nonce = wp_nonce_field( TranslationActionController::NONCE_ACTION, TranslationActionController::NONCE_NAME, true, false );
+		printf(
+			'<input type="hidden" name="target_language" value="%1$s">%2$s<button type="submit" class="button-link" aria-label="%3$s">+ %4$s</button></form>',
+			esc_attr( $language->code() ),
+			$nonce, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WordPress generates this nonce field markup.
+			esc_attr( $label ),
+			esc_html( strtoupper( $language->code() ) )
+		);
 	}
 
 	/**
