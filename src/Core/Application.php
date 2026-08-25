@@ -23,6 +23,7 @@ use McLogiora\Cache\ObjectCache;
 use McLogiora\Content\ContentExclusionRules;
 use McLogiora\Content\ContentTranslationService;
 use McLogiora\Content\ContentTranslationServiceInterface;
+use McLogiora\Content\ContentInventoryService;
 use McLogiora\Content\ContentTypeRegistry;
 use McLogiora\Content\ContentTypeRegistryInterface;
 use McLogiora\Content\CustomPostTypeSupportDetector;
@@ -598,6 +599,18 @@ final class Application {
 			ContentTranslationServiceInterface::class,
 			static function ( Container $container ) {
 				return new ContentTranslationService( $container->get( ContentTypeRegistryInterface::class ) );
+			}
+		);
+
+		$this->container->set(
+			ContentInventoryService::class,
+			static function ( Container $container ) {
+				return new ContentInventoryService(
+					$container->get( ContentTypeRegistryInterface::class ),
+					$container->get( TaxonomyRegistryInterface::class ),
+					$container->get( TranslationRelationServiceInterface::class ),
+					$container->get( LanguageServiceInterface::class )
+				);
 			}
 		);
 

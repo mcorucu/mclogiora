@@ -49,6 +49,12 @@ final class ContentExclusionRules {
 		'lp_quiz',
 	);
 
+	/** @var string[] WordPress-owned or internal object types. */
+	private $internal_types = array(
+		'revision', 'nav_menu_item', 'custom_css', 'customize_changeset', 'oembed_cache', 'user_request',
+		'wp_block', 'wp_template', 'wp_template_part', 'wp_global_styles', 'wp_navigation',
+	);
+
 	/**
 	 * Returns exclusion reason for a post type.
 	 *
@@ -62,7 +68,12 @@ final class ContentExclusionRules {
 			return __( 'Media translation is not available for this content type.', 'mclogiora' );
 		}
 
-		if ( in_array( $post_type, $this->woocommerce_types, true ) || 0 === strpos( $post_type, 'wc_' ) ) {
+		if ( in_array( $post_type, $this->internal_types, true ) ) {
+			return __( 'Internal WordPress content is not available for translation.', 'mclogiora' );
+		}
+
+		$woocommerce = apply_filters( 'mclogiora_is_woocommerce_post_type', false, $post_type );
+		if ( true === $woocommerce || in_array( $post_type, $this->woocommerce_types, true ) || 0 === strpos( $post_type, 'wc_' ) ) {
 			return __( 'WooCommerce content is not currently supported by mcLogiora.', 'mclogiora' );
 		}
 

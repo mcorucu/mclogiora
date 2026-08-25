@@ -42,6 +42,9 @@ final class TaxonomyExclusionRules {
 		'ld_lesson_tag',
 	);
 
+	/** @var string[] WordPress-owned or internal taxonomies. */
+	private $internal_taxonomies = array( 'nav_menu', 'link_category', 'post_format', 'wp_theme' );
+
 	/**
 	 * Returns exclusion reason for a taxonomy.
 	 *
@@ -51,7 +54,12 @@ final class TaxonomyExclusionRules {
 	public function reason_for( $taxonomy ) {
 		$taxonomy = sanitize_key( $taxonomy );
 
-		if ( in_array( $taxonomy, $this->woocommerce_taxonomies, true ) || 0 === strpos( $taxonomy, 'pa_' ) ) {
+		if ( in_array( $taxonomy, $this->internal_taxonomies, true ) ) {
+			return __( 'Internal WordPress taxonomies are not available for translation.', 'mclogiora' );
+		}
+
+		$woocommerce = apply_filters( 'mclogiora_is_woocommerce_taxonomy', false, $taxonomy );
+		if ( true === $woocommerce || in_array( $taxonomy, $this->woocommerce_taxonomies, true ) || 0 === strpos( $taxonomy, 'pa_' ) ) {
 			return __( 'WooCommerce taxonomies are not currently supported by mcLogiora.', 'mclogiora' );
 		}
 

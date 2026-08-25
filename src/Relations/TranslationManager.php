@@ -11,6 +11,7 @@ use McLogiora\Admin\AdminScreen;
 use McLogiora\Admin\AdminScreenRegistry;
 use McLogiora\Capabilities\CapabilityRegistry;
 use McLogiora\Content\ContentTranslationServiceInterface;
+use McLogiora\Content\ContentInventoryService;
 use McLogiora\Content\TranslatableContentType;
 use McLogiora\Contracts\ModuleInterface;
 use McLogiora\Core\Container;
@@ -59,6 +60,13 @@ final class TranslationManager implements ModuleInterface {
 	private $taxonomy_service = null;
 
 	/**
+	 * Read-only content and taxonomy inventory.
+	 *
+	 * @var ContentInventoryService|null
+	 */
+	private $inventory = null;
+
+	/**
 	 * Effective admin capability.
 	 *
 	 * @var string
@@ -92,6 +100,7 @@ final class TranslationManager implements ModuleInterface {
 		$this->language_service = $container->get( LanguageServiceInterface::class );
 		$this->content_service  = $container->get( ContentTranslationServiceInterface::class );
 		$this->taxonomy_service = $container->get( TaxonomyTranslationServiceInterface::class );
+		$this->inventory        = $container->get( ContentInventoryService::class );
 		$this->transitions      = $container->get( TranslationStatusTransitions::class );
 		$this->suggestions      = $container->get( SuggestionAdminState::class );
 
@@ -141,42 +150,7 @@ final class TranslationManager implements ModuleInterface {
 				<?php $this->render_action_notice(); ?>
 				<?php $this->render_create_translation_panel( $languages ); ?>
 
-				<div class="mclogiora-filter-bar mclogiora-filter-bar--disabled" aria-label="<?php esc_attr_e( 'Translation manager filters', 'mclogiora' ); ?>" aria-describedby="mclogiora-translation-manager-empty-state">
-					<label>
-						<span><?php esc_html_e( 'Content type', 'mclogiora' ); ?></span>
-						<select disabled>
-							<option><?php esc_html_e( 'All content types', 'mclogiora' ); ?></option>
-						</select>
-					</label>
-					<label>
-						<span><?php esc_html_e( 'Taxonomy', 'mclogiora' ); ?></span>
-						<select disabled>
-							<option><?php esc_html_e( 'All taxonomies', 'mclogiora' ); ?></option>
-						</select>
-					</label>
-					<label>
-						<span><?php esc_html_e( 'Source language', 'mclogiora' ); ?></span>
-						<select disabled>
-							<option><?php esc_html_e( 'Any source', 'mclogiora' ); ?></option>
-						</select>
-					</label>
-					<label>
-						<span><?php esc_html_e( 'Target language', 'mclogiora' ); ?></span>
-						<select disabled>
-							<option><?php esc_html_e( 'Any target', 'mclogiora' ); ?></option>
-						</select>
-					</label>
-					<label>
-						<span><?php esc_html_e( 'Status', 'mclogiora' ); ?></span>
-						<select disabled>
-							<option><?php esc_html_e( 'Any status', 'mclogiora' ); ?></option>
-						</select>
-					</label>
-					<label>
-						<span><?php esc_html_e( 'Search', 'mclogiora' ); ?></span>
-						<input type="search" placeholder="<?php esc_attr_e( 'Search relations', 'mclogiora' ); ?>" disabled>
-					</label>
-				</div>
+				<?php $this->render_inventory(); ?>
 
 				<div class="mclogiora-status-card mclogiora-status-card--notice">
 					<span class="mclogiora-status-card__icon" aria-hidden="true">i</span>
@@ -237,6 +211,83 @@ final class TranslationManager implements ModuleInterface {
 			</section>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Renders the read-only inventory and explicit inline creation controls.
+	 *
+	 * The controls are ordinary POST forms so the workflow remains usable with
+	 * JavaScript disabled and the server remains the only authority for
+	 * capability, nonce, eligibility, duplicate, and language-slot checks.
+	 *
+	 * @return void
+	 */
+	private function render_inventory() {
+		if ( ! $this->inventory instanceof ContentInventoryService ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filters; mutations require the action nonce.
+		$kind = isset( $_GET['mclogiora_inventory_kind'] ) && 'term' === sanitize_key( wp_unslash( $_GET['mclogiora_inventory_kind'] ) ) ? 'term' : 'post';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filters.
+		$search = isset( $_GET['mclogiora_inventory_search'] ) ? sanitize_text_field( wp_unslash( $_GET['mclogiora_inventory_search'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filters.
+		$page = isset( $_GET['mclogiora_inventory_page'] ) ? absint( $_GET['mclogiora_inventory_page'] ) : 1;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filters.
+		$post_type = isset( $_GET['mclogiora_inventory_post_type'] ) ? sanitize_key( wp_unslash( $_GET['mclogiora_inventory_post_type'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filters.
+		$taxonomy = isset( $_GET['mclogiora_inventory_taxonomy'] ) ? sanitize_key( wp_unslash( $_GET['mclogiora_inventory_taxonomy'] ) ) : '';
+		$result = $this->inventory->query( array( 'kind' => $kind, 'search' => $search, 'page' => $page, 'post_type' => $post_type, 'taxonomy' => $taxonomy, 'per_page' => 25 ) );
+		?>
+		<div class="mclogiora-table-card" id="mclogiora-content-inventory">
+			<h2><?php esc_html_e( 'Content Inventory', 'mclogiora' ); ?></h2>
+			<p><?php esc_html_e( 'Eligible content is listed even before it has a translation relation. Scanning is read-only; creation starts an explicit draft workflow.', 'mclogiora' ); ?></p>
+			<form method="get" class="mclogiora-filter-bar" aria-label="<?php esc_attr_e( 'Content inventory filters', 'mclogiora' ); ?>">
+				<input type="hidden" name="page" value="mclogiora-translation-manager">
+				<label><span><?php esc_html_e( 'Inventory', 'mclogiora' ); ?></span><select name="mclogiora_inventory_kind">
+					<option value="post" <?php selected( $kind, 'post' ); ?>><?php esc_html_e( 'Posts, pages, and public content', 'mclogiora' ); ?></option>
+					<option value="term" <?php selected( $kind, 'term' ); ?>><?php esc_html_e( 'Categories, tags, and public taxonomies', 'mclogiora' ); ?></option>
+				</select></label>
+				<label><span><?php esc_html_e( 'Search', 'mclogiora' ); ?></span><input type="search" name="mclogiora_inventory_search" value="<?php echo esc_attr( $search ); ?>" placeholder="<?php esc_attr_e( 'Search content', 'mclogiora' ); ?>"></label>
+				<?php if ( 'post' === $kind ) : ?>
+					<label><span><?php esc_html_e( 'Post type', 'mclogiora' ); ?></span><select name="mclogiora_inventory_post_type"><option value=""><?php esc_html_e( 'All eligible types', 'mclogiora' ); ?></option><?php foreach ( $this->content_service->get_translatable_content_types() as $type ) : ?><option value="<?php echo esc_attr( $type->name() ); ?>" <?php selected( $post_type, $type->name() ); ?>><?php echo esc_html( $type->label() ); ?></option><?php endforeach; ?></select></label>
+				<?php else : ?>
+					<label><span><?php esc_html_e( 'Taxonomy', 'mclogiora' ); ?></span><select name="mclogiora_inventory_taxonomy"><?php foreach ( $this->taxonomy_service->get_translatable_taxonomies() as $type ) : ?><option value="<?php echo esc_attr( $type->name() ); ?>" <?php selected( $taxonomy, $type->name() ); ?>><?php echo esc_html( $type->label() ); ?></option><?php endforeach; ?></select></label>
+				<?php endif; ?>
+				<button class="button" type="submit"><?php esc_html_e( 'Filter', 'mclogiora' ); ?></button>
+			</form>
+			<div class="mclogiora-table-scroll"><table class="widefat striped mclogiora-language-table">
+				<thead><tr><th scope="col"><?php esc_html_e( 'Title', 'mclogiora' ); ?></th><th scope="col"><?php esc_html_e( 'Type', 'mclogiora' ); ?></th><th scope="col"><?php esc_html_e( 'Source language', 'mclogiora' ); ?></th><th scope="col"><?php esc_html_e( 'Translations', 'mclogiora' ); ?></th><th scope="col"><?php esc_html_e( 'Missing targets', 'mclogiora' ); ?></th><th scope="col"><?php esc_html_e( 'Actions', 'mclogiora' ); ?></th></tr></thead>
+				<tbody><?php if ( empty( $result['items'] ) ) : ?><tr><td colspan="6"><?php esc_html_e( 'No eligible content matches this filter.', 'mclogiora' ); ?></td></tr><?php else : foreach ( $result['items'] as $row ) : $this->render_inventory_row( $row ); endforeach; endif; ?></tbody>
+			</table></div>
+			<?php if ( $result['total_pages'] > 1 ) : ?><p class="tablenav"><span class="displaying-num"><?php echo esc_html( sprintf( _n( '%d item', '%d items', $result['total'], 'mclogiora' ), $result['total'] ) ); ?></span> <?php for ( $i = 1; $i <= $result['total_pages']; $i++ ) : ?><a class="button <?php echo $i === $result['page'] ? 'button-primary' : ''; ?>" href="<?php echo esc_url( add_query_arg( array( 'page' => 'mclogiora-translation-manager', 'mclogiora_inventory_kind' => $kind, 'mclogiora_inventory_search' => $search, 'mclogiora_inventory_post_type' => $post_type, 'mclogiora_inventory_taxonomy' => $taxonomy, 'mclogiora_inventory_page' => $i ) ) ); ?>"><?php echo esc_html( (string) $i ); ?></a> <?php endfor; ?></p><?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Renders one inventory row.
+	 *
+	 * @param array<string,mixed> $row Inventory row.
+	 * @return void
+	 */
+	private function render_inventory_row( array $row ) {
+		$title = (string) $row['title'];
+		$term  = 'term' === $row['kind'];
+		?><tr><td><a href="<?php echo esc_url( $row['edit_url'] ); ?>"><strong><?php echo esc_html( $title ); ?></strong></a><br><code><?php echo esc_html( (string) $row['object_id'] ); ?></code></td><td><?php echo esc_html( (string) $row['object_subtype'] ); ?></td><td><?php echo esc_html( '' !== $row['source_language'] ? strtoupper( $row['source_language'] ) : __( 'Unassigned', 'mclogiora' ) ); ?></td><td><?php foreach ( $row['targets'] as $code => $target ) : ?><a class="mclogiora-pill mclogiora-pill--active" href="<?php echo esc_url( $target['edit_url'] ); ?>"><?php echo esc_html( strtoupper( $code ) ); ?></a> <?php endforeach; if ( empty( $row['targets'] ) ) : ?><span class="mclogiora-muted-line"><?php esc_html_e( 'None', 'mclogiora' ); ?></span><?php endif; ?></td><td><?php foreach ( $row['missing'] as $code ) : ?><span class="mclogiora-pill"><?php echo esc_html( strtoupper( $code ) ); ?></span> <?php endforeach; if ( empty( $row['missing'] ) ) : ?><span class="mclogiora-pill mclogiora-pill--active"><?php esc_html_e( 'Complete', 'mclogiora' ); ?></span><?php endif; ?></td><td><div class="mclogiora-action-row"><?php foreach ( $row['missing'] as $code ) : $this->render_inventory_action( $row, $code, $term ); endforeach; ?></div></td></tr><?php
+	}
+
+	/**
+	 * Renders a no-JS action form for one missing target language.
+	 *
+	 * @param array<string,mixed> $row Inventory row.
+	 * @param string              $code Target language code.
+	 * @param bool                $term Whether this is a term.
+	 * @return void
+	 */
+	private function render_inventory_action( array $row, $code, $term ) {
+		$label = sprintf( __( 'Add %s translation for %s', 'mclogiora' ), strtoupper( $code ), $row['title'] );
+		?><form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="mclogiora-inline-form"><input type="hidden" name="action" value="<?php echo esc_attr( $term ? 'mclogiora_create_term_translation' : 'mclogiora_create_translation' ); ?>"><input type="hidden" name="source_id" value="<?php echo esc_attr( (string) $row['object_id'] ); ?>"><?php if ( $term ) : ?><input type="hidden" name="taxonomy" value="<?php echo esc_attr( (string) $row['object_subtype'] ); ?>"><input type="hidden" name="translated_name" value="<?php echo esc_attr( (string) $row['title'] ); ?>"><input type="hidden" name="translated_description" value=""><?php endif; ?><input type="hidden" name="target_language" value="<?php echo esc_attr( $code ); ?>"><?php wp_nonce_field( TranslationActionController::NONCE_ACTION, TranslationActionController::NONCE_NAME ); ?><button type="submit" class="button" aria-label="<?php echo esc_attr( $label ); ?>">+ <?php echo esc_html( strtoupper( $code ) ); ?></button></form><?php
 	}
 
 	/**

@@ -8,6 +8,7 @@
 namespace McLogiora\Tests\Integration;
 
 use McLogiora\Core\Application;
+use McLogiora\Content\ContentInventoryService;
 use McLogiora\Database\MigrationRunner;
 use McLogiora\Database\SchemaBuilder;
 use McLogiora\Database\TableNames;
@@ -131,6 +132,50 @@ final class TranslationWorkflowIntegrationTest extends WP_UnitTestCase {
 		$this->assertSame( 'post', $created->post_type );
 		$this->assertSame( 'Hello world', $created->post_title );
 		$this->assertNotSame( $source_id, $created->ID );
+	}
+
+	/**
+	 * Asserts the read-only inventory includes eligible objects without a
+	 * relation and calculates the missing target from the active languages.
+	 *
+	 * @return void
+	 */
+	public function test_inventory_includes_unrelated_posts_and_missing_targets() {
+		$post_id = self::factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_title'  => 'Inventory source',
+				'post_status' => 'publish',
+			)
+		);
+
+		$result = $this->container->get( ContentInventoryService::class )->query(
+			array( 'kind' => 'post', 'search' => 'Inventory source', 'per_page' => 25 )
+		);
+
+		$this->assertSame( 1, $result['total'] );
+		$this->assertSame( $post_id, $result['items'][0]['object_id'] );
+		$this->assertSame( 'post', $result['items'][0]['object_type'] );
+		$this->assertSame( 'en', $result['items'][0]['source_language'] );
+		$this->assertContains( 'tr', $result['items'][0]['missing'] );
+		$this->assertSame( '', $result['items'][0]['group_key'] );
+	}
+
+	/**
+	 * Asserts taxonomy inventory uses the same relation-aware normalized shape.
+	 *
+	 * @return void
+	 */
+	public function test_inventory_includes_unrelated_categories() {
+		$term = self::factory()->term->create_and_get( array( 'taxonomy' => 'category', 'name' => 'Inventory category' ) );
+		$result = $this->container->get( ContentInventoryService::class )->query(
+			array( 'kind' => 'term', 'taxonomy' => 'category', 'search' => 'Inventory category', 'per_page' => 25 )
+		);
+
+		$this->assertSame( 1, $result['total'] );
+		$this->assertSame( $term->term_id, $result['items'][0]['object_id'] );
+		$this->assertSame( 'term', $result['items'][0]['object_type'] );
+		$this->assertContains( 'tr', $result['items'][0]['missing'] );
 	}
 
 	/**
