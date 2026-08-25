@@ -85,6 +85,7 @@ use McLogiora\Languages\LanguageManager;
 use McLogiora\Localization\DocumentLanguageModule;
 use McLogiora\Localization\Localization;
 use McLogiora\Logging\NullLogger;
+use McLogiora\Manual\ManualModule;
 use McLogiora\Relations\CachedTranslationRelationRepository;
 use McLogiora\Relations\DatabaseTranslationRelationRepository;
 use McLogiora\Relations\MetadataNeedsUpdateDetector;
@@ -281,6 +282,7 @@ final class Application {
 		$modules->add( new SuggestionAdminController() );
 		$modules->add( new CompatibilityDashboard() );
 		$modules->add( new SystemStatusDashboard() );
+		$modules->add( new ManualModule() );
 		$modules->add( new SiteHealthIntegration() );
 		$modules->add( new AdminMenu() );
 		$modules->register();

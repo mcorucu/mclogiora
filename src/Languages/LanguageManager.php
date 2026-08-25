@@ -86,6 +86,7 @@ final class LanguageManager implements ModuleInterface {
 				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Language Manager', 'mclogiora' ); ?></p>
 				<h1 id="mclogiora-languages-title"><?php esc_html_e( 'Languages', 'mclogiora' ); ?></h1>
 				<p class="mclogiora-lede"><?php esc_html_e( 'Add and manage the languages used by translated content, language-aware URLs, and the language switcher.', 'mclogiora' ); ?></p>
+				<p class="mclogiora-muted-line"><a href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-manual&article=choosing-languages' ) ); ?>"><?php esc_html_e( 'Learn more about choosing languages', 'mclogiora' ); ?></a></p>
 
 				<?php $this->render_notice( $notice ); ?>
 
@@ -132,6 +133,16 @@ final class LanguageManager implements ModuleInterface {
 		switch ( $action ) {
 			case 'add':
 				$result = $this->language_service->create_language( $this->posted_language_data() );
+				break;
+
+			case 'add_catalog':
+				$catalog = LanguageCatalog::language_data( $this->posted_catalog_code(), false, count( $this->language_service->get_languages() ) + 1 );
+
+				if ( ! is_array( $catalog ) ) {
+					return $this->notice( 'error', __( 'Choose a language from the catalog.', 'mclogiora' ) );
+				}
+
+				$result = $this->language_service->create_language( $catalog );
 				break;
 
 			case 'edit':
@@ -191,6 +202,15 @@ final class LanguageManager implements ModuleInterface {
 	 */
 	private function posted_code() {
 		return isset( $_POST['language_code'] ) ? sanitize_key( wp_unslash( $_POST['language_code'] ) ) : '';
+	}
+
+	/**
+	 * Returns the selected catalog code.
+	 *
+	 * @return string
+	 */
+	private function posted_catalog_code() {
+		return isset( $_POST['catalog_language_code'] ) ? sanitize_key( wp_unslash( $_POST['catalog_language_code'] ) ) : '';
 	}
 
 	/**
@@ -295,13 +315,46 @@ final class LanguageManager implements ModuleInterface {
 		?>
 		<article class="mclogiora-info-card">
 			<h2><?php esc_html_e( 'Add Language', 'mclogiora' ); ?></h2>
-			<form class="mclogiora-language-form" method="post">
+			<p><?php esc_html_e( 'Choose a standard language by name. mcLogiora supplies its locale, language tag, and text direction automatically.', 'mclogiora' ); ?></p>
+			<form class="mclogiora-language-form mclogiora-catalog-picker" method="post" data-mclogiora-language-picker>
 				<?php echo Security::nonce_field( self::NONCE_ACTION, self::NONCE_FIELD ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-				<input type="hidden" name="mclogiora_language_action" value="add">
-				<?php $this->render_language_fields(); ?>
-				<button type="submit" class="button button-primary mclogiora-button"><?php esc_html_e( 'Add Language', 'mclogiora' ); ?></button>
+				<input type="hidden" name="mclogiora_language_action" value="add_catalog">
+				<?php $this->render_catalog_picker( 'catalog_language_code', false ); ?>
+				<button type="submit" class="button button-primary mclogiora-button" disabled><?php esc_html_e( 'Add Language', 'mclogiora' ); ?></button>
 			</form>
+			<details class="mclogiora-inline-details"><summary class="button"><?php esc_html_e( 'Advanced: add a custom locale', 'mclogiora' ); ?></summary><p><?php esc_html_e( 'Use this only when the language you need is not in the bundled catalog. Custom values are validated before they are stored.', 'mclogiora' ); ?></p><form class="mclogiora-language-form" method="post"><?php echo Security::nonce_field( self::NONCE_ACTION, self::NONCE_FIELD ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><input type="hidden" name="mclogiora_language_action" value="add"><?php $this->render_language_fields(); ?><button type="submit" class="button"><?php esc_html_e( 'Add custom language', 'mclogiora' ); ?></button></form></details>
 		</article>
+		<?php
+	}
+
+	/**
+	 * Renders a searchable catalog radio picker.
+	 *
+	 * @param string $name Field name.
+	 * @param bool   $multi Whether multiple selection is allowed.
+	 * @return void
+	 */
+	private function render_catalog_picker( $name, $multi ) {
+		$catalog = LanguageCatalog::all();
+		?>
+		<label class="mclogiora-picker-search"><span><?php esc_html_e( 'Search languages', 'mclogiora' ); ?></span><input type="search" data-mclogiora-language-search placeholder="<?php esc_attr_e( 'Search by name, code, locale, or region', 'mclogiora' ); ?>"></label>
+		<div class="mclogiora-language-options" role="<?php echo $multi ? 'group' : 'radiogroup'; ?>" aria-label="<?php esc_attr_e( 'Language catalog', 'mclogiora' ); ?>">
+			<?php foreach ( $catalog as $definition ) : ?>
+				<label class="mclogiora-language-option" data-mclogiora-language-option data-search="<?php echo esc_attr( strtolower( implode( ' ', array( $definition->code(), $definition->locale(), $definition->native_name(), $definition->english_name(), $definition->region() ) ) ) ); ?>">
+					<input type="<?php echo $multi ? 'checkbox' : 'radio'; ?>" name="<?php echo esc_attr( $name . ( $multi ? '[]' : '' ) ); ?>" value="<?php echo esc_attr( $definition->code() ); ?>" data-mclogiora-language-choice>
+					<span><strong><?php echo esc_html( $definition->native_name() ); ?></strong>
+					<?php
+					if ( $definition->english_name() !== $definition->native_name() ) :
+						?>
+						<span class="mclogiora-language-option__english"><?php echo esc_html( $definition->english_name() ); ?></span><?php endif; ?>
+						<?php
+						if ( '' !== $definition->region() ) :
+							?>
+						<span class="mclogiora-language-option__region"><?php echo esc_html( $definition->region() ); ?></span><?php endif; ?><small><?php echo esc_html( $definition->locale() ); ?> · <?php echo esc_html( strtoupper( $definition->direction() ) ); ?></small></span>
+				</label>
+			<?php endforeach; ?>
+		</div>
+		<p class="mclogiora-muted-line" data-mclogiora-language-empty hidden><?php esc_html_e( 'No catalog language matches that search.', 'mclogiora' ); ?></p>
 		<?php
 	}
 
@@ -428,8 +481,13 @@ final class LanguageManager implements ModuleInterface {
 	 * @return void
 	 */
 	private function render_action_form( $action, $code, $label, $enabled ) {
+		$confirmation = 'set_default' === $action ? __( 'Changing the primary language can affect existing content ownership and language URLs. Continue?', 'mclogiora' ) : '';
 		?>
-		<form method="post">
+		<form method="post"
+		<?php
+		if ( '' !== $confirmation ) :
+			?>
+			data-mclogiora-confirm="<?php echo esc_attr( $confirmation ); ?>"<?php endif; ?>>
 			<?php echo Security::nonce_field( self::NONCE_ACTION, self::NONCE_FIELD ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			<input type="hidden" name="mclogiora_language_action" value="<?php echo esc_attr( $action ); ?>">
 			<input type="hidden" name="language_code" value="<?php echo esc_attr( $code ); ?>">

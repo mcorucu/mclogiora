@@ -33,6 +33,7 @@ final class AdminScreenSmokeTest extends WP_UnitTestCase {
 		'mclogiora-suggestions'        => 'Translation Suggestions',
 		'mclogiora-compatibility'      => 'Editors and compatibility',
 		'mclogiora-system-status'      => 'System Status',
+		'mclogiora-manual'             => 'mcLogiora Manual',
 	);
 
 	/**
@@ -68,6 +69,11 @@ final class AdminScreenSmokeTest extends WP_UnitTestCase {
 				$this->assertStringContainsString( 'data-mclogiora-setup-wizard', $html, 'Setup Wizard did not render its semantic root.' );
 				$this->assertStringContainsString( 'Welcome', $html, 'Setup Wizard did not render a concrete first step.' );
 				$this->assertStringContainsString( 'Start setup', $html, 'Setup Wizard did not render its primary action.' );
+			}
+
+			if ( 'mclogiora-manual' === $slug ) {
+				$this->assertStringContainsString( 'How can we help?', $html, 'Manual did not render its local search.' );
+				$this->assertStringContainsString( 'Start here', $html, 'Manual did not render its Start Here section.' );
 			}
 		}
 
