@@ -13,22 +13,52 @@ defined( 'ABSPATH' ) || exit;
  * Immutable, display-ready language metadata.
  */
 final class LanguageDefinition {
-	/** @var string */
+	/**
+	 * Internal language code.
+	 *
+	 * @var string
+	 */
 	private $code;
-	/** @var string */
+	/**
+	 * WordPress locale.
+	 *
+	 * @var string
+	 */
 	private $locale;
-	/** @var string */
+	/**
+	 * Hreflang tag.
+	 *
+	 * @var string
+	 */
 	private $hreflang;
-	/** @var string */
+	/**
+	 * Native display name.
+	 *
+	 * @var string
+	 */
 	private $native_name;
-	/** @var string */
+	/**
+	 * English display name.
+	 *
+	 * @var string
+	 */
 	private $english_name;
-	/** @var string */
+	/**
+	 * Text direction.
+	 *
+	 * @var string
+	 */
 	private $direction;
-	/** @var string */
+	/**
+	 * Region label.
+	 *
+	 * @var string
+	 */
 	private $region;
 
 	/**
+	 * Creates a language definition.
+	 *
 	 * @param string $code Internal language code.
 	 * @param string $locale WordPress locale.
 	 * @param string $hreflang BCP-47 tag.
@@ -47,20 +77,27 @@ final class LanguageDefinition {
 		$this->region       = sanitize_text_field( $region );
 	}
 
-	/** @return string */
-	public function code() { return $this->code; }
-	/** @return string */
-	public function locale() { return $this->locale; }
-	/** @return string */
-	public function hreflang() { return $this->hreflang; }
-	/** @return string */
-	public function native_name() { return $this->native_name; }
-	/** @return string */
-	public function english_name() { return $this->english_name; }
-	/** @return string */
-	public function direction() { return $this->direction; }
-	/** @return string */
-	public function region() { return $this->region; }
+	/** Returns the internal code. @return string */
+	public function code() {
+		return $this->code; }
+	/** Returns the WordPress locale. @return string */
+	public function locale() {
+		return $this->locale; }
+	/** Returns the hreflang tag. @return string */
+	public function hreflang() {
+		return $this->hreflang; }
+	/** Returns the native display name. @return string */
+	public function native_name() {
+		return $this->native_name; }
+	/** Returns the English display name. @return string */
+	public function english_name() {
+		return $this->english_name; }
+	/** Returns the text direction. @return string */
+	public function direction() {
+		return $this->direction; }
+	/** Returns the region label. @return string */
+	public function region() {
+		return $this->region; }
 
 	/**
 	 * Returns the compact user-facing label.

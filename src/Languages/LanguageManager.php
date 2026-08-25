@@ -342,7 +342,15 @@ final class LanguageManager implements ModuleInterface {
 			<?php foreach ( $catalog as $definition ) : ?>
 				<label class="mclogiora-language-option" data-mclogiora-language-option data-search="<?php echo esc_attr( strtolower( implode( ' ', array( $definition->code(), $definition->locale(), $definition->native_name(), $definition->english_name(), $definition->region() ) ) ) ); ?>">
 					<input type="<?php echo $multi ? 'checkbox' : 'radio'; ?>" name="<?php echo esc_attr( $name . ( $multi ? '[]' : '' ) ); ?>" value="<?php echo esc_attr( $definition->code() ); ?>" data-mclogiora-language-choice>
-					<span><strong><?php echo esc_html( $definition->native_name() ); ?></strong><?php if ( $definition->english_name() !== $definition->native_name() ) : ?> <span class="mclogiora-language-option__english"><?php echo esc_html( $definition->english_name() ); ?></span><?php endif; ?><?php if ( '' !== $definition->region() ) : ?> <span class="mclogiora-language-option__region"><?php echo esc_html( $definition->region() ); ?></span><?php endif; ?><small><?php echo esc_html( $definition->locale() ); ?> · <?php echo esc_html( strtoupper( $definition->direction() ) ); ?></small></span>
+					<span><strong><?php echo esc_html( $definition->native_name() ); ?></strong>
+					<?php
+					if ( $definition->english_name() !== $definition->native_name() ) :
+						?>
+						<span class="mclogiora-language-option__english"><?php echo esc_html( $definition->english_name() ); ?></span><?php endif; ?>
+						<?php
+						if ( '' !== $definition->region() ) :
+							?>
+						<span class="mclogiora-language-option__region"><?php echo esc_html( $definition->region() ); ?></span><?php endif; ?><small><?php echo esc_html( $definition->locale() ); ?> · <?php echo esc_html( strtoupper( $definition->direction() ) ); ?></small></span>
 				</label>
 			<?php endforeach; ?>
 		</div>
@@ -475,7 +483,11 @@ final class LanguageManager implements ModuleInterface {
 	private function render_action_form( $action, $code, $label, $enabled ) {
 		$confirmation = 'set_default' === $action ? __( 'Changing the primary language can affect existing content ownership and language URLs. Continue?', 'mclogiora' ) : '';
 		?>
-		<form method="post"<?php if ( '' !== $confirmation ) : ?> data-mclogiora-confirm="<?php echo esc_attr( $confirmation ); ?>"<?php endif; ?>>
+		<form method="post"
+		<?php
+		if ( '' !== $confirmation ) :
+			?>
+			data-mclogiora-confirm="<?php echo esc_attr( $confirmation ); ?>"<?php endif; ?>>
 			<?php echo Security::nonce_field( self::NONCE_ACTION, self::NONCE_FIELD ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			<input type="hidden" name="mclogiora_language_action" value="<?php echo esc_attr( $action ); ?>">
 			<input type="hidden" name="language_code" value="<?php echo esc_attr( $code ); ?>">

@@ -21,10 +21,16 @@ defined( 'ABSPATH' ) || exit;
 final class ManualModule implements ModuleInterface {
 	const PAGE_SLUG = 'mclogiora-manual';
 
-	/** @var string */
+	/**
+	 * Effective admin capability.
+	 *
+	 * @var string
+	 */
 	private $capability = 'manage_options';
 
 	/**
+	 * Registers the manual screen.
+	 *
 	 * @param Container $container Service container.
 	 * @return void
 	 */
@@ -33,8 +39,10 @@ final class ManualModule implements ModuleInterface {
 
 		$container->get( AdminScreenRegistry::class )->add(
 			new AdminScreen(
-				static function () { return __( 'mcLogiora Manual', 'mclogiora' ); },
-				static function () { return __( 'Manual', 'mclogiora' ); },
+				static function () {
+					return __( 'mcLogiora Manual', 'mclogiora' ); },
+				static function () {
+					return __( 'Manual', 'mclogiora' ); },
 				$this->capability,
 				self::PAGE_SLUG,
 				array( $this, 'render' )
@@ -52,9 +60,10 @@ final class ManualModule implements ModuleInterface {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'mclogiora' ) );
 		}
 
-		$query   = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
-		$article = isset( $_GET['article'] ) ? ManualRegistry::find( wp_unslash( $_GET['article'] ) ) : null;
-		$results = ManualSearch::search( ManualRegistry::all(), $query );
+		$query        = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
+		$article_slug = isset( $_GET['article'] ) ? sanitize_key( wp_unslash( $_GET['article'] ) ) : '';
+		$article      = ManualRegistry::find( $article_slug );
+		$results      = ManualSearch::search( ManualRegistry::all(), $query );
 
 		?>
 		<div class="wrap mclogiora-admin mclogiora-manual">
@@ -71,11 +80,16 @@ final class ManualModule implements ModuleInterface {
 				<?php if ( $article instanceof ManualArticle ) : ?>
 					<?php $this->render_article( $article ); ?>
 				<?php elseif ( '' !== $query ) : ?>
+					<?php /* translators: %d: number of matching manual articles. */ ?>
 					<div class="mclogiora-manual-results" aria-live="polite"><h2><?php echo esc_html( sprintf( _n( '%d result', '%d results', count( $results ), 'mclogiora' ), count( $results ) ) ); ?></h2><?php $this->render_article_cards( $results ); ?></div>
 				<?php else : ?>
 					<div class="mclogiora-manual-layout">
 						<div><h2><?php esc_html_e( 'Start here', 'mclogiora' ); ?></h2><?php $this->render_article_cards( $this->by_slugs( array( 'quick-start', 'choosing-languages', 'first-translation', 'translation-manager' ) ) ); ?></div>
-						<aside class="mclogiora-manual-categories" aria-label="<?php esc_attr_e( 'Manual categories', 'mclogiora' ); ?>"><h2><?php esc_html_e( 'Browse by topic', 'mclogiora' ); ?></h2><ul><?php foreach ( ManualRegistry::categories() as $category ) : ?><li><a href="<?php echo esc_url( $this->category_url( $category ) ); ?>"><?php echo esc_html( $category ); ?></a></li><?php endforeach; ?></ul></aside>
+						<aside class="mclogiora-manual-categories" aria-label="<?php esc_attr_e( 'Manual categories', 'mclogiora' ); ?>"><h2><?php esc_html_e( 'Browse by topic', 'mclogiora' ); ?></h2><ul>
+						<?php
+						foreach ( ManualRegistry::categories() as $category ) :
+							?>
+							<li><a href="<?php echo esc_url( $this->category_url( $category ) ); ?>"><?php echo esc_html( $category ); ?></a></li><?php endforeach; ?></ul></aside>
 					</div>
 				<?php endif; ?>
 			</section>
@@ -84,6 +98,8 @@ final class ManualModule implements ModuleInterface {
 	}
 
 	/**
+	 * Renders article summary cards.
+	 *
 	 * @param ManualArticle[] $articles Articles.
 	 * @return void
 	 */
@@ -103,6 +119,8 @@ final class ManualModule implements ModuleInterface {
 	}
 
 	/**
+	 * Renders one manual article.
+	 *
 	 * @param ManualArticle $article Article.
 	 * @return void
 	 */
@@ -112,13 +130,22 @@ final class ManualModule implements ModuleInterface {
 		?>
 		<nav class="mclogiora-manual-breadcrumbs" aria-label="<?php esc_attr_e( 'Manual breadcrumbs', 'mclogiora' ); ?>"><a href="<?php echo esc_url( $this->article_url( '' ) ); ?>"><?php esc_html_e( 'Manual', 'mclogiora' ); ?></a><span aria-hidden="true"> / </span><span><?php echo esc_html( $article->title() ); ?></span></nav>
 		<article class="mclogiora-manual-article" aria-labelledby="mclogiora-article-title"><p class="mclogiora-eyebrow"><?php echo esc_html( $article->category() ); ?></p><h2 id="mclogiora-article-title"><?php echo esc_html( $article->title() ); ?></h2><p class="mclogiora-lede"><?php echo esc_html( $article->summary() ); ?></p>
-			<?php foreach ( $article->sections() as $section ) : $this->render_section( $section ); endforeach; ?>
+			<?php
+			foreach ( $article->sections() as $section ) :
+				$this->render_section( $section );
+endforeach;
+			?>
 		</article>
-		<?php if ( ! empty( $related ) ) : ?><div class="mclogiora-manual-related"><h3><?php esc_html_e( 'Related articles', 'mclogiora' ); ?></h3><?php $this->render_article_cards( $related ); ?></div><?php endif; ?>
+		<?php
+		if ( ! empty( $related ) ) :
+			?>
+			<div class="mclogiora-manual-related"><h3><?php esc_html_e( 'Related articles', 'mclogiora' ); ?></h3><?php $this->render_article_cards( $related ); ?></div><?php endif; ?>
 		<?php
 	}
 
 	/**
+	 * Renders one trusted structured section.
+	 *
 	 * @param array<string,mixed> $section Section data.
 	 * @return void
 	 */
@@ -134,12 +161,11 @@ final class ManualModule implements ModuleInterface {
 		}
 
 		if ( in_array( $type, array( 'list', 'steps' ), true ) && isset( $section['items'] ) && is_array( $section['items'] ) ) {
-			$list_tag = 'steps' === $type ? 'ol' : 'ul';
-			echo '<' . $list_tag . ' class="mclogiora-manual-list">';
+			echo 'steps' === $type ? '<ol class="mclogiora-manual-list">' : '<ul class="mclogiora-manual-list">';
 			foreach ( $section['items'] as $item ) {
 				echo '<li>' . esc_html( $item ) . '</li>';
 			}
-			echo '</' . $list_tag . '>';
+			echo 'steps' === $type ? '</ol>' : '</ul>';
 		}
 
 		if ( 'tip' === $type ) {
@@ -151,7 +177,12 @@ final class ManualModule implements ModuleInterface {
 		}
 	}
 
-	/** @param string[] $slugs @return ManualArticle[] */
+	/**
+	 * Finds a set of related articles.
+	 *
+	 * @param string[] $slugs Article slugs.
+	 * @return ManualArticle[]
+	 */
 	private function by_slugs( array $slugs ) {
 		$articles = array();
 		foreach ( $slugs as $slug ) {
@@ -163,12 +194,22 @@ final class ManualModule implements ModuleInterface {
 		return $articles;
 	}
 
-	/** @param string $slug @return string */
+	/**
+	 * Builds a safe article URL.
+	 *
+	 * @param string $slug Article slug.
+	 * @return string
+	 */
 	private function article_url( $slug ) {
 		return admin_url( 'admin.php?page=' . self::PAGE_SLUG . ( '' !== $slug ? '&article=' . rawurlencode( sanitize_key( $slug ) ) : '' ) );
 	}
 
-	/** @param string $category @return string */
+	/**
+	 * Builds a category search URL.
+	 *
+	 * @param string $category Category name.
+	 * @return string
+	 */
 	private function category_url( $category ) {
 		return $this->article_url( '' ) . '&s=' . rawurlencode( $category );
 	}

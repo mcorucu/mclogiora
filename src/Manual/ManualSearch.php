@@ -14,6 +14,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class ManualSearch {
 	/**
+	 * Searches title, summary, keywords, and structured article text.
+	 *
 	 * @param ManualArticle[] $articles Articles.
 	 * @param string          $query Query.
 	 * @return ManualArticle[]
@@ -45,23 +47,26 @@ final class ManualSearch {
 				if ( false !== strpos( self::normalize( $article->title() ), $term ) ) {
 					$score += 3;
 				} else {
-					$score += 1;
+					++$score;
 				}
 			}
 
 			if ( $score >= 0 ) {
-				$ranked[] = array( 'score' => $score, 'article' => $article );
+				$ranked[] = array(
+					'score'   => $score,
+					'article' => $article,
+				);
 			}
 		}
 
 		usort(
 			$ranked,
 			static function ( $left, $right ) {
-			if ( $left['score'] === $right['score'] ) {
-				return strcmp( $left['article']->title(), $right['article']->title() );
-			}
+				if ( $left['score'] === $right['score'] ) {
+					return strcmp( $left['article']->title(), $right['article']->title() );
+				}
 
-			return $left['score'] < $right['score'] ? 1 : -1;
+				return $left['score'] < $right['score'] ? 1 : -1;
 			}
 		);
 
@@ -74,6 +79,8 @@ final class ManualSearch {
 	}
 
 	/**
+	 * Normalizes text for deterministic local matching.
+	 *
 	 * @param string $value Value.
 	 * @return string
 	 */

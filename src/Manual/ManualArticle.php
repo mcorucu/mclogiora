@@ -13,10 +13,16 @@ defined( 'ABSPATH' ) || exit;
  * Read-only article value object.
  */
 final class ManualArticle {
-	/** @var array<string,mixed> */
+	/**
+	 * Normalized article data.
+	 *
+	 * @var array<string,mixed>
+	 */
 	private $data;
 
 	/**
+	 * Creates a normalized article.
+	 *
 	 * @param array<string,mixed> $data Article data.
 	 */
 	public function __construct( array $data ) {
@@ -31,20 +37,27 @@ final class ManualArticle {
 		);
 	}
 
-	/** @return string */
-	public function slug() { return $this->data['slug']; }
-	/** @return string */
-	public function title() { return $this->data['title']; }
-	/** @return string */
-	public function summary() { return $this->data['summary']; }
-	/** @return string */
-	public function category() { return $this->data['category']; }
-	/** @return string[] */
-	public function keywords() { return $this->data['keywords']; }
-	/** @return array<int,array<string,mixed>> */
-	public function sections() { return $this->data['sections']; }
-	/** @return string[] */
-	public function related_articles() { return $this->data['related_articles']; }
+	/** Returns the article slug. @return string */
+	public function slug() {
+		return $this->data['slug']; }
+	/** Returns the article title. @return string */
+	public function title() {
+		return $this->data['title']; }
+	/** Returns the article summary. @return string */
+	public function summary() {
+		return $this->data['summary']; }
+	/** Returns the article category. @return string */
+	public function category() {
+		return $this->data['category']; }
+	/** Returns article keywords. @return string[] */
+	public function keywords() {
+		return $this->data['keywords']; }
+	/** Returns structured article sections. @return array<int,array<string,mixed>> */
+	public function sections() {
+		return $this->data['sections']; }
+	/** Returns related article slugs. @return string[] */
+	public function related_articles() {
+		return $this->data['related_articles']; }
 
 	/**
 	 * Returns plain text used by the local index.

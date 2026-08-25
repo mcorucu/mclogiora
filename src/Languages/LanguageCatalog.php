@@ -108,7 +108,7 @@ final class LanguageCatalog {
 		$value = strtolower( trim( (string) $value ) );
 
 		foreach ( self::all() as $definition ) {
-			if ( $value === strtolower( $definition->code() ) || $value === strtolower( $definition->locale() ) ) {
+			if ( strtolower( $definition->code() ) === $value || strtolower( $definition->locale() ) === $value ) {
 				return $definition;
 			}
 		}
@@ -117,6 +117,8 @@ final class LanguageCatalog {
 	}
 
 	/**
+	 * Validates the normalized catalog shape.
+	 *
 	 * Suggests a catalog entry from the WordPress site locale.
 	 *
 	 * Exact locale matches are preferred. A bare language fallback is returned
@@ -201,6 +203,8 @@ final class LanguageCatalog {
 	}
 
 	/**
+	 * Checks whether a definition has valid normalized metadata.
+	 *
 	 * @param LanguageDefinition $definition Candidate.
 	 * @return bool
 	 */

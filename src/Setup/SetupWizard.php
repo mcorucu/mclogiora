@@ -285,7 +285,7 @@ final class SetupWizard implements ModuleInterface {
 				break;
 
 			case 'save_catalog_languages':
-				$primary = isset( $_POST['primary_language'] ) ? sanitize_key( wp_unslash( $_POST['primary_language'] ) ) : '';
+				$primary    = isset( $_POST['primary_language'] ) ? sanitize_key( wp_unslash( $_POST['primary_language'] ) ) : '';
 				$definition = LanguageCatalog::find( $primary );
 
 				if ( ! $definition instanceof LanguageDefinition ) {
@@ -304,17 +304,17 @@ final class SetupWizard implements ModuleInterface {
 					return;
 				}
 
-				$targets = isset( $_POST['translation_languages'] ) && is_array( $_POST['translation_languages'] ) ? wp_unslash( $_POST['translation_languages'] ) : array();
-				$targets = array_values( array_unique( array_map( 'sanitize_key', $targets ) ) );
-				$order   = count( $this->language_service->get_languages() ) + 1;
+				$targets      = isset( $_POST['translation_languages'] ) && is_array( $_POST['translation_languages'] ) ? wp_unslash( $_POST['translation_languages'] ) : array();
+				$targets      = array_values( array_unique( array_map( 'sanitize_key', $targets ) ) );
+				$order        = count( $this->language_service->get_languages() ) + 1;
 				$primary_code = $existing instanceof Language ? $existing->code() : $definition->code();
 
 				if ( SetupState::COMPLETED !== SetupState::status() ) {
 					foreach ( $this->language_service->get_languages() as $configured ) {
-						$configured_definition = $configured instanceof Language ? LanguageCatalog::find( $configured->locale() ) : null;
-						$is_selected_target   = $configured instanceof Language && ( in_array( $configured->code(), $targets, true ) || ( $configured_definition instanceof LanguageDefinition && in_array( $configured_definition->code(), $targets, true ) ) );
+						$configured_definition = LanguageCatalog::find( $configured->locale() );
+						$is_selected_target    = in_array( $configured->code(), $targets, true ) || ( $configured_definition instanceof LanguageDefinition && in_array( $configured_definition->code(), $targets, true ) );
 
-						if ( ! $configured instanceof Language || $configured->code() === $primary_code || $is_selected_target ) {
+						if ( $configured->code() === $primary_code || $is_selected_target ) {
 							continue;
 						}
 
@@ -543,7 +543,11 @@ final class SetupWizard implements ModuleInterface {
 					<?php
 					foreach ( $languages as $language ) :
 						?>
-						<li><strong><?php echo esc_html( $language->native_name() ); ?></strong> <span><?php echo esc_html( sprintf( '%s · %s · %s', $language->english_name(), $language->locale(), strtoupper( $language->direction() ) ) ); ?></span><?php if ( $default instanceof Language && $language->code() === $default->code() ) : ?> <em><?php esc_html_e( 'Primary', 'mclogiora' ); ?></em><?php endif; ?></li><?php endforeach; ?>
+						<li><strong><?php echo esc_html( $language->native_name() ); ?></strong> <span><?php echo esc_html( sprintf( '%s · %s · %s', $language->english_name(), $language->locale(), strtoupper( $language->direction() ) ) ); ?></span>
+						<?php
+						if ( $default instanceof Language && $language->code() === $default->code() ) :
+							?>
+							<em><?php esc_html_e( 'Primary', 'mclogiora' ); ?></em><?php endif; ?></li><?php endforeach; ?>
 				</ul>
 			<?php endif; ?>
 			<form class="mclogiora-language-form mclogiora-language-form--wide mclogiora-catalog-picker" method="post" data-mclogiora-setup-language-picker>
@@ -682,17 +686,28 @@ final class SetupWizard implements ModuleInterface {
 	 * @return void
 	 */
 	private function render_catalog_picker( $name, $multi, $checked_code = '', array $checked_codes = array(), $primary = false ) {
-		$catalog   = LanguageCatalog::all();
+		$catalog    = LanguageCatalog::all();
 		$suggestion = $primary ? LanguageCatalog::suggested_for_site() : null;
 		?>
-		<?php if ( $suggestion instanceof LanguageDefinition && ( '' === $checked_code || $suggestion->code() === $checked_code ) ) : ?><p class="mclogiora-language-suggestion" role="status"><strong><?php esc_html_e( 'Suggested from your WordPress site language', 'mclogiora' ); ?></strong> <?php echo esc_html( $suggestion->display_name() ); ?> (<?php echo esc_html( $suggestion->locale() ); ?>)</p><?php endif; ?>
+		<?php
+		if ( $suggestion instanceof LanguageDefinition && ( '' === $checked_code || $suggestion->code() === $checked_code ) ) :
+			?>
+			<p class="mclogiora-language-suggestion" role="status"><strong><?php esc_html_e( 'Suggested from your WordPress site language', 'mclogiora' ); ?></strong> <?php echo esc_html( $suggestion->display_name() ); ?> (<?php echo esc_html( $suggestion->locale() ); ?>)</p><?php endif; ?>
 		<label class="mclogiora-picker-search"><span><?php esc_html_e( 'Search languages', 'mclogiora' ); ?></span><input type="search" data-mclogiora-language-search placeholder="<?php esc_attr_e( 'Search by name, code, locale, or region', 'mclogiora' ); ?>"></label>
 		<div class="mclogiora-language-options" role="<?php echo $multi ? 'group' : 'radiogroup'; ?>" aria-label="<?php esc_attr_e( 'Language catalog', 'mclogiora' ); ?>" data-mclogiora-language-group="<?php echo $primary ? 'primary' : 'target'; ?>">
 			<?php foreach ( $catalog as $definition ) : ?>
 				<?php $is_checked = $primary ? $definition->code() === $checked_code : in_array( $definition->code(), $checked_codes, true ); ?>
 				<label class="mclogiora-language-option" data-mclogiora-language-option data-search="<?php echo esc_attr( strtolower( implode( ' ', array( $definition->code(), $definition->locale(), $definition->native_name(), $definition->english_name(), $definition->region() ) ) ) ); ?>">
 					<input type="<?php echo $multi ? 'checkbox' : 'radio'; ?>" name="<?php echo esc_attr( $name . ( $multi ? '[]' : '' ) ); ?>" value="<?php echo esc_attr( $definition->code() ); ?>" data-mclogiora-language-choice="<?php echo $primary ? 'primary' : 'target'; ?>" <?php checked( $is_checked ); ?>>
-					<span><strong><?php echo esc_html( $definition->native_name() ); ?></strong><?php if ( $definition->english_name() !== $definition->native_name() ) : ?> <span class="mclogiora-language-option__english"><?php echo esc_html( $definition->english_name() ); ?></span><?php endif; ?><?php if ( '' !== $definition->region() ) : ?> <span class="mclogiora-language-option__region"><?php echo esc_html( $definition->region() ); ?></span><?php endif; ?><small><?php echo esc_html( $definition->locale() ); ?> · <?php echo esc_html( strtoupper( $definition->direction() ) ); ?></small></span>
+					<span><strong><?php echo esc_html( $definition->native_name() ); ?></strong>
+					<?php
+					if ( $definition->english_name() !== $definition->native_name() ) :
+						?>
+						<span class="mclogiora-language-option__english"><?php echo esc_html( $definition->english_name() ); ?></span><?php endif; ?>
+						<?php
+						if ( '' !== $definition->region() ) :
+							?>
+						<span class="mclogiora-language-option__region"><?php echo esc_html( $definition->region() ); ?></span><?php endif; ?><small><?php echo esc_html( $definition->locale() ); ?> · <?php echo esc_html( strtoupper( $definition->direction() ) ); ?></small></span>
 				</label>
 			<?php endforeach; ?>
 		</div>
@@ -739,6 +754,7 @@ final class SetupWizard implements ModuleInterface {
 	/**
 	 * Returns a readable language summary.
 	 *
+	 * @param Language|null $exclude Language to omit.
 	 * @return string Language names.
 	 */
 	private function language_names( $exclude = null ) {
@@ -762,17 +778,6 @@ final class SetupWizard implements ModuleInterface {
 	 */
 	private function posted_code() {
 		return isset( $_POST['language_code'] ) ? sanitize_key( wp_unslash( $_POST['language_code'] ) ) : '';
-	}
-
-	/**
-	 * Returns a retained posted field value.
-	 *
-	 * @param string $key Field key.
-	 * @param string $fallback Fallback value.
-	 * @return string Sanitized field value.
-	 */
-	private function posted_value( $key, $fallback = '' ) {
-		return isset( $_POST[ $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) : $fallback;
 	}
 
 	/**
