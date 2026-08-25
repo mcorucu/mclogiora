@@ -20,4 +20,22 @@
 			control.form.submit();
 		}
 	} );
+
+	var heading = document.querySelector( '[data-mclogiora-focus-heading="1"]' );
+
+	if ( heading ) {
+		heading.focus();
+	}
+
+	document.addEventListener( 'submit', function ( event ) {
+		var form = event.target;
+		var submit = form && form.querySelector( 'button[type="submit"]' );
+
+		if ( ! submit || ! form.checkValidity() ) {
+			return;
+		}
+
+		submit.disabled = true;
+		submit.setAttribute( 'aria-disabled', 'true' );
+	} );
 }() );

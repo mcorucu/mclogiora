@@ -25,7 +25,7 @@ final class AdminScreenSmokeTest extends WP_UnitTestCase {
 	 */
 	private $screens = array(
 		'mclogiora-languages'          => 'Languages',
-		'mclogiora-setup'              => 'mcLogiora Setup',
+		'mclogiora-setup'              => 'Set up mcLogiora',
 		'mclogiora-translation-manager'=> 'Translation Manager',
 		'mclogiora-string-translation' => 'String Translation',
 		'mclogiora-menus-widgets'      => 'Menus & Widgets',

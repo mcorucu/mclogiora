@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-25T11:47:08+00:00\n"
+"POT-Creation-Date: 2026-08-25T13:05:03+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mclogiora\n"
@@ -63,7 +63,7 @@ msgstr ""
 #: src/Compatibility/CompatibilityDashboard.php:78
 #: src/Languages/LanguageManager.php:74
 #: src/Relations/TranslationManager.php:121
-#: src/Setup/SetupWizard.php:87
+#: src/Setup/SetupWizard.php:154
 msgid "You do not have permission to access this page."
 msgstr ""
 
@@ -86,6 +86,9 @@ msgstr ""
 #: src/Diagnostics/SiteHealthIntegration.php:53
 #: src/Languages/LanguageManager.php:58
 #: src/Languages/LanguageManager.php:87
+#: src/Setup/SetupWizard.php:435
+#: src/Setup/SetupWizard.php:535
+#: src/Setup/SetupWizard.php:712
 msgid "Languages"
 msgstr ""
 
@@ -102,7 +105,7 @@ msgid "Explicit relationships managed by the plugin"
 msgstr ""
 
 #: src/Admin/AdminMenu.php:179
-msgid "Start with your site language"
+msgid "Finish setting up your languages"
 msgstr ""
 
 #: src/Admin/AdminMenu.php:180
@@ -110,8 +113,8 @@ msgid "Choose a default language before configuring translated URLs or creating 
 msgstr ""
 
 #: src/Admin/AdminMenu.php:182
-#: src/Languages/LanguageManager.php:263
-msgid "Run Setup Wizard"
+#: src/Setup/SetupWizard.php:536
+msgid "Finish setup"
 msgstr ""
 
 #: src/Admin/AdminMenu.php:187
@@ -123,6 +126,7 @@ msgid "mcLogiora quick actions"
 msgstr ""
 
 #: src/Admin/AdminMenu.php:189
+#: src/Setup/SetupWizard.php:554
 msgid "Manage Languages"
 msgstr ""
 
@@ -139,6 +143,7 @@ msgid "String Translation"
 msgstr ""
 
 #: src/Admin/AdminMenu.php:192
+#: src/Setup/SetupWizard.php:554
 msgid "Configure URLs"
 msgstr ""
 
@@ -152,6 +157,7 @@ msgstr ""
 #: src/Diagnostics/SiteHealthIntegration.php:57
 #: src/Editors/ClassicEditorMetabox.php:264
 #: src/Relations/TranslationManager.php:491
+#: src/Setup/SetupWizard.php:535
 #: assets/js/editor-panel.js:399
 msgid "Translation Suggestions"
 msgstr ""
@@ -327,10 +333,12 @@ msgid "Strategy"
 msgstr ""
 
 #: src/Admin/RoutingSettingsScreen.php:110
+#: src/Setup/SetupWizard.php:512
 msgid "Language directory"
 msgstr ""
 
 #: src/Admin/RoutingSettingsScreen.php:117
+#: src/Setup/SetupWizard.php:513
 msgid "Also add a directory for the default language"
 msgstr ""
 
@@ -1403,14 +1411,6 @@ msgstr ""
 msgid "Nothing detected in the current environment."
 msgstr ""
 
-#: src/Compatibility/CompatibilityDashboard.php:211
-msgid "Detected capability"
-msgstr ""
-
-#: src/Compatibility/CompatibilityDashboard.php:212
-msgid "This integration is reported here when the related editor or builder is active. Use the native WordPress editing screen for translation actions."
-msgstr ""
-
 #: src/Compatibility/PluginDetector.php:49
 msgid "Classic Editor"
 msgstr ""
@@ -1455,7 +1455,7 @@ msgstr ""
 msgid "Pages"
 msgstr ""
 
-#: src/Core/Activation.php:31
+#: src/Core/Activation.php:32
 msgid "mcLogiora activation stopped"
 msgstr ""
 
@@ -1519,6 +1519,9 @@ msgstr ""
 
 #: src/Diagnostics/DiagnosticsService.php:482
 #: src/Diagnostics/SiteHealthIntegration.php:54
+#: src/Setup/SetupWizard.php:475
+#: src/Setup/SetupWizard.php:535
+#: src/Setup/SetupWizard.php:713
 msgid "Default language"
 msgstr ""
 
@@ -1670,7 +1673,6 @@ msgid "Generate Excerpt suggestion"
 msgstr ""
 
 #: src/Editors/ClassicEditorMetabox.php:343
-#: src/Setup/SetupWizard.php:245
 #: src/Switcher/SwitcherRenderer.php:66
 #: assets/js/editor-panel.js:596
 msgid "Language"
@@ -2297,17 +2299,16 @@ msgid "Add and manage the languages used by translated content, language-aware U
 msgstr ""
 
 #: src/Languages/LanguageManager.php:116
-#: src/Setup/SetupWizard.php:124
+#: src/Setup/SetupWizard.php:214
 msgid "You do not have permission to perform this action."
 msgstr ""
 
 #: src/Languages/LanguageManager.php:122
-#: src/Setup/SetupWizard.php:130
+#: src/Setup/SetupWizard.php:220
 msgid "Security check failed. Please try again."
 msgstr ""
 
 #: src/Languages/LanguageManager.php:126
-#: src/Setup/SetupWizard.php:134
 msgid "Language services are not available."
 msgstr ""
 
@@ -2344,12 +2345,15 @@ msgid "Language action completed."
 msgstr ""
 
 #: src/Languages/LanguageManager.php:257
-#: src/Setup/SetupWizard.php:334
 msgid "Default Language"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:262
 msgid "No default language has been configured yet."
+msgstr ""
+
+#: src/Languages/LanguageManager.php:263
+msgid "Run Setup Wizard"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:297
@@ -2383,7 +2387,6 @@ msgstr ""
 
 #: src/Languages/LanguageManager.php:356
 #: src/Languages/LanguageManager.php:455
-#: src/Setup/SetupWizard.php:268
 msgid "Locale"
 msgstr ""
 
@@ -2397,7 +2400,6 @@ msgstr ""
 
 #: src/Languages/LanguageManager.php:359
 #: src/Languages/LanguageManager.php:467
-#: src/Setup/SetupWizard.php:280
 msgid "Direction"
 msgstr ""
 
@@ -2448,44 +2450,44 @@ msgid "Delete"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:451
-#: src/Setup/SetupWizard.php:264
+#: src/Setup/SetupWizard.php:449
 msgid "Language code"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:452
-#: src/Setup/SetupWizard.php:265
+#: src/Setup/SetupWizard.php:449
 msgid "en"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:456
-#: src/Setup/SetupWizard.php:269
+#: src/Setup/SetupWizard.php:450
 msgid "en_US"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:459
-#: src/Setup/SetupWizard.php:272
+#: src/Setup/SetupWizard.php:451
 msgid "Native name"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:460
 #: src/Languages/LanguageManager.php:464
-#: src/Setup/SetupWizard.php:273
-#: src/Setup/SetupWizard.php:277
+#: src/Setup/SetupWizard.php:451
+#: src/Setup/SetupWizard.php:452
 msgid "English"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:463
-#: src/Setup/SetupWizard.php:276
+#: src/Setup/SetupWizard.php:452
 msgid "English name"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:469
-#: src/Setup/SetupWizard.php:282
+#: src/Setup/SetupWizard.php:453
 msgid "Left to right"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:470
-#: src/Setup/SetupWizard.php:283
+#: src/Setup/SetupWizard.php:453
 msgid "Right to left"
 msgstr ""
 
@@ -2932,94 +2934,327 @@ msgstr ""
 msgid "The translation status was updated."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:68
+#: src/Setup/SetupWizard.php:80
 msgid "mcLogiora Setup Wizard"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:71
-#: src/Setup/SetupWizard.php:96
+#: src/Setup/SetupWizard.php:83
+#: src/Setup/SetupWizard.php:170
 msgid "Setup Wizard"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:97
-msgid "mcLogiora Setup"
+#: src/Setup/SetupWizard.php:171
+msgid "Review your setup"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:98
-msgid "Set the default language first. You can then add more languages and configure URLs from the Languages and Settings screens."
+#: src/Setup/SetupWizard.php:171
+msgid "Set up mcLogiora"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:155
-msgid "Unknown setup action."
+#: src/Setup/SetupWizard.php:172
+msgid "Review the languages and URL choices currently used by your site. Nothing is reset by revisiting this screen."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:162
-msgid "Default language saved."
+#: src/Setup/SetupWizard.php:172
+msgid "A few focused choices will prepare mcLogiora for your multilingual content. You can change them later in the dedicated settings screens."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:211
-#: src/Setup/SetupWizard.php:333
-msgid "Welcome"
+#: src/Setup/SetupWizard.php:231
+msgid "Setup services are not available. Please try again later."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:212
-msgid "Choose the language used for your existing content and site-wide defaults. This gives mcLogiora a clear starting point for multilingual routing."
+#: src/Setup/SetupWizard.php:245
+msgid "That language is already available. Continue when you are ready."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:213
-msgid "Choose Default Language"
+#: src/Setup/SetupWizard.php:269
+msgid "Add at least one language before choosing the default."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:230
-msgid "Current Default"
+#: src/Setup/SetupWizard.php:310
+msgid "Choose a default language before saving URL settings."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:235
-msgid "No default language has been saved yet."
-msgstr ""
-
-#: src/Setup/SetupWizard.php:240
-msgid "Use Existing Language"
-msgstr ""
-
-#: src/Setup/SetupWizard.php:252
-msgid "Save Default"
-msgstr ""
-
-#: src/Setup/SetupWizard.php:258
-msgid "Create Default Language"
-msgstr ""
-
-#: src/Setup/SetupWizard.php:259
-msgid "Create a new active language and mark it as the site default."
-msgstr ""
-
-#: src/Setup/SetupWizard.php:286
-msgid "Create and Save Default"
-msgstr ""
-
-#: src/Setup/SetupWizard.php:335
-msgid "Additional Languages"
+#: src/Setup/SetupWizard.php:328
+msgid "Choose a default language before finishing setup."
 msgstr ""
 
 #: src/Setup/SetupWizard.php:336
-msgid "URL Format"
+msgid "That setup action is not available. Please try again."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:337
-msgid "Switcher"
+#: src/Setup/SetupWizard.php:377
+msgid "Setup progress"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:338
-msgid "Finish"
+#. translators: 1: current step number, 2: total step count, 3: step name.
+#: src/Setup/SetupWizard.php:392
+#, php-format
+msgid "Step %1$d of %2$d: %3$s"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:353
-msgid "Introduce mcLogiora and confirm the setup path."
+#: src/Setup/SetupWizard.php:412
+#: src/Setup/SetupWizard.php:533
+msgid "Review setup"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:354
-msgid "Choose or create the default language for this site."
+#: src/Setup/SetupWizard.php:412
+msgid "Welcome to mcLogiora"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:413
+msgid "Your current languages and URL choices are safe. Open the settings below whenever you want to review them."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:413
+msgid "This short setup helps mcLogiora understand the languages your site uses and how visitors should reach them."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:415
+msgid "Review current setup"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:415
+msgid "Start setup"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:436
+msgid "Add the languages you plan to use. You can add more later without changing existing translations."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:438
+msgid "Configured languages"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:445
+msgid "Add a language"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:450
+msgid "WordPress locale"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:453
+msgid "Text direction"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:454
+msgid "Add language"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:457
+msgid "Continue to default language"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:476
+msgid "This is the language used for your existing content and site-wide defaults. It must be chosen before setup can be finished."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:480
+msgid "Current default:"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:484
+msgid "Choose a configured language"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:489
+msgid "Save and continue"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:491
+msgid "Add or review languages"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:492
+#: src/Setup/SetupWizard.php:517
+#: src/Setup/SetupWizard.php:536
+msgid "Back"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:507
+#: src/Setup/SetupWizard.php:714
+msgid "Language URLs"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:508
+msgid "mcLogiora uses language directories, such as /tr/about/. The default language can keep your existing root URLs, or you can include its directory too."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:512
+msgid "URL structure"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:514
+msgid "Leaving this off keeps default-language URLs at the site root. If your site uses plain permalinks, review WordPress Permalinks after setup so rewrite rules can be refreshed."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:515
+msgid "Save and review"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:534
+msgid "Check the choices that mcLogiora will use. Translation Suggestions remain optional and are not part of core setup."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:535
+msgid "Not selected"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:535
+msgid "URL behavior"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:535
+msgid "Language directories for every language"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:535
+msgid "Language directories for translated languages; default language stays at the site root"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:535
+msgid "Not configured — optional"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:549
+msgid "Your multilingual foundation is ready."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:550
+msgid "mcLogiora now knows your site languages and default language. You can build translation relationships when you are ready."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:551
+msgid "Languages configured"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:551
+msgid "Default language set"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:551
+msgid "Language URL behavior saved"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:552
+msgid "How mcLogiora works"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:552
+msgid "Open your content."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:552
+msgid "Work with a supported post, page, taxonomy term, or media item."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:552
+msgid "Create or link its translation."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:552
+msgid "Each language version remains its own WordPress object and relationships connect the versions."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:552
+msgid "Translate and review."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:552
+msgid "Edit translations manually, or optionally request a suggestion that you review before using."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:552
+msgid "Publish and navigate."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:552
+msgid "The relationship, language switcher, URLs, and multilingual metadata stay connected around your content."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:553
+msgid "Good to know"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:553
+msgid "Translations are independent WordPress objects; mcLogiora does not duplicate or publish content automatically."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:553
+msgid "Unlinking a relationship does not delete the content."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:553
+msgid "Translation Suggestions are optional and use providers you configure yourself."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:554
+msgid "Open Translation Manager"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:554
+msgid "Create your first translation"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:566
+msgid "Exit for now"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:578
+msgid "Enter a language code."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:579
+msgid "Enter a valid WordPress locale such as en_US or tr_TR."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:580
+msgid "Enter both the native and English language names."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:581
+msgid "That WordPress locale is already in use."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:618
+msgid "No languages configured"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:711
+msgid "Welcome"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:715
+msgid "Review"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:716
+msgid "Complete"
+msgstr ""
+
+#: src/Setup/SetupWizard.php:730
+msgid "A short introduction to the setup choices."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:731
+msgid "Add the languages your site will use."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:732
+msgid "Choose the language used for existing content."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:733
+msgid "Choose how translated URLs are organized."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:734
+msgid "Check the choices before finishing."
+msgstr ""
+
+#: src/Setup/SetupWizard.php:735
+msgid "See what to do next."
 msgstr ""
 
 #: src/Strings/DatabaseStringRepository.php:77

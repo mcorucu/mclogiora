@@ -16,42 +16,53 @@ use McLogiora\Helpers\Security;
 use McLogiora\Languages\Language;
 use McLogiora\Languages\LanguageServiceInterface;
 use McLogiora\Languages\LanguageStatus;
+use McLogiora\Routing\RoutingModule;
+use McLogiora\Routing\RoutingSettings;
+use McLogiora\Routing\UrlStrategy;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Registers the setup wizard.
+ * Registers and renders the first-run setup journey.
  */
 final class SetupWizard implements ModuleInterface {
-	const NONCE_ACTION = 'mclogiora_setup_default_language';
+	const NONCE_ACTION = 'mclogiora_setup_wizard';
 	const NONCE_FIELD  = 'mclogiora_setup_nonce';
+	const PAGE_SLUG    = 'mclogiora-setup';
 
-	/**
-	 * Effective admin capability.
+	/** Effective capability for setup mutations.
 	 *
 	 * @var string
 	 */
 	private $capability = 'manage_options';
 
-	/**
-	 * Language service.
+	/** Canonical language service.
 	 *
 	 * @var LanguageServiceInterface|null
 	 */
 	private $language_service = null;
 
-	/**
-	 * Wizard step keys.
+	/** Canonical routing settings service.
+	 *
+	 * @var RoutingSettings|null
+	 */
+	private $routing_settings = null;
+
+	/** Ordered server-rendered steps.
 	 *
 	 * @var string[]
 	 */
 	private $steps = array(
 		'welcome',
+		'languages',
 		'default_language',
+		'url_format',
+		'review',
+		'complete',
 	);
 
 	/**
-	 * Registers the setup wizard admin screen.
+	 * Registers the setup wizard admin screen and activation hand-off.
 	 *
 	 * @param Container $container Service container.
 	 * @return void
@@ -60,6 +71,7 @@ final class SetupWizard implements ModuleInterface {
 		$capabilities           = $container->get( CapabilityRegistry::class );
 		$this->capability       = $capabilities->resolve( CapabilityRegistry::MANAGE_SETTINGS );
 		$this->language_service = $container->get( LanguageServiceInterface::class );
+		$this->routing_settings = $container->get( RoutingSettings::class );
 
 		$registry = $container->get( AdminScreenRegistry::class );
 		$registry->add(
@@ -71,10 +83,65 @@ final class SetupWizard implements ModuleInterface {
 					return __( 'Setup Wizard', 'mclogiora' );
 				},
 				$this->capability,
-				'mclogiora-setup',
+				self::PAGE_SLUG,
 				array( $this, 'render' )
 			)
 		);
+
+		if ( is_admin() ) {
+			add_action( 'admin_init', array( $this, 'maybe_redirect_after_activation' ), 1 );
+		}
+	}
+
+	/**
+	 * Redirects one eligible request after a fresh interactive activation.
+	 *
+	 * @return void
+	 */
+	public function maybe_redirect_after_activation() {
+		if ( ! SetupState::has_pending_activation() || ! $this->eligible_activation_request() ) {
+			return;
+		}
+
+		SetupState::consume_activation();
+
+		if ( self::PAGE_SLUG === $this->requested_page() ) {
+			return;
+		}
+
+		wp_safe_redirect( admin_url( 'admin.php?page=' . self::PAGE_SLUG . '&step=welcome' ) );
+		exit;
+	}
+
+	/**
+	 * Returns whether the current request is safe for the one-time redirect.
+	 *
+	 * @return bool
+	 */
+	public function eligible_activation_request() {
+		if ( ! is_admin() || ! current_user_can( $this->capability ) ) {
+			return false;
+		}
+
+		if ( ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() )
+			|| ( defined( 'REST_REQUEST' ) && REST_REQUEST )
+			|| ( function_exists( 'wp_doing_cron' ) && wp_doing_cron() )
+			|| ( defined( 'WP_CLI' ) && WP_CLI )
+			|| ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) ) {
+			return false;
+		}
+
+		if ( function_exists( 'is_network_admin' ) && is_network_admin() ) {
+			return false;
+		}
+
+		$request_action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
+
+		if ( 'activate-selected' === $request_action || isset( $_REQUEST['activate-multi'] ) || isset( $_REQUEST['networkwide'] ) ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -87,24 +154,47 @@ final class SetupWizard implements ModuleInterface {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'mclogiora' ) );
 		}
 
-		$notice = $this->maybe_handle_post();
-		$step   = $this->current_step();
+		$notice  = $this->maybe_handle_post();
+		$default = $this->default_language();
+		$step    = $this->current_step( $default );
+
+		if ( SetupState::COMPLETED !== SetupState::status() ) {
+			SetupState::begin();
+		}
+
+		$is_review = SetupState::COMPLETED === SetupState::status();
 
 		?>
-		<div class="wrap mclogiora-admin">
+		<div class="wrap mclogiora-admin mclogiora-setup-wizard">
 			<section class="mclogiora-panel" aria-labelledby="mclogiora-setup-title">
 				<p class="mclogiora-eyebrow"><?php esc_html_e( 'Setup Wizard', 'mclogiora' ); ?></p>
-				<h1 id="mclogiora-setup-title"><?php esc_html_e( 'mcLogiora Setup', 'mclogiora' ); ?></h1>
-				<p class="mclogiora-lede"><?php esc_html_e( 'Set the default language first. You can then add more languages and configure URLs from the Languages and Settings screens.', 'mclogiora' ); ?></p>
+				<h1 id="mclogiora-setup-title"><?php echo esc_html( $is_review ? __( 'Review your setup', 'mclogiora' ) : __( 'Set up mcLogiora', 'mclogiora' ) ); ?></h1>
+				<p class="mclogiora-lede"><?php echo esc_html( $is_review ? __( 'Review the languages and URL choices currently used by your site. Nothing is reset by revisiting this screen.', 'mclogiora' ) : __( 'A few focused choices will prepare mcLogiora for your multilingual content. You can change them later in the dedicated settings screens.', 'mclogiora' ) ); ?></p>
 
 				<?php $this->render_notice( $notice ); ?>
 				<?php $this->render_steps( $step ); ?>
 
-				<?php if ( 'default_language' === $step ) : ?>
-					<?php $this->render_default_language_step(); ?>
-				<?php else : ?>
-					<?php $this->render_welcome_step(); ?>
-				<?php endif; ?>
+				<?php
+				switch ( $step ) {
+					case 'languages':
+						$this->render_languages_step();
+						break;
+					case 'default_language':
+						$this->render_default_language_step();
+						break;
+					case 'url_format':
+						$this->render_url_format_step();
+						break;
+					case 'review':
+						$this->render_review_step();
+						break;
+					case 'complete':
+						$this->render_complete_step();
+						break;
+					default:
+						$this->render_welcome_step( $is_review );
+				}
+				?>
 			</section>
 		</div>
 		<?php
@@ -113,7 +203,7 @@ final class SetupWizard implements ModuleInterface {
 	/**
 	 * Handles posted setup actions.
 	 *
-	 * @return array<string, string>|null
+	 * @return array<string,string>|null
 	 */
 	private function maybe_handle_post() {
 		if ( empty( $_POST['mclogiora_setup_action'] ) ) {
@@ -130,70 +220,180 @@ final class SetupWizard implements ModuleInterface {
 			return $this->notice( 'error', __( 'Security check failed. Please try again.', 'mclogiora' ) );
 		}
 
-		if ( ! $this->language_service instanceof LanguageServiceInterface ) {
-			return $this->notice( 'error', __( 'Language services are not available.', 'mclogiora' ) );
-		}
-
 		$action = sanitize_key( wp_unslash( $_POST['mclogiora_setup_action'] ) );
 
-		if ( 'set_existing_default' === $action ) {
-			$code   = isset( $_POST['language_code'] ) ? sanitize_key( wp_unslash( $_POST['language_code'] ) ) : '';
-			$result = $this->language_service->set_default_language( $code );
-		} elseif ( 'create_default_language' === $action ) {
-			$result = $this->language_service->create_language(
-				array(
-					'code'         => isset( $_POST['language_code'] ) ? wp_unslash( $_POST['language_code'] ) : '',
-					'locale'       => isset( $_POST['locale'] ) ? wp_unslash( $_POST['locale'] ) : '',
-					'native_name'  => isset( $_POST['native_name'] ) ? wp_unslash( $_POST['native_name'] ) : '',
-					'english_name' => isset( $_POST['english_name'] ) ? wp_unslash( $_POST['english_name'] ) : '',
-					'direction'    => isset( $_POST['direction'] ) ? wp_unslash( $_POST['direction'] ) : '',
-					'status'       => LanguageStatus::ACTIVE,
-					'default'      => true,
-				)
-			);
-		} else {
-			return $this->notice( 'error', __( 'Unknown setup action.', 'mclogiora' ) );
+		if ( 'exit' === $action ) {
+			SetupState::dismiss();
+			$this->redirect_to( admin_url( 'admin.php?page=mclogiora' ) );
 		}
 
-		if ( is_wp_error( $result ) ) {
-			return $this->notice( 'error', $result->get_error_message() );
+		if ( ! $this->language_service instanceof LanguageServiceInterface || ! $this->routing_settings instanceof RoutingSettings ) {
+			return $this->notice( 'error', __( 'Setup services are not available. Please try again later.', 'mclogiora' ) );
 		}
 
-		return $this->notice( 'success', __( 'Default language saved.', 'mclogiora' ) );
+		switch ( $action ) {
+			case 'continue_welcome':
+				SetupState::begin();
+				$this->redirect_to( $this->step_url( 'languages' ) );
+				break;
+
+			case 'add_language':
+				$code     = isset( $_POST['language_code'] ) ? sanitize_key( wp_unslash( $_POST['language_code'] ) ) : '';
+				$existing = $this->language_service->get_language_by_code( $code );
+
+				if ( $existing instanceof Language ) {
+					return $this->notice( 'success', __( 'That language is already available. Continue when you are ready.', 'mclogiora' ) );
+				}
+
+				$result = $this->language_service->create_language(
+					array(
+						'code'         => $code,
+						'locale'       => isset( $_POST['locale'] ) ? wp_unslash( $_POST['locale'] ) : '',
+						'native_name'  => isset( $_POST['native_name'] ) ? wp_unslash( $_POST['native_name'] ) : '',
+						'english_name' => isset( $_POST['english_name'] ) ? wp_unslash( $_POST['english_name'] ) : '',
+						'direction'    => isset( $_POST['direction'] ) ? wp_unslash( $_POST['direction'] ) : '',
+						'status'       => LanguageStatus::ACTIVE,
+						'default'      => false,
+					)
+				);
+
+				if ( is_wp_error( $result ) ) {
+					return $this->notice( 'error', $this->friendly_language_error( $result ) );
+				}
+
+				$this->redirect_to( $this->step_url( 'languages' ) );
+				break;
+
+			case 'continue_languages':
+				if ( empty( $this->language_service->get_languages() ) ) {
+					return $this->notice( 'error', __( 'Add at least one language before choosing the default.', 'mclogiora' ) );
+				}
+
+				SetupState::begin();
+				$this->redirect_to( $this->step_url( 'default_language' ) );
+				break;
+
+			case 'set_existing_default':
+				$result = $this->language_service->set_default_language( $this->posted_code() );
+
+				if ( is_wp_error( $result ) ) {
+					return $this->notice( 'error', $this->friendly_language_error( $result ) );
+				}
+
+				$this->redirect_to( $this->step_url( 'url_format' ) );
+				break;
+
+			case 'create_default_language':
+				$code     = $this->posted_code();
+				$existing = $this->language_service->get_language_by_code( $code );
+				$result   = $existing instanceof Language ? $this->language_service->set_default_language( $code ) : $this->language_service->create_language(
+					array(
+						'code'         => $code,
+						'locale'       => isset( $_POST['locale'] ) ? wp_unslash( $_POST['locale'] ) : '',
+						'native_name'  => isset( $_POST['native_name'] ) ? wp_unslash( $_POST['native_name'] ) : '',
+						'english_name' => isset( $_POST['english_name'] ) ? wp_unslash( $_POST['english_name'] ) : '',
+						'direction'    => isset( $_POST['direction'] ) ? wp_unslash( $_POST['direction'] ) : '',
+						'status'       => LanguageStatus::ACTIVE,
+						'default'      => true,
+					)
+				);
+
+				if ( is_wp_error( $result ) ) {
+					return $this->notice( 'error', $this->friendly_language_error( $result ) );
+				}
+
+				$this->redirect_to( $this->step_url( 'url_format' ) );
+				break;
+
+			case 'save_routing':
+				if ( ! $this->default_language() instanceof Language ) {
+					return $this->notice( 'error', __( 'Choose a default language before saving URL settings.', 'mclogiora' ) );
+				}
+
+				$input  = array(
+					'url_strategy'            => UrlStrategy::DIRECTORY,
+					'default_language_prefix' => isset( $_POST['default_language_prefix'] ),
+				);
+				$result = $this->routing_settings->save( $input );
+
+				if ( ! empty( $result['routing_changed'] ) ) {
+					RoutingModule::invalidate_rules();
+				}
+
+				$this->redirect_to( $this->step_url( 'review' ) );
+				break;
+
+			case 'finish_setup':
+				if ( ! $this->default_language() instanceof Language ) {
+					return $this->notice( 'error', __( 'Choose a default language before finishing setup.', 'mclogiora' ) );
+				}
+
+				SetupState::complete();
+				$this->redirect_to( $this->step_url( 'complete' ) );
+				break;
+
+			default:
+				return $this->notice( 'error', __( 'That setup action is not available. Please try again.', 'mclogiora' ) );
+		}
+
+		return null;
 	}
 
 	/**
-	 * Returns the current setup step.
+	 * Returns the current step constrained by actual prerequisites.
 	 *
-	 * @return string
+	 * @param Language|null $default_language Current default language.
+	 * @return string Current step key.
 	 */
-	private function current_step() {
-		$step = isset( $_GET['step'] ) ? sanitize_key( wp_unslash( $_GET['step'] ) ) : 'welcome';
+	private function current_step( $default_language ) {
+		$has_step = isset( $_GET['step'] );
+		$step     = $has_step ? sanitize_key( wp_unslash( $_GET['step'] ) ) : ( $default_language instanceof Language && SetupState::COMPLETED === SetupState::status() ? 'review' : 'welcome' );
 
-		return in_array( $step, array( 'welcome', 'default_language' ), true ) ? $step : 'welcome';
+		if ( ! in_array( $step, $this->steps, true ) ) {
+			$step = 'welcome';
+		}
+
+		if ( 'complete' === $step && ( ! $default_language instanceof Language || SetupState::COMPLETED !== SetupState::status() ) ) {
+			$step = 'review';
+		}
+
+		if ( in_array( $step, array( 'url_format', 'review' ), true ) && ! $default_language instanceof Language ) {
+			$step = empty( $this->languages() ) ? 'languages' : 'default_language';
+		}
+
+		return $step;
 	}
 
 	/**
-	 * Renders setup step navigation.
+	 * Renders the accessible step progress indicator.
 	 *
-	 * @param string $current_step Current step.
+	 * @param string $current_step Current step key.
 	 * @return void
 	 */
 	private function render_steps( $current_step ) {
+		$current_index = array_search( $current_step, $this->steps, true );
+
 		?>
-		<ol class="mclogiora-step-list mclogiora-step-list--compact">
+		<ol class="mclogiora-step-list" aria-label="<?php esc_attr_e( 'Setup progress', 'mclogiora' ); ?>">
 			<?php foreach ( $this->steps as $index => $step ) : ?>
 				<?php
-				$is_available = in_array( $step, array( 'welcome', 'default_language' ), true );
-				$is_current   = $current_step === $step;
-				$class        = $is_current ? 'mclogiora-step mclogiora-step--current' : 'mclogiora-step';
+				$is_current = $current_step === $step;
+				$is_done    = $index < $current_index || ( 'complete' === $current_step && 'complete' !== $step );
+				$class      = 'mclogiora-step';
+
+				if ( $is_current ) {
+					$class .= ' mclogiora-step--current';
+				} elseif ( $is_done ) {
+					$class .= ' mclogiora-step--done';
+				}
 				?>
-				<li class="<?php echo esc_attr( $class ); ?>">
-					<span class="mclogiora-step__number"><?php echo esc_html( (string) ( $index + 1 ) ); ?></span>
-					<div>
-						<h2><?php echo esc_html( $this->label_for_step( $step ) ); ?></h2>
-						<p><?php echo esc_html( $this->description_for_step( $step, $is_available ) ); ?></p>
-					</div>
+				<?php
+				/* translators: 1: current step number, 2: total step count, 3: step name. */
+				$step_aria = sprintf( __( 'Step %1$d of %2$d: %3$s', 'mclogiora' ), $index + 1, count( $this->steps ), $this->label_for_step( $step ) );
+				?>
+				<li class="<?php echo esc_attr( $class ); ?>" <?php echo $is_current ? 'aria-current="step"' : ''; ?> aria-label="<?php echo esc_attr( $step_aria ); ?>">
+					<span class="mclogiora-step__number" aria-hidden="true"><?php echo esc_html( (string) ( $index + 1 ) ); ?></span>
+					<div><h2><?php echo esc_html( $this->label_for_step( $step ) ); ?></h2><p><?php echo esc_html( $this->description_for_step( $step ) ); ?></p></div>
 				</li>
 			<?php endforeach; ?>
 		</ol>
@@ -201,16 +401,62 @@ final class SetupWizard implements ModuleInterface {
 	}
 
 	/**
-	 * Renders the welcome step.
+	 * Renders the welcome or completed-site entry step.
+	 *
+	 * @param bool $is_review Whether this is a completed-site revisit.
+	 * @return void
+	 */
+	private function render_welcome_step( $is_review ) {
+		?>
+		<div class="mclogiora-table-card mclogiora-setup-card">
+			<h2><?php echo esc_html( $is_review ? __( 'Review setup', 'mclogiora' ) : __( 'Welcome to mcLogiora', 'mclogiora' ) ); ?></h2>
+			<p><?php echo esc_html( $is_review ? __( 'Your current languages and URL choices are safe. Open the settings below whenever you want to review them.', 'mclogiora' ) : __( 'This short setup helps mcLogiora understand the languages your site uses and how visitors should reach them.', 'mclogiora' ) ); ?></p>
+			<div class="mclogiora-setup-actions">
+				<a class="button button-primary mclogiora-button" href="<?php echo esc_url( $this->step_url( $is_review ? 'review' : 'languages' ) ); ?>"><?php echo esc_html( $is_review ? __( 'Review current setup', 'mclogiora' ) : __( 'Start setup', 'mclogiora' ) ); ?></a>
+				<?php
+				if ( ! $is_review ) :
+					?>
+					<?php $this->render_exit_form(); ?><?php endif; ?>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Renders the language selection and add form.
 	 *
 	 * @return void
 	 */
-	private function render_welcome_step() {
+	private function render_languages_step() {
+		$languages = $this->languages();
+
 		?>
-		<div class="mclogiora-table-card">
-			<h2><?php esc_html_e( 'Welcome', 'mclogiora' ); ?></h2>
-			<p><?php esc_html_e( 'Choose the language used for your existing content and site-wide defaults. This gives mcLogiora a clear starting point for multilingual routing.', 'mclogiora' ); ?></p>
-			<a class="button button-primary mclogiora-button" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-setup&step=default_language' ) ); ?>"><?php esc_html_e( 'Choose Default Language', 'mclogiora' ); ?></a>
+		<div class="mclogiora-table-card mclogiora-setup-card">
+			<h2><?php esc_html_e( 'Languages', 'mclogiora' ); ?></h2>
+			<p><?php esc_html_e( 'Add the languages you plan to use. You can add more later without changing existing translations.', 'mclogiora' ); ?></p>
+			<?php if ( ! empty( $languages ) ) : ?>
+				<ul class="mclogiora-setup-language-list" aria-label="<?php esc_attr_e( 'Configured languages', 'mclogiora' ); ?>">
+					<?php
+					foreach ( $languages as $language ) :
+						?>
+						<li><strong><?php echo esc_html( $language->english_name() ); ?></strong> <span><?php echo esc_html( sprintf( '%s · %s', $language->native_name(), $language->locale() ) ); ?></span></li><?php endforeach; ?>
+				</ul>
+			<?php endif; ?>
+			<h3><?php esc_html_e( 'Add a language', 'mclogiora' ); ?></h3>
+			<form class="mclogiora-language-form mclogiora-language-form--wide" method="post">
+				<?php echo Security::nonce_field( self::NONCE_ACTION, self::NONCE_FIELD ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<input type="hidden" name="mclogiora_setup_action" value="add_language">
+				<label><span><?php esc_html_e( 'Language code', 'mclogiora' ); ?></span><input type="text" name="language_code" value="<?php echo esc_attr( $this->posted_value( 'language_code' ) ); ?>" placeholder="<?php esc_attr_e( 'en', 'mclogiora' ); ?>" required></label>
+				<label><span><?php esc_html_e( 'WordPress locale', 'mclogiora' ); ?></span><input type="text" name="locale" value="<?php echo esc_attr( $this->posted_value( 'locale' ) ); ?>" placeholder="<?php esc_attr_e( 'en_US', 'mclogiora' ); ?>" required></label>
+				<label><span><?php esc_html_e( 'Native name', 'mclogiora' ); ?></span><input type="text" name="native_name" value="<?php echo esc_attr( $this->posted_value( 'native_name' ) ); ?>" placeholder="<?php esc_attr_e( 'English', 'mclogiora' ); ?>" required></label>
+				<label><span><?php esc_html_e( 'English name', 'mclogiora' ); ?></span><input type="text" name="english_name" value="<?php echo esc_attr( $this->posted_value( 'english_name' ) ); ?>" placeholder="<?php esc_attr_e( 'English', 'mclogiora' ); ?>" required></label>
+				<label><span><?php esc_html_e( 'Text direction', 'mclogiora' ); ?></span><select name="direction"><option value="ltr" <?php selected( 'ltr', $this->posted_value( 'direction', 'ltr' ) ); ?>><?php esc_html_e( 'Left to right', 'mclogiora' ); ?></option><option value="rtl" <?php selected( 'rtl', $this->posted_value( 'direction' ) ); ?>><?php esc_html_e( 'Right to left', 'mclogiora' ); ?></option></select></label>
+				<button type="submit" class="button mclogiora-button"><?php esc_html_e( 'Add language', 'mclogiora' ); ?></button>
+			</form>
+			<div class="mclogiora-setup-actions">
+				<form method="post"><?php echo Security::nonce_field( self::NONCE_ACTION, self::NONCE_FIELD ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><input type="hidden" name="mclogiora_setup_action" value="continue_languages"><button type="submit" class="button button-primary mclogiora-button" <?php disabled( empty( $languages ) ); ?>><?php esc_html_e( 'Continue to default language', 'mclogiora' ); ?></button></form>
+				<?php $this->render_exit_form(); ?>
+			</div>
 		</div>
 		<?php
 	}
@@ -221,80 +467,213 @@ final class SetupWizard implements ModuleInterface {
 	 * @return void
 	 */
 	private function render_default_language_step() {
-		$languages = $this->language_service instanceof LanguageServiceInterface ? $this->language_service->get_languages() : array();
-		$default   = $this->language_service instanceof LanguageServiceInterface ? $this->language_service->get_default_language() : null;
+		$languages = $this->languages();
+		$default   = $this->default_language();
 
 		?>
-		<div class="mclogiora-card-grid mclogiora-card-grid--two">
-			<article class="mclogiora-info-card">
-				<h2><?php esc_html_e( 'Current Default', 'mclogiora' ); ?></h2>
-				<?php if ( $default instanceof Language ) : ?>
-					<p class="mclogiora-card-value"><?php echo esc_html( $default->english_name() ); ?></p>
-					<p><?php echo esc_html( sprintf( '%s / %s', $default->code(), $default->locale() ) ); ?></p>
-				<?php else : ?>
-					<p><?php esc_html_e( 'No default language has been saved yet.', 'mclogiora' ); ?></p>
-				<?php endif; ?>
-			</article>
-
-			<article class="mclogiora-info-card">
-				<h2><?php esc_html_e( 'Use Existing Language', 'mclogiora' ); ?></h2>
-				<form class="mclogiora-language-form" method="post">
-					<?php echo Security::nonce_field( self::NONCE_ACTION, self::NONCE_FIELD ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					<input type="hidden" name="mclogiora_setup_action" value="set_existing_default">
-					<label>
-						<span><?php esc_html_e( 'Language', 'mclogiora' ); ?></span>
-						<select name="language_code" <?php disabled( empty( $languages ) ); ?>>
-							<?php foreach ( $languages as $language ) : ?>
-								<option value="<?php echo esc_attr( $language->code() ); ?>" <?php selected( $language->is_default() ); ?>><?php echo esc_html( $language->english_name() . ' (' . $language->locale() . ')' ); ?></option>
-							<?php endforeach; ?>
-						</select>
-					</label>
-					<button type="submit" class="button button-primary mclogiora-button" <?php disabled( empty( $languages ) ); ?>><?php esc_html_e( 'Save Default', 'mclogiora' ); ?></button>
-				</form>
-			</article>
-		</div>
-
-		<div class="mclogiora-table-card">
-			<h2><?php esc_html_e( 'Create Default Language', 'mclogiora' ); ?></h2>
-			<p><?php esc_html_e( 'Create a new active language and mark it as the site default.', 'mclogiora' ); ?></p>
-			<form class="mclogiora-language-form mclogiora-language-form--wide" method="post">
+		<div class="mclogiora-table-card mclogiora-setup-card">
+			<h2><?php esc_html_e( 'Default language', 'mclogiora' ); ?></h2>
+			<p><?php esc_html_e( 'This is the language used for your existing content and site-wide defaults. It must be chosen before setup can be finished.', 'mclogiora' ); ?></p>
+			<?php
+			if ( $default instanceof Language ) :
+				?>
+				<p class="mclogiora-status-line"><strong><?php esc_html_e( 'Current default:', 'mclogiora' ); ?></strong> <?php echo esc_html( $default->english_name() . ' (' . $default->locale() . ')' ); ?></p><?php endif; ?>
+			<form class="mclogiora-language-form" method="post">
 				<?php echo Security::nonce_field( self::NONCE_ACTION, self::NONCE_FIELD ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-				<input type="hidden" name="mclogiora_setup_action" value="create_default_language">
-				<label>
-					<span><?php esc_html_e( 'Language code', 'mclogiora' ); ?></span>
-					<input type="text" name="language_code" placeholder="<?php esc_attr_e( 'en', 'mclogiora' ); ?>" required>
-				</label>
-				<label>
-					<span><?php esc_html_e( 'Locale', 'mclogiora' ); ?></span>
-					<input type="text" name="locale" placeholder="<?php esc_attr_e( 'en_US', 'mclogiora' ); ?>" required>
-				</label>
-				<label>
-					<span><?php esc_html_e( 'Native name', 'mclogiora' ); ?></span>
-					<input type="text" name="native_name" placeholder="<?php esc_attr_e( 'English', 'mclogiora' ); ?>" required>
-				</label>
-				<label>
-					<span><?php esc_html_e( 'English name', 'mclogiora' ); ?></span>
-					<input type="text" name="english_name" placeholder="<?php esc_attr_e( 'English', 'mclogiora' ); ?>" required>
-				</label>
-				<label>
-					<span><?php esc_html_e( 'Direction', 'mclogiora' ); ?></span>
-					<select name="direction">
-						<option value="ltr"><?php esc_html_e( 'Left to right', 'mclogiora' ); ?></option>
-						<option value="rtl"><?php esc_html_e( 'Right to left', 'mclogiora' ); ?></option>
-					</select>
-				</label>
-				<button type="submit" class="button button-primary mclogiora-button"><?php esc_html_e( 'Create and Save Default', 'mclogiora' ); ?></button>
+				<input type="hidden" name="mclogiora_setup_action" value="set_existing_default">
+				<label><span><?php esc_html_e( 'Choose a configured language', 'mclogiora' ); ?></span><select name="language_code" required>
+				<?php
+				foreach ( $languages as $language ) :
+					?>
+					<option value="<?php echo esc_attr( $language->code() ); ?>" <?php selected( $language->is_default() ); ?>><?php echo esc_html( $language->english_name() . ' (' . $language->locale() . ')' ); ?></option><?php endforeach; ?></select></label>
+				<button type="submit" class="button button-primary mclogiora-button" <?php disabled( empty( $languages ) ); ?>><?php esc_html_e( 'Save and continue', 'mclogiora' ); ?></button>
 			</form>
+			<p class="mclogiora-muted-line"><a href="<?php echo esc_url( $this->step_url( 'languages' ) ); ?>"><?php esc_html_e( 'Add or review languages', 'mclogiora' ); ?></a></p>
+			<div class="mclogiora-setup-actions"><a class="button" href="<?php echo esc_url( $this->step_url( 'languages' ) ); ?>"><?php esc_html_e( 'Back', 'mclogiora' ); ?></a><?php $this->render_exit_form(); ?></div>
 		</div>
 		<?php
 	}
 
 	/**
-	 * Creates a notice payload.
+	 * Renders the language URL step.
+	 *
+	 * @return void
+	 */
+	private function render_url_format_step() {
+		$settings = $this->routing_settings instanceof RoutingSettings ? $this->routing_settings->all() : RoutingSettings::defaults();
+
+		?>
+		<div class="mclogiora-table-card mclogiora-setup-card">
+			<h2><?php esc_html_e( 'Language URLs', 'mclogiora' ); ?></h2>
+			<p><?php esc_html_e( 'mcLogiora uses language directories, such as /tr/about/. The default language can keep your existing root URLs, or you can include its directory too.', 'mclogiora' ); ?></p>
+			<form class="mclogiora-language-form" method="post">
+				<?php echo Security::nonce_field( self::NONCE_ACTION, self::NONCE_FIELD ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<input type="hidden" name="mclogiora_setup_action" value="save_routing">
+				<label><span><?php esc_html_e( 'URL structure', 'mclogiora' ); ?></span><select name="url_strategy"><option value="<?php echo esc_attr( UrlStrategy::DIRECTORY ); ?>" selected><?php esc_html_e( 'Language directory', 'mclogiora' ); ?></option></select></label>
+				<label class="mclogiora-checkbox-label"><input type="checkbox" name="default_language_prefix" value="1" <?php checked( ! empty( $settings['default_language_prefix'] ) ); ?>> <span><?php esc_html_e( 'Also add a directory for the default language', 'mclogiora' ); ?></span></label>
+				<p class="mclogiora-muted-line"><?php esc_html_e( 'Leaving this off keeps default-language URLs at the site root. If your site uses plain permalinks, review WordPress Permalinks after setup so rewrite rules can be refreshed.', 'mclogiora' ); ?></p>
+				<button type="submit" class="button button-primary mclogiora-button"><?php esc_html_e( 'Save and review', 'mclogiora' ); ?></button>
+			</form>
+			<div class="mclogiora-setup-actions"><a class="button" href="<?php echo esc_url( $this->step_url( 'default_language' ) ); ?>"><?php esc_html_e( 'Back', 'mclogiora' ); ?></a><?php $this->render_exit_form(); ?></div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Renders the review summary.
+	 *
+	 * @return void
+	 */
+	private function render_review_step() {
+		$default  = $this->default_language();
+		$settings = $this->routing_settings instanceof RoutingSettings ? $this->routing_settings->all() : RoutingSettings::defaults();
+
+		?>
+		<div class="mclogiora-table-card mclogiora-setup-card">
+			<h2><?php esc_html_e( 'Review setup', 'mclogiora' ); ?></h2>
+			<p><?php esc_html_e( 'Check the choices that mcLogiora will use. Translation Suggestions remain optional and are not part of core setup.', 'mclogiora' ); ?></p>
+			<dl class="mclogiora-setup-summary"><dt><?php esc_html_e( 'Languages', 'mclogiora' ); ?></dt><dd><?php echo esc_html( $this->language_names() ); ?></dd><dt><?php esc_html_e( 'Default language', 'mclogiora' ); ?></dt><dd><?php echo esc_html( $default instanceof Language ? $default->english_name() : __( 'Not selected', 'mclogiora' ) ); ?></dd><dt><?php esc_html_e( 'URL behavior', 'mclogiora' ); ?></dt><dd><?php echo esc_html( ! empty( $settings['default_language_prefix'] ) ? __( 'Language directories for every language', 'mclogiora' ) : __( 'Language directories for translated languages; default language stays at the site root', 'mclogiora' ) ); ?></dd><dt><?php esc_html_e( 'Translation Suggestions', 'mclogiora' ); ?></dt><dd><?php esc_html_e( 'Not configured — optional', 'mclogiora' ); ?></dd></dl>
+			<div class="mclogiora-setup-actions"><a class="button" href="<?php echo esc_url( $this->step_url( 'url_format' ) ); ?>"><?php esc_html_e( 'Back', 'mclogiora' ); ?></a><form method="post"><?php echo Security::nonce_field( self::NONCE_ACTION, self::NONCE_FIELD ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><input type="hidden" name="mclogiora_setup_action" value="finish_setup"><button type="submit" class="button button-primary mclogiora-button" <?php disabled( ! $default instanceof Language ); ?>><?php esc_html_e( 'Finish setup', 'mclogiora' ); ?></button></form><?php $this->render_exit_form(); ?></div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Renders the completion education and next actions.
+	 *
+	 * @return void
+	 */
+	private function render_complete_step() {
+		?>
+		<div class="mclogiora-table-card mclogiora-setup-card mclogiora-setup-complete" tabindex="-1" data-mclogiora-focus-heading="1">
+			<h2><?php esc_html_e( 'Your multilingual foundation is ready.', 'mclogiora' ); ?></h2>
+			<p><?php esc_html_e( 'mcLogiora now knows your site languages and default language. You can build translation relationships when you are ready.', 'mclogiora' ); ?></p>
+			<ul class="mclogiora-check-list"><li><?php esc_html_e( 'Languages configured', 'mclogiora' ); ?></li><li><?php esc_html_e( 'Default language set', 'mclogiora' ); ?></li><li><?php esc_html_e( 'Language URL behavior saved', 'mclogiora' ); ?></li></ul>
+			<div class="mclogiora-setup-next"><h3><?php esc_html_e( 'How mcLogiora works', 'mclogiora' ); ?></h3><ol><li><strong><?php esc_html_e( 'Open your content.', 'mclogiora' ); ?></strong> <?php esc_html_e( 'Work with a supported post, page, taxonomy term, or media item.', 'mclogiora' ); ?></li><li><strong><?php esc_html_e( 'Create or link its translation.', 'mclogiora' ); ?></strong> <?php esc_html_e( 'Each language version remains its own WordPress object and relationships connect the versions.', 'mclogiora' ); ?></li><li><strong><?php esc_html_e( 'Translate and review.', 'mclogiora' ); ?></strong> <?php esc_html_e( 'Edit translations manually, or optionally request a suggestion that you review before using.', 'mclogiora' ); ?></li><li><strong><?php esc_html_e( 'Publish and navigate.', 'mclogiora' ); ?></strong> <?php esc_html_e( 'The relationship, language switcher, URLs, and multilingual metadata stay connected around your content.', 'mclogiora' ); ?></li></ol></div>
+			<details class="mclogiora-inline-details"><summary class="button"><?php esc_html_e( 'Good to know', 'mclogiora' ); ?></summary><ul><li><?php esc_html_e( 'Translations are independent WordPress objects; mcLogiora does not duplicate or publish content automatically.', 'mclogiora' ); ?></li><li><?php esc_html_e( 'Unlinking a relationship does not delete the content.', 'mclogiora' ); ?></li><li><?php esc_html_e( 'Translation Suggestions are optional and use providers you configure yourself.', 'mclogiora' ); ?></li></ul></details>
+			<div class="mclogiora-setup-actions mclogiora-setup-actions--primary"><a class="button button-primary mclogiora-button" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-translation-manager' ) ); ?>"><?php esc_html_e( 'Open Translation Manager', 'mclogiora' ); ?></a><a class="button" href="<?php echo esc_url( admin_url( 'post-new.php' ) ); ?>"><?php esc_html_e( 'Create your first translation', 'mclogiora' ); ?></a><a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-languages' ) ); ?>"><?php esc_html_e( 'Manage Languages', 'mclogiora' ); ?></a><a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=mclogiora-routing' ) ); ?>"><?php esc_html_e( 'Configure URLs', 'mclogiora' ); ?></a></div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Renders the dismissible exit action.
+	 *
+	 * @return void
+	 */
+	private function render_exit_form() {
+		?>
+		<form method="post" class="mclogiora-setup-exit-form"><?php echo Security::nonce_field( self::NONCE_ACTION, self::NONCE_FIELD ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><input type="hidden" name="mclogiora_setup_action" value="exit"><button type="submit" class="button-link"><?php esc_html_e( 'Exit for now', 'mclogiora' ); ?></button></form>
+		<?php
+	}
+
+	/**
+	 * Converts known language errors to clear setup copy.
+	 *
+	 * @param \WP_Error $error Language error.
+	 * @return string User-facing error message.
+	 */
+	private function friendly_language_error( $error ) {
+		$known = array(
+			'mclogiora_invalid_language_code'  => __( 'Enter a language code.', 'mclogiora' ),
+			'mclogiora_invalid_locale'         => __( 'Enter a valid WordPress locale such as en_US or tr_TR.', 'mclogiora' ),
+			'mclogiora_language_name_required' => __( 'Enter both the native and English language names.', 'mclogiora' ),
+			'mclogiora_duplicate_locale'       => __( 'That WordPress locale is already in use.', 'mclogiora' ),
+		);
+		$code  = $error->get_error_code();
+
+		return isset( $known[ $code ] ) ? $known[ $code ] : $error->get_error_message();
+	}
+
+	/**
+	 * Returns all configured languages.
+	 *
+	 * @return Language[] Configured languages.
+	 */
+	private function languages() {
+		return $this->language_service instanceof LanguageServiceInterface ? $this->language_service->get_languages() : array();
+	}
+
+	/**
+	 * Returns the configured default language.
+	 *
+	 * @return Language|null Default language.
+	 */
+	private function default_language() {
+		return $this->language_service instanceof LanguageServiceInterface ? $this->language_service->get_default_language() : null;
+	}
+
+	/**
+	 * Returns a readable language summary.
+	 *
+	 * @return string Language names.
+	 */
+	private function language_names() {
+		$names = array();
+
+		foreach ( $this->languages() as $language ) {
+			$names[] = $language->english_name();
+		}
+
+		return empty( $names ) ? __( 'No languages configured', 'mclogiora' ) : implode( ', ', $names );
+	}
+
+	/**
+	 * Returns the posted language code.
+	 *
+	 * @return string Sanitized language code.
+	 */
+	private function posted_code() {
+		return isset( $_POST['language_code'] ) ? sanitize_key( wp_unslash( $_POST['language_code'] ) ) : '';
+	}
+
+	/**
+	 * Returns a retained posted field value.
+	 *
+	 * @param string $key Field key.
+	 * @param string $fallback Fallback value.
+	 * @return string Sanitized field value.
+	 */
+	private function posted_value( $key, $fallback = '' ) {
+		return isset( $_POST[ $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) : $fallback;
+	}
+
+	/**
+	 * Returns the current admin page slug.
+	 *
+	 * @return string Page slug.
+	 */
+	private function requested_page() {
+		return isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+	}
+
+	/**
+	 * Builds a wizard step URL.
+	 *
+	 * @param string $step Step key.
+	 * @return string Admin URL.
+	 */
+	private function step_url( $step ) {
+		return admin_url( 'admin.php?page=' . self::PAGE_SLUG . '&step=' . sanitize_key( $step ) );
+	}
+
+	/**
+	 * Redirects after a successful mutation.
+	 *
+	 * @param string $url Destination URL.
+	 * @return void
+	 */
+	private function redirect_to( $url ) {
+		wp_safe_redirect( $url );
+		exit;
+	}
+
+	/**
+	 * Builds a notice payload.
 	 *
 	 * @param string $type Notice type.
 	 * @param string $message Notice message.
-	 * @return array<string, string>
+	 * @return array<string,string> Notice payload.
 	 */
 	private function notice( $type, $message ) {
 		return array(
@@ -304,9 +683,9 @@ final class SetupWizard implements ModuleInterface {
 	}
 
 	/**
-	 * Renders a screen notice.
+	 * Renders a notice payload.
 	 *
-	 * @param array<string, string>|null $notice Notice payload.
+	 * @param array<string,string>|null $notice Notice payload.
 	 * @return void
 	 */
 	private function render_notice( $notice ) {
@@ -315,43 +694,45 @@ final class SetupWizard implements ModuleInterface {
 		}
 
 		$class = 'success' === $notice['type'] ? 'mclogiora-notice mclogiora-notice--success' : 'mclogiora-notice mclogiora-notice--error';
+		$role  = 'error' === $notice['type'] ? 'alert' : 'status';
 		?>
-		<div class="<?php echo esc_attr( $class ); ?>" role="status">
-			<p><?php echo esc_html( $notice['message'] ); ?></p>
-		</div>
+		<div class="<?php echo esc_attr( $class ); ?>" role="<?php echo esc_attr( $role ); ?>"><p><?php echo esc_html( $notice['message'] ); ?></p></div>
 		<?php
 	}
 
 	/**
-	 * Returns the translated label for a step.
+	 * Returns a translated step label.
 	 *
 	 * @param string $step Step key.
-	 * @return string
+	 * @return string Step label.
 	 */
 	private function label_for_step( $step ) {
 		$labels = array(
-			'welcome'              => __( 'Welcome', 'mclogiora' ),
-			'default_language'     => __( 'Default Language', 'mclogiora' ),
-			'additional_languages' => __( 'Additional Languages', 'mclogiora' ),
-			'url_format'           => __( 'URL Format', 'mclogiora' ),
-			'switcher'             => __( 'Switcher', 'mclogiora' ),
-			'finish'               => __( 'Finish', 'mclogiora' ),
+			'welcome'          => __( 'Welcome', 'mclogiora' ),
+			'languages'        => __( 'Languages', 'mclogiora' ),
+			'default_language' => __( 'Default language', 'mclogiora' ),
+			'url_format'       => __( 'Language URLs', 'mclogiora' ),
+			'review'           => __( 'Review', 'mclogiora' ),
+			'complete'         => __( 'Complete', 'mclogiora' ),
 		);
 
 		return isset( $labels[ $step ] ) ? $labels[ $step ] : $step;
 	}
 
 	/**
-	 * Returns the translated description for a step.
+	 * Returns a translated step description.
 	 *
 	 * @param string $step Step key.
-	 * @param bool   $available Whether this step is available.
-	 * @return string
+	 * @return string Step description.
 	 */
-	private function description_for_step( $step, $available ) {
+	private function description_for_step( $step ) {
 		$descriptions = array(
-			'welcome'          => __( 'Introduce mcLogiora and confirm the setup path.', 'mclogiora' ),
-			'default_language' => __( 'Choose or create the default language for this site.', 'mclogiora' ),
+			'welcome'          => __( 'A short introduction to the setup choices.', 'mclogiora' ),
+			'languages'        => __( 'Add the languages your site will use.', 'mclogiora' ),
+			'default_language' => __( 'Choose the language used for existing content.', 'mclogiora' ),
+			'url_format'       => __( 'Choose how translated URLs are organized.', 'mclogiora' ),
+			'review'           => __( 'Check the choices before finishing.', 'mclogiora' ),
+			'complete'         => __( 'See what to do next.', 'mclogiora' ),
 		);
 
 		return isset( $descriptions[ $step ] ) ? $descriptions[ $step ] : '';
