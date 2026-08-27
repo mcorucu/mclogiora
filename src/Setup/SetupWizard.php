@@ -525,6 +525,7 @@ final class SetupWizard implements ModuleInterface {
 		$languages = $this->languages();
 		$default   = $this->default_language();
 		$selected  = array();
+		$suggested = LanguageCatalog::suggested_for_site();
 
 		foreach ( $languages as $language ) {
 			if ( $default instanceof Language && $language->code() === $default->code() ) {
@@ -550,12 +551,12 @@ final class SetupWizard implements ModuleInterface {
 							<em><?php esc_html_e( 'Primary', 'mclogiora' ); ?></em><?php endif; ?></li><?php endforeach; ?>
 				</ul>
 			<?php endif; ?>
-			<form class="mclogiora-language-form mclogiora-language-form--wide mclogiora-catalog-picker" method="post" data-mclogiora-setup-language-picker>
+			<form class="mclogiora-language-form mclogiora-language-form--wide mclogiora-catalog-picker" method="post" data-mclogiora-setup-language-picker data-mclogiora-language-picker>
 				<?php echo Security::nonce_field( self::NONCE_ACTION, self::NONCE_FIELD ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<input type="hidden" name="mclogiora_setup_action" value="save_catalog_languages">
 				<h3><?php esc_html_e( 'What is the primary language of this site?', 'mclogiora' ); ?></h3>
 				<p class="mclogiora-setup-tip"><?php esc_html_e( 'Choose the language most of your existing content is written in. mcLogiora will use this as the starting point for translation relationships.', 'mclogiora' ); ?></p>
-				<?php $this->render_catalog_picker( 'primary_language', false, $default instanceof Language ? $default->code() : '', array(), true ); ?>
+				<?php $this->render_catalog_picker( 'primary_language', false, $default instanceof Language ? $default->code() : ( $suggested instanceof LanguageDefinition ? $suggested->code() : '' ), array(), true ); ?>
 				<h3><?php esc_html_e( 'Which languages would you like to translate into?', 'mclogiora' ); ?></h3>
 				<p class="mclogiora-setup-tip"><?php esc_html_e( 'You can add or remove languages later. Choosing a language does not translate or publish any content automatically.', 'mclogiora' ); ?></p>
 				<?php $this->render_catalog_picker( 'translation_languages', true, '', $selected, false ); ?>
