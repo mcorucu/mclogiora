@@ -144,9 +144,9 @@ final class SetupWizard implements ModuleInterface {
 			return false;
 		}
 
-		$request_action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
+		$request_action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only activation-request classification.
 
-		if ( 'activate-selected' === $request_action || isset( $_REQUEST['activate-multi'] ) || isset( $_REQUEST['networkwide'] ) ) {
+		if ( 'activate-selected' === $request_action || isset( $_REQUEST['activate-multi'] ) || isset( $_REQUEST['networkwide'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only activation-request classification.
 			return false;
 		}
 
@@ -222,7 +222,19 @@ final class SetupWizard implements ModuleInterface {
 			return;
 		}
 
-		if ( empty( $_POST['mclogiora_setup_action'] ) ) {
+		if ( 'POST' !== ( isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) : '' ) ) {
+			return;
+		}
+
+		$nonce = isset( $_POST[ self::NONCE_FIELD ] ) ? sanitize_text_field( wp_unslash( $_POST[ self::NONCE_FIELD ] ) ) : '';
+
+		if ( ! wp_verify_nonce( $nonce, self::NONCE_ACTION ) ) {
+			return;
+		}
+
+		$posted_action = isset( $_POST['mclogiora_setup_action'] ) ? sanitize_key( wp_unslash( $_POST['mclogiora_setup_action'] ) ) : '';
+
+		if ( '' === $posted_action ) {
 			return;
 		}
 
@@ -230,14 +242,7 @@ final class SetupWizard implements ModuleInterface {
 			wp_die( esc_html__( 'You do not have permission to perform this action.', 'mclogiora' ) );
 		}
 
-		$nonce = isset( $_POST[ self::NONCE_FIELD ] ) ? sanitize_text_field( wp_unslash( $_POST[ self::NONCE_FIELD ] ) ) : '';
-
-		if ( ! Security::verify_nonce( $nonce, self::NONCE_ACTION ) ) {
-			$this->request_notice = $this->notice( 'error', __( 'Security check failed. Please try again.', 'mclogiora' ) );
-			return;
-		}
-
-		$action = sanitize_key( wp_unslash( $_POST['mclogiora_setup_action'] ) );
+		$action = $posted_action;
 
 		if ( 'exit' === $action ) {
 			SetupState::dismiss();
@@ -267,10 +272,10 @@ final class SetupWizard implements ModuleInterface {
 				$result = $this->language_service->create_language(
 					array(
 						'code'         => $code,
-						'locale'       => isset( $_POST['locale'] ) ? wp_unslash( $_POST['locale'] ) : '',
-						'native_name'  => isset( $_POST['native_name'] ) ? wp_unslash( $_POST['native_name'] ) : '',
-						'english_name' => isset( $_POST['english_name'] ) ? wp_unslash( $_POST['english_name'] ) : '',
-						'direction'    => isset( $_POST['direction'] ) ? wp_unslash( $_POST['direction'] ) : '',
+						'locale'       => $this->posted_text( 'locale' ),
+						'native_name'  => $this->posted_text( 'native_name' ),
+						'english_name' => $this->posted_text( 'english_name' ),
+						'direction'    => $this->posted_key( 'direction' ),
 						'status'       => LanguageStatus::ACTIVE,
 						'default'      => false,
 					)
@@ -304,8 +309,7 @@ final class SetupWizard implements ModuleInterface {
 					return;
 				}
 
-				$targets      = isset( $_POST['translation_languages'] ) && is_array( $_POST['translation_languages'] ) ? wp_unslash( $_POST['translation_languages'] ) : array();
-				$targets      = array_values( array_unique( array_map( 'sanitize_key', $targets ) ) );
+				$targets      = $this->posted_language_codes( 'translation_languages' );
 				$order        = count( $this->language_service->get_languages() ) + 1;
 				$primary_code = $existing instanceof Language ? $existing->code() : $definition->code();
 
@@ -381,10 +385,10 @@ final class SetupWizard implements ModuleInterface {
 				$result   = $existing instanceof Language ? $this->language_service->set_default_language( $code ) : $this->language_service->create_language(
 					array(
 						'code'         => $code,
-						'locale'       => isset( $_POST['locale'] ) ? wp_unslash( $_POST['locale'] ) : '',
-						'native_name'  => isset( $_POST['native_name'] ) ? wp_unslash( $_POST['native_name'] ) : '',
-						'english_name' => isset( $_POST['english_name'] ) ? wp_unslash( $_POST['english_name'] ) : '',
-						'direction'    => isset( $_POST['direction'] ) ? wp_unslash( $_POST['direction'] ) : '',
+						'locale'       => $this->posted_text( 'locale' ),
+						'native_name'  => $this->posted_text( 'native_name' ),
+						'english_name' => $this->posted_text( 'english_name' ),
+						'direction'    => $this->posted_key( 'direction' ),
 						'status'       => LanguageStatus::ACTIVE,
 						'default'      => true,
 					)
@@ -440,8 +444,8 @@ final class SetupWizard implements ModuleInterface {
 	 * @return string Current step key.
 	 */
 	private function current_step( $default_language ) {
-		$has_step = isset( $_GET['step'] );
-		$step     = $has_step ? sanitize_key( wp_unslash( $_GET['step'] ) ) : ( $default_language instanceof Language && SetupState::COMPLETED === SetupState::status() ? 'review' : 'welcome' );
+		$has_step = isset( $_GET['step'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only step navigation.
+		$step     = $has_step ? sanitize_key( wp_unslash( $_GET['step'] ) ) : ( $default_language instanceof Language && SetupState::COMPLETED === SetupState::status() ? 'review' : 'welcome' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only step navigation.
 
 		if ( ! in_array( $step, $this->steps, true ) ) {
 			$step = 'welcome';
@@ -778,7 +782,39 @@ final class SetupWizard implements ModuleInterface {
 	 * @return string Sanitized language code.
 	 */
 	private function posted_code() {
-		return isset( $_POST['language_code'] ) ? sanitize_key( wp_unslash( $_POST['language_code'] ) ) : '';
+		return isset( $_POST['language_code'] ) ? sanitize_key( wp_unslash( $_POST['language_code'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- called only after handle_post() verifies the setup nonce.
+	}
+
+	/**
+	 * Returns a sanitized posted text value.
+	 *
+	 * @param string $key Field key.
+	 * @return string
+	 */
+	private function posted_text( $key ) {
+		return isset( $_POST[ $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- called only after handle_post() verifies the setup nonce.
+	}
+
+	/**
+	 * Returns a sanitized posted key value.
+	 *
+	 * @param string $key Field key.
+	 * @return string
+	 */
+	private function posted_key( $key ) {
+		return isset( $_POST[ $key ] ) ? sanitize_key( wp_unslash( $_POST[ $key ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- called only after handle_post() verifies the setup nonce.
+	}
+
+	/**
+	 * Returns sanitized language codes from a posted multi-value field.
+	 *
+	 * @param string $key Field key.
+	 * @return string[]
+	 */
+	private function posted_language_codes( $key ) {
+		$values = isset( $_POST[ $key ] ) && is_array( $_POST[ $key ] ) ? wp_unslash( $_POST[ $key ] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- called only after handle_post() verifies the setup nonce; every value is sanitized by sanitize_key below.
+
+		return array_values( array_unique( array_filter( array_map( 'sanitize_key', $values ) ) ) );
 	}
 
 	/**
@@ -787,7 +823,7 @@ final class SetupWizard implements ModuleInterface {
 	 * @return string Page slug.
 	 */
 	private function requested_page() {
-		return isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		return isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only admin page routing.
 	}
 
 	/**

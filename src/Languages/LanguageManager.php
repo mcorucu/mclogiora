@@ -109,7 +109,19 @@ final class LanguageManager implements ModuleInterface {
 	 * @return array<string, string>|null
 	 */
 	private function maybe_handle_post() {
-		if ( empty( $_POST['mclogiora_language_action'] ) ) {
+		if ( 'POST' !== ( isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) : '' ) ) {
+			return null;
+		}
+
+		$nonce = isset( $_POST[ self::NONCE_FIELD ] ) ? sanitize_text_field( wp_unslash( $_POST[ self::NONCE_FIELD ] ) ) : '';
+
+		if ( ! wp_verify_nonce( $nonce, self::NONCE_ACTION ) ) {
+			return null;
+		}
+
+		$posted_action = isset( $_POST['mclogiora_language_action'] ) ? sanitize_key( wp_unslash( $_POST['mclogiora_language_action'] ) ) : '';
+
+		if ( '' === $posted_action ) {
 			return null;
 		}
 
@@ -117,17 +129,11 @@ final class LanguageManager implements ModuleInterface {
 			wp_die( esc_html__( 'You do not have permission to perform this action.', 'mclogiora' ) );
 		}
 
-		$nonce = isset( $_POST[ self::NONCE_FIELD ] ) ? sanitize_text_field( wp_unslash( $_POST[ self::NONCE_FIELD ] ) ) : '';
-
-		if ( ! Security::verify_nonce( $nonce, self::NONCE_ACTION ) ) {
-			return $this->notice( 'error', __( 'Security check failed. Please try again.', 'mclogiora' ) );
-		}
-
 		if ( ! $this->language_service instanceof LanguageServiceInterface ) {
 			return $this->notice( 'error', __( 'Language services are not available.', 'mclogiora' ) );
 		}
 
-		$action = sanitize_key( wp_unslash( $_POST['mclogiora_language_action'] ) );
+		$action = $posted_action;
 		$result = null;
 
 		switch ( $action ) {
@@ -162,7 +168,7 @@ final class LanguageManager implements ModuleInterface {
 				break;
 
 			case 'reorder':
-				$orders = isset( $_POST['mclogiora_language_order'] ) && is_array( $_POST['mclogiora_language_order'] ) ? wp_unslash( $_POST['mclogiora_language_order'] ) : array();
+				$orders = $this->posted_order();
 				$result = $this->language_service->reorder_languages( $orders );
 				break;
 
@@ -184,15 +190,52 @@ final class LanguageManager implements ModuleInterface {
 	 */
 	private function posted_language_data() {
 		return array(
-			'code'         => isset( $_POST['language_code'] ) ? wp_unslash( $_POST['language_code'] ) : '',
-			'locale'       => isset( $_POST['locale'] ) ? wp_unslash( $_POST['locale'] ) : '',
-			'native_name'  => isset( $_POST['native_name'] ) ? wp_unslash( $_POST['native_name'] ) : '',
-			'english_name' => isset( $_POST['english_name'] ) ? wp_unslash( $_POST['english_name'] ) : '',
-			'direction'    => isset( $_POST['direction'] ) ? wp_unslash( $_POST['direction'] ) : '',
-			'status'       => isset( $_POST['status'] ) ? wp_unslash( $_POST['status'] ) : LanguageStatus::ACTIVE,
-			'order'        => isset( $_POST['sort_order'] ) ? wp_unslash( $_POST['sort_order'] ) : 0,
-			'default'      => ! empty( $_POST['is_default'] ),
+			'code'         => $this->posted_key_value( 'language_code' ),
+			'locale'       => $this->posted_text_value( 'locale' ),
+			'native_name'  => $this->posted_text_value( 'native_name' ),
+			'english_name' => $this->posted_text_value( 'english_name' ),
+			'direction'    => $this->posted_key_value( 'direction' ),
+			'status'       => $this->posted_key_value( 'status', LanguageStatus::ACTIVE ),
+			'order'        => isset( $_POST['sort_order'] ) ? absint( wp_unslash( $_POST['sort_order'] ) ) : 0, // phpcs:ignore WordPress.Security.NonceVerification.Missing -- called only after maybe_handle_post() verifies the language nonce.
+			'default'      => ! empty( $_POST['is_default'] ), // phpcs:ignore WordPress.Security.NonceVerification.Missing -- called only after maybe_handle_post() verifies the language nonce.
 		);
+	}
+
+	/**
+	 * Returns the posted order map after key and integer sanitization.
+	 *
+	 * @return array<string,int>
+	 */
+	private function posted_order() {
+		$raw = isset( $_POST['mclogiora_language_order'] ) && is_array( $_POST['mclogiora_language_order'] ) ? wp_unslash( $_POST['mclogiora_language_order'] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- called only after maybe_handle_post() verifies the language nonce; every key and value is sanitized below.
+		$out = array();
+
+		foreach ( $raw as $code => $order ) {
+			$out[ sanitize_key( $code ) ] = absint( $order );
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Returns a posted key value.
+	 *
+	 * @param string $key Field key.
+	 * @param string $default Default value.
+	 * @return string
+	 */
+	private function posted_key_value( $key, $default = '' ) {
+		return isset( $_POST[ $key ] ) ? sanitize_key( wp_unslash( $_POST[ $key ] ) ) : $default; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- called only after maybe_handle_post() verifies the language nonce.
+	}
+
+	/**
+	 * Returns a posted text value.
+	 *
+	 * @param string $key Field key.
+	 * @return string
+	 */
+	private function posted_text_value( $key ) {
+		return isset( $_POST[ $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- called only after maybe_handle_post() verifies the language nonce.
 	}
 
 	/**
@@ -201,7 +244,7 @@ final class LanguageManager implements ModuleInterface {
 	 * @return string
 	 */
 	private function posted_code() {
-		return isset( $_POST['language_code'] ) ? sanitize_key( wp_unslash( $_POST['language_code'] ) ) : '';
+		return isset( $_POST['language_code'] ) ? sanitize_key( wp_unslash( $_POST['language_code'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- called only after maybe_handle_post() verifies the language nonce.
 	}
 
 	/**
@@ -210,7 +253,7 @@ final class LanguageManager implements ModuleInterface {
 	 * @return string
 	 */
 	private function posted_catalog_code() {
-		return isset( $_POST['catalog_language_code'] ) ? sanitize_key( wp_unslash( $_POST['catalog_language_code'] ) ) : '';
+		return isset( $_POST['catalog_language_code'] ) ? sanitize_key( wp_unslash( $_POST['catalog_language_code'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- called only after maybe_handle_post() verifies the language nonce.
 	}
 
 	/**

@@ -18,11 +18,10 @@ defined( 'ABSPATH' ) || exit;
  * come back. The planner never needs the objects themselves -- it needs to
  * know whether a locator names none, one, or more than one of them.
  *
- * Filters are suppressed on both queries. That is unusual enough to justify:
- * locator resolution is identity resolution, and a plugin filtering rows out
- * of a query it never knew about would make the planner report a language slot
- * as free while the destination site can plainly see the post sitting in it.
- * The plan has to describe the database, not one plugin's view of it.
+ * Core query filters remain enabled so that the gateway follows the same
+ * visibility and compatibility contracts as the rest of the WordPress site.
+ * The planner still limits each lookup to identifiers and a small result set;
+ * it does not need to load the matched objects.
  */
 final class WordPressObjectLocatorGateway implements ObjectLocatorGatewayInterface {
 	/**
@@ -94,7 +93,7 @@ final class WordPressObjectLocatorGateway implements ObjectLocatorGatewayInterfa
 				'fields'                 => 'ids',
 				'no_found_rows'          => true,
 				'ignore_sticky_posts'    => true,
-				'suppress_filters'       => true,
+				'suppress_filters'       => false,
 				'update_post_meta_cache' => false,
 				'update_post_term_cache' => false,
 			)

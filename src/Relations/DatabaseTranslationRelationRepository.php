@@ -181,10 +181,12 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 		}
 
 		$group_uuid = $this->normalize_group_key( $group_key );
+		$db         = $this->wpdb;
 		$table      = $this->tables->translation_groups();
-		$group      = $this->wpdb->get_row(
-			$this->wpdb->prepare(
-				"SELECT group_uuid FROM {$table} WHERE group_uuid = %s LIMIT 1",
+		$group      = $db->get_row(
+			$db->prepare(
+				'SELECT group_uuid FROM %i WHERE group_uuid = %s LIMIT 1',
+				$table,
 				$group_uuid
 			)
 		);
@@ -207,10 +209,12 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 			return null;
 		}
 
+		$db         = $this->wpdb;
 		$table      = $this->tables->translation_groups();
-		$group_uuid = $this->wpdb->get_var(
-			$this->wpdb->prepare(
-				"SELECT group_uuid FROM {$table} WHERE id = %d LIMIT 1",
+		$group_uuid = $db->get_var(
+			$db->prepare(
+				'SELECT group_uuid FROM %i WHERE id = %d LIMIT 1',
+				$table,
 				absint( $group_id )
 			)
 		);
@@ -229,10 +233,12 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 			return null;
 		}
 
+		$db         = $this->wpdb;
 		$table      = $this->tables->translation_groups();
-		$group_uuid = $this->wpdb->get_var(
-			$this->wpdb->prepare(
-				"SELECT group_uuid FROM {$table} WHERE source_content_type = %s AND source_content_id = %s AND source_language = %s AND status = %s LIMIT 1",
+		$group_uuid = $db->get_var(
+			$db->prepare(
+				'SELECT group_uuid FROM %i WHERE source_content_type = %s AND source_content_id = %s AND source_language = %s AND status = %s LIMIT 1',
+				$table,
 				$source->object_type(),
 				$source->object_id(),
 				$source->language_code(),
@@ -467,10 +473,12 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 			return null;
 		}
 
+		$db    = $this->wpdb;
 		$table = $this->tables->translation_items();
-		$row   = $this->wpdb->get_row(
-			$this->wpdb->prepare(
-				"SELECT * FROM {$table} WHERE content_type = %s AND content_id = %s AND language_code = %s LIMIT 1",
+		$row   = $db->get_row(
+			$db->prepare(
+				'SELECT * FROM %i WHERE content_type = %s AND content_id = %s AND language_code = %s LIMIT 1',
+				$table,
 				$this->normalize_object_type( $object_type ),
 				$this->normalize_object_id( $object_id ),
 				$this->normalize_language_code( $language_code )
@@ -491,10 +499,12 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 			return array();
 		}
 
+		$db    = $this->wpdb;
 		$table = $this->tables->translation_items();
-		$rows  = $this->wpdb->get_results(
-			$this->wpdb->prepare(
-				"SELECT * FROM {$table} WHERE group_uuid = %s ORDER BY is_original DESC, language_code ASC",
+		$rows  = $db->get_results(
+			$db->prepare(
+				'SELECT * FROM %i WHERE group_uuid = %s ORDER BY is_original DESC, language_code ASC',
+				$table,
 				$this->normalize_group_key( $group_key )
 			)
 		);
@@ -513,10 +523,12 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 			return array();
 		}
 
+		$db    = $this->wpdb;
 		$table = $this->tables->translation_items();
-		$rows  = $this->wpdb->get_results(
-			$this->wpdb->prepare(
-				"SELECT * FROM {$table} WHERE status = %s ORDER BY updated_at DESC LIMIT 100",
+		$rows  = $db->get_results(
+			$db->prepare(
+				'SELECT * FROM %i WHERE status = %s ORDER BY updated_at DESC LIMIT 100',
+				$table,
 				sanitize_key( $status )
 			)
 		);
@@ -535,10 +547,12 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 			return null;
 		}
 
+		$db    = $this->wpdb;
 		$table = $this->tables->translation_items();
-		$row   = $this->wpdb->get_row(
-			$this->wpdb->prepare(
-				"SELECT * FROM {$table} WHERE group_uuid = %s AND is_original = 1 LIMIT 1",
+		$row   = $db->get_row(
+			$db->prepare(
+				'SELECT * FROM %i WHERE group_uuid = %s AND is_original = 1 LIMIT 1',
+				$table,
 				$this->normalize_group_key( $group_key )
 			)
 		);
@@ -558,11 +572,14 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 			return false;
 		}
 
+		$db           = $this->wpdb;
 		$items_table  = $this->tables->translation_items();
 		$groups_table = $this->tables->translation_groups();
-		$count        = $this->wpdb->get_var(
-			$this->wpdb->prepare(
-				"SELECT COUNT(*) FROM {$items_table} i INNER JOIN {$groups_table} g ON i.group_uuid = g.group_uuid WHERE i.content_type = %s AND i.content_id = %s AND i.status <> %s AND g.status = %s",
+		$count        = $db->get_var(
+			$db->prepare(
+				'SELECT COUNT(*) FROM %i i INNER JOIN %i g ON i.group_uuid = g.group_uuid WHERE i.content_type = %s AND i.content_id = %s AND i.status <> %s AND g.status = %s',
+				$items_table,
+				$groups_table,
 				$this->normalize_object_type( $object_type ),
 				$this->normalize_object_id( $object_id ),
 				TranslationStatus::DISABLED,
@@ -658,10 +675,12 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 			return array();
 		}
 
+		$db     = $this->wpdb;
 		$table  = $this->tables->translation_groups();
-		$rows   = $this->wpdb->get_results(
-			$this->wpdb->prepare(
-				"SELECT group_uuid FROM {$table} WHERE status = %s ORDER BY updated_at DESC LIMIT 100",
+		$rows   = $db->get_results(
+			$db->prepare(
+				'SELECT group_uuid FROM %i WHERE status = %s ORDER BY updated_at DESC LIMIT 100',
+				$table,
 				self::GROUP_STATUS_ACTIVE
 			)
 		);
@@ -692,10 +711,12 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 			return array();
 		}
 
+		$db    = $this->wpdb;
 		$table = $this->tables->translation_groups();
-		$keys  = $this->wpdb->get_col(
-			$this->wpdb->prepare(
-				"SELECT group_uuid FROM {$table} WHERE status = %s ORDER BY group_uuid ASC LIMIT %d OFFSET %d",
+		$keys  = $db->get_col(
+			$db->prepare(
+				'SELECT group_uuid FROM %i WHERE status = %s ORDER BY group_uuid ASC LIMIT %d OFFSET %d',
+				$table,
 				self::GROUP_STATUS_ACTIVE,
 				max( 1, (int) $limit ),
 				max( 0, (int) $offset )
@@ -715,12 +736,14 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 			return 0;
 		}
 
+		$db    = $this->wpdb;
 		$table = $this->tables->translation_groups();
 
 		return absint(
-			$this->wpdb->get_var(
-				$this->wpdb->prepare(
-					"SELECT COUNT(*) FROM {$table} WHERE status = %s",
+			$db->get_var(
+				$db->prepare(
+					'SELECT COUNT(*) FROM %i WHERE status = %s',
+					$table,
 					self::GROUP_STATUS_ACTIVE
 				)
 			)
@@ -737,9 +760,10 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 			return 0;
 		}
 
+		$db    = $this->wpdb;
 		$table = $this->tables->translation_items();
 
-		return absint( $this->wpdb->get_var( "SELECT COUNT(*) FROM {$table}" ) );
+		return absint( $db->get_var( $db->prepare( 'SELECT COUNT(*) FROM %i', $table ) ) );
 	}
 
 	/**
@@ -927,10 +951,12 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 			return false;
 		}
 
+		$db    = $this->wpdb;
 		$table = $this->tables->translation_items();
-		$count = $this->wpdb->get_var(
-			$this->wpdb->prepare(
-				"SELECT COUNT(*) FROM {$table} WHERE group_uuid = %s AND language_code = %s AND status <> %s",
+		$count = $db->get_var(
+			$db->prepare(
+				'SELECT COUNT(*) FROM %i WHERE group_uuid = %s AND language_code = %s AND status <> %s',
+				$table,
 				$this->normalize_group_key( $group_uuid ),
 				$this->normalize_language_code( $language_code ),
 				TranslationStatus::DISABLED
@@ -951,11 +977,13 @@ final class DatabaseTranslationRelationRepository implements TranslationRelation
 			return '';
 		}
 
+		$db    = $this->wpdb;
 		$table = $this->tables->translation_items();
 
-		return (string) $this->wpdb->get_var(
-			$this->wpdb->prepare(
-				"SELECT group_uuid FROM {$table} WHERE content_type = %s AND content_id = %s AND language_code = %s LIMIT 1",
+		return (string) $db->get_var(
+			$db->prepare(
+				'SELECT group_uuid FROM %i WHERE content_type = %s AND content_id = %s AND language_code = %s LIMIT 1',
+				$table,
 				$item->object_type(),
 				$item->object_id(),
 				$item->language_code()

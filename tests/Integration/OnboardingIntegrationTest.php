@@ -50,6 +50,7 @@ final class OnboardingIntegrationTest extends WP_UnitTestCase {
 	public function tear_down() {
 		$_GET  = array();
 		$_POST = array();
+		unset( $_SERVER['REQUEST_METHOD'] );
 		delete_option( SetupState::OPTION_NAME );
 		parent::tear_down();
 	}
@@ -138,6 +139,7 @@ final class OnboardingIntegrationTest extends WP_UnitTestCase {
 			'english_name'          => 'English',
 			'direction'             => 'ltr',
 		);
+		$_SERVER['REQUEST_METHOD'] = 'POST';
 
 		set_current_screen( 'dashboard' );
 		$wizard = new SetupWizard();
@@ -172,6 +174,59 @@ final class OnboardingIntegrationTest extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'data-mclogiora-setup-wizard', $html );
 		$this->assertStringContainsString( 'Languages', $html );
 		$this->assertStringContainsString( 'Continue to default language', $html );
+	}
+
+	/**
+	 * A missing setup nonce cannot create language data.
+	 *
+	 * @return void
+	 */
+	public function test_missing_nonce_cannot_mutate_setup() {
+		$_GET  = array( 'page' => SetupWizard::PAGE_SLUG );
+		$_POST = array(
+			'mclogiora_setup_action' => 'add_language',
+			'language_code'          => 'en',
+			'locale'                => 'en_US',
+			'native_name'           => 'English',
+			'english_name'          => 'English',
+			'direction'             => 'ltr',
+		);
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+
+		set_current_screen( 'dashboard' );
+		$wizard = new SetupWizard();
+		$wizard->register( $this->container );
+		$wizard->handle_post();
+
+		$this->assertNull( $this->container->get( LanguageRepositoryInterface::class )->find_by_code( 'en' ) );
+		set_current_screen( 'front' );
+	}
+
+	/**
+	 * An invalid setup nonce cannot create language data.
+	 *
+	 * @return void
+	 */
+	public function test_invalid_nonce_cannot_mutate_setup() {
+		$_GET  = array( 'page' => SetupWizard::PAGE_SLUG );
+		$_POST = array(
+			'mclogiora_setup_action' => 'add_language',
+			SetupWizard::NONCE_FIELD => 'invalid-nonce',
+			'language_code'          => 'en',
+			'locale'                => 'en_US',
+			'native_name'           => 'English',
+			'english_name'          => 'English',
+			'direction'             => 'ltr',
+		);
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+
+		set_current_screen( 'dashboard' );
+		$wizard = new SetupWizard();
+		$wizard->register( $this->container );
+		$wizard->handle_post();
+
+		$this->assertNull( $this->container->get( LanguageRepositoryInterface::class )->find_by_code( 'en' ) );
+		set_current_screen( 'front' );
 	}
 
 	/**
