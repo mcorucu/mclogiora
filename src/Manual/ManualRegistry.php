@@ -101,6 +101,15 @@ final class ManualRegistry {
 					),
 				),
 				'related_articles' => array( 'choosing-languages', 'first-translation', 'translation-manager' ),
+				'media'            => array(
+					array(
+						'file'    => 'setup-complete.png',
+						'alt'     => __( 'WordPress admin setup completion screen with next-step guidance.', 'mclogiora' ),
+						'caption' => __( 'After setup, the wizard points you to discovery, translation, review, and navigation.', 'mclogiora' ),
+						'width'   => 922,
+						'height'  => 960,
+					),
+				),
 			),
 			array(
 				'slug'             => 'what-is-mclogiora',
@@ -144,6 +153,15 @@ final class ManualRegistry {
 					),
 				),
 				'related_articles' => array( 'language-details', 'rtl-languages', 'language-urls' ),
+				'media'            => array(
+					array(
+						'file'    => 'setup-selected-languages.png',
+						'alt'     => __( 'WordPress setup language picker with Turkish primary language and English and German targets selected.', 'mclogiora' ),
+						'caption' => __( 'The picker keeps the primary language separate from selected translation targets.', 'mclogiora' ),
+						'width'   => 612,
+						'height'  => 960,
+					),
+				),
 			),
 			array(
 				'slug'             => 'language-details',
@@ -182,6 +200,15 @@ final class ManualRegistry {
 					),
 				),
 				'related_articles' => array( 'choosing-languages', 'language-details' ),
+				'media'            => array(
+					array(
+						'file'    => 'languages-admin.png',
+						'alt'     => __( 'WordPress Languages administration screen showing configured language records.', 'mclogiora' ),
+						'caption' => __( 'Review configured names, locales, directions, and default-language state from Languages.', 'mclogiora' ),
+						'width'   => 898,
+						'height'  => 960,
+					),
+				),
 			),
 			array(
 				'slug'             => 'rtl-languages',
@@ -239,6 +266,15 @@ final class ManualRegistry {
 					),
 				),
 				'related_articles' => array( 'first-translation', 'choosing-languages', 'troubleshooting' ),
+				'media'            => array(
+					array(
+						'file'    => 'translation-manager-inventory.png',
+						'alt'     => __( 'WordPress Translation Manager inventory with source content and missing English translation action.', 'mclogiora' ),
+						'caption' => __( 'The inventory shows eligible content before a relationship exists and exposes an explicit target action.', 'mclogiora' ),
+						'width'   => 727,
+						'height'  => 960,
+					),
+				),
 			),
 			array(
 				'slug'             => 'editors',

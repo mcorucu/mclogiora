@@ -762,6 +762,24 @@
 	margin: 5px 0 0;
 }
 
+.mclogiora-manual-media {
+	margin: 24px 0 0;
+	max-width: 960px;
+}
+
+.mclogiora-manual-media img {
+	display: block;
+	height: auto;
+	max-width: 100%;
+}
+
+.mclogiora-manual-media figcaption {
+	color: var(--mclogiora-ink-muted);
+	font-size: 13px;
+	line-height: 19px;
+	margin-top: 7px;
+}
+
 .mclogiora-manual-related {
 	border-top: 1px solid var(--mclogiora-outline);
 	margin-top: 24px;
