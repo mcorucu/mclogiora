@@ -60,8 +60,9 @@ final class DatabaseLanguageRepository implements LanguageRepositoryInterface {
 			return array();
 		}
 
+		$db    = $this->wpdb;
 		$table = $this->tables->languages();
-		$rows  = $this->wpdb->get_results( "SELECT * FROM {$table} ORDER BY sort_order ASC, language_code ASC" );
+		$rows  = $db->get_results( $db->prepare( 'SELECT * FROM %i ORDER BY sort_order ASC, language_code ASC', $table ) );
 
 		return array_map( array( $this, 'map_row' ), is_array( $rows ) ? $rows : array() );
 	}
@@ -77,10 +78,12 @@ final class DatabaseLanguageRepository implements LanguageRepositoryInterface {
 			return null;
 		}
 
+		$db    = $this->wpdb;
 		$table = $this->tables->languages();
-		$row   = $this->wpdb->get_row(
-			$this->wpdb->prepare(
-				"SELECT * FROM {$table} WHERE language_code = %s LIMIT 1",
+		$row   = $db->get_row(
+			$db->prepare(
+				'SELECT * FROM %i WHERE language_code = %s LIMIT 1',
+				$table,
 				$this->normalize_code( $code )
 			)
 		);
@@ -99,10 +102,12 @@ final class DatabaseLanguageRepository implements LanguageRepositoryInterface {
 			return null;
 		}
 
+		$db    = $this->wpdb;
 		$table = $this->tables->languages();
-		$row   = $this->wpdb->get_row(
-			$this->wpdb->prepare(
-				"SELECT * FROM {$table} WHERE locale = %s LIMIT 1",
+		$row   = $db->get_row(
+			$db->prepare(
+				'SELECT * FROM %i WHERE locale = %s LIMIT 1',
+				$table,
 				$this->normalize_locale( $locale )
 			)
 		);
@@ -120,10 +125,12 @@ final class DatabaseLanguageRepository implements LanguageRepositoryInterface {
 			return array();
 		}
 
+		$db    = $this->wpdb;
 		$table = $this->tables->languages();
-		$rows  = $this->wpdb->get_results(
-			$this->wpdb->prepare(
-				"SELECT * FROM {$table} WHERE status = %s ORDER BY sort_order ASC, language_code ASC",
+		$rows  = $db->get_results(
+			$db->prepare(
+				'SELECT * FROM %i WHERE status = %s ORDER BY sort_order ASC, language_code ASC',
+				$table,
 				LanguageStatus::ACTIVE
 			)
 		);
@@ -141,8 +148,9 @@ final class DatabaseLanguageRepository implements LanguageRepositoryInterface {
 			return null;
 		}
 
+		$db    = $this->wpdb;
 		$table = $this->tables->languages();
-		$row   = $this->wpdb->get_row( "SELECT * FROM {$table} WHERE is_default = 1 ORDER BY sort_order ASC LIMIT 1" );
+		$row   = $db->get_row( $db->prepare( 'SELECT * FROM %i WHERE is_default = 1 ORDER BY sort_order ASC LIMIT 1', $table ) );
 
 		return $row ? $this->map_row( $row ) : null;
 	}
@@ -530,8 +538,9 @@ final class DatabaseLanguageRepository implements LanguageRepositoryInterface {
 			return false;
 		}
 
+		$db    = $this->wpdb;
 		$table = $this->tables->languages();
-		$count = $this->wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE is_default = 1" );
+		$count = $db->get_var( $db->prepare( 'SELECT COUNT(*) FROM %i WHERE is_default = 1', $table ) );
 
 		return absint( $count ) > 1;
 	}
@@ -544,12 +553,14 @@ final class DatabaseLanguageRepository implements LanguageRepositoryInterface {
 	 */
 	private function language_is_referenced( $code ) {
 		$code = $this->normalize_code( $code );
+		$db   = $this->wpdb;
 
 		if ( $this->schema_builder->table_exists( $this->tables->translation_groups() ) ) {
 			$groups_table = $this->tables->translation_groups();
-			$groups_count = $this->wpdb->get_var(
-				$this->wpdb->prepare(
-					"SELECT COUNT(*) FROM {$groups_table} WHERE source_language = %s",
+			$groups_count = $db->get_var(
+				$db->prepare(
+					'SELECT COUNT(*) FROM %i WHERE source_language = %s',
+					$groups_table,
 					$code
 				)
 			);
@@ -561,9 +572,10 @@ final class DatabaseLanguageRepository implements LanguageRepositoryInterface {
 
 		if ( $this->schema_builder->table_exists( $this->tables->translation_items() ) ) {
 			$items_table = $this->tables->translation_items();
-			$items_count = $this->wpdb->get_var(
-				$this->wpdb->prepare(
-					"SELECT COUNT(*) FROM {$items_table} WHERE language_code = %s",
+			$items_count = $db->get_var(
+				$db->prepare(
+					'SELECT COUNT(*) FROM %i WHERE language_code = %s',
+					$items_table,
 					$code
 				)
 			);

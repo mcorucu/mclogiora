@@ -151,13 +151,19 @@ final class SetupState {
 			return false;
 		}
 
-		$table = ( new TableNames( $wpdb ) )->languages();
+		$db    = $wpdb;
+		$table = ( new TableNames( $db ) )->languages();
 
 		if ( function_exists( 'get_option' ) && ! get_option( 'mclogiora_db_version', '' ) ) {
 			return false;
 		}
 
-		$count = $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- trusted table name.
+		$count = $db->get_var(
+			$db->prepare(
+				'SELECT COUNT(*) FROM %i',
+				$table
+			)
+		); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- setup must inspect the current table state; the identifier is a TableNames value and the result is request-local.
 
 		return absint( $count ) > 0;
 	}

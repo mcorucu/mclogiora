@@ -13,7 +13,12 @@ use McLogiora\Core\Container;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Loads plugin translations.
+ * Registers the plugin's translation integration.
+ *
+ * WordPress.org supplies plugin language packs and loads them automatically
+ * for the plugin text domain. The POT file remains in the source tree for
+ * translators; this module intentionally does not call the discouraged
+ * load_plugin_textdomain() function.
  */
 final class Localization implements ModuleInterface {
 	/**
@@ -23,15 +28,6 @@ final class Localization implements ModuleInterface {
 	 * @return void
 	 */
 	public function register( Container $container ) {
-		add_action( 'init', array( $this, 'load_textdomain' ) );
-	}
-
-	/**
-	 * Loads the plugin text domain.
-	 *
-	 * @return void
-	 */
-	public function load_textdomain() {
-		load_plugin_textdomain( 'mclogiora', false, dirname( MCLOGIORA_BASENAME ) . '/languages' );
+		unset( $container );
 	}
 }

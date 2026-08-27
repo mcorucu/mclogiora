@@ -60,8 +60,9 @@ final class ManualModule implements ModuleInterface {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'mclogiora' ) );
 		}
 
-		$query        = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
-		$article_slug = isset( $_GET['article'] ) ? sanitize_key( wp_unslash( $_GET['article'] ) ) : '';
+		// These are read-only navigation/search parameters; the manual has no mutation path.
+		$query        = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only manual search.
+		$article_slug = isset( $_GET['article'] ) ? sanitize_key( wp_unslash( $_GET['article'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only manual navigation.
 		$article      = ManualRegistry::find( $article_slug );
 		$results      = ManualSearch::search( ManualRegistry::all(), $query );
 
