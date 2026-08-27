@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-25T18:51:04+00:00\n"
+"POT-Creation-Date: 2026-08-27T19:35:11+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mclogiora\n"
@@ -62,7 +62,7 @@ msgstr ""
 #: src/Admin/WidgetTranslationManager.php:87
 #: src/Compatibility/CompatibilityDashboard.php:78
 #: src/Languages/LanguageManager.php:74
-#: src/Manual/ManualModule.php:52
+#: src/Manual/ManualModule.php:60
 #: src/Relations/TranslationManager.php:130
 #: src/Setup/SetupWizard.php:163
 msgid "You do not have permission to access this page."
@@ -87,11 +87,11 @@ msgstr ""
 #: src/Diagnostics/SiteHealthIntegration.php:53
 #: src/Languages/LanguageManager.php:58
 #: src/Languages/LanguageManager.php:87
-#: src/Manual/ManualRegistry.php:92
-#: src/Manual/ManualRegistry.php:100
-#: src/Manual/ManualRegistry.php:107
-#: src/Manual/ManualRegistry.php:114
-#: src/Setup/SetupWizard.php:849
+#: src/Manual/ManualRegistry.php:136
+#: src/Manual/ManualRegistry.php:170
+#: src/Manual/ManualRegistry.php:189
+#: src/Manual/ManualRegistry.php:217
+#: src/Setup/SetupWizard.php:855
 msgid "Languages"
 msgstr ""
 
@@ -116,7 +116,7 @@ msgid "Choose a default language before configuring translated URLs or creating 
 msgstr ""
 
 #: src/Admin/AdminMenu.php:182
-#: src/Setup/SetupWizard.php:640
+#: src/Setup/SetupWizard.php:645
 msgid "Finish setup"
 msgstr ""
 
@@ -129,7 +129,7 @@ msgid "mcLogiora quick actions"
 msgstr ""
 
 #: src/Admin/AdminMenu.php:189
-#: src/Setup/SetupWizard.php:658
+#: src/Setup/SetupWizard.php:663
 msgid "Manage Languages"
 msgstr ""
 
@@ -142,12 +142,12 @@ msgstr ""
 #: src/Admin/AdminMenu.php:191
 #: src/Admin/StringManager.php:83
 #: src/Admin/StringManager.php:113
-#: src/Manual/ManualRegistry.php:179
+#: src/Manual/ManualRegistry.php:457
 msgid "String Translation"
 msgstr ""
 
 #: src/Admin/AdminMenu.php:192
-#: src/Setup/SetupWizard.php:658
+#: src/Setup/SetupWizard.php:663
 msgid "Configure URLs"
 msgstr ""
 
@@ -161,7 +161,7 @@ msgstr ""
 #: src/Diagnostics/SiteHealthIntegration.php:57
 #: src/Editors/ClassicEditorMetabox.php:264
 #: src/Relations/TranslationManager.php:627
-#: src/Setup/SetupWizard.php:639
+#: src/Setup/SetupWizard.php:644
 #: assets/js/editor-panel.js:399
 msgid "Translation Suggestions"
 msgstr ""
@@ -225,8 +225,8 @@ msgid "Review the editors, builders, plugins, and theme detected on this site."
 msgstr ""
 
 #: src/Admin/AdminMenu.php:226
-#: src/Manual/ManualModule.php:37
-#: src/Manual/ManualModule.php:113
+#: src/Manual/ManualModule.php:45
+#: src/Manual/ManualModule.php:131
 msgid "Manual"
 msgstr ""
 
@@ -368,12 +368,12 @@ msgid "Strategy"
 msgstr ""
 
 #: src/Admin/RoutingSettingsScreen.php:111
-#: src/Setup/SetupWizard.php:616
+#: src/Setup/SetupWizard.php:621
 msgid "Language directory"
 msgstr ""
 
 #: src/Admin/RoutingSettingsScreen.php:118
-#: src/Setup/SetupWizard.php:617
+#: src/Setup/SetupWizard.php:622
 msgid "Also add a directory for the default language"
 msgstr ""
 
@@ -479,7 +479,7 @@ msgid "String filters"
 msgstr ""
 
 #: src/Admin/StringManager.php:123
-#: src/Manual/ManualModule.php:68
+#: src/Manual/ManualModule.php:77
 #: src/Relations/TranslationManager.php:262
 msgid "Search"
 msgstr ""
@@ -916,8 +916,8 @@ msgid "Learn more about troubleshooting"
 msgstr ""
 
 #: src/Admin/SystemStatusDashboard.php:82
-#: src/Languages/LanguageManager.php:405
-#: src/Languages/LanguageManager.php:520
+#: src/Languages/LanguageManager.php:413
+#: src/Languages/LanguageManager.php:532
 msgid "Status"
 msgstr ""
 
@@ -1573,8 +1573,8 @@ msgstr ""
 
 #: src/Diagnostics/DiagnosticsService.php:482
 #: src/Diagnostics/SiteHealthIntegration.php:54
-#: src/Setup/SetupWizard.php:579
-#: src/Setup/SetupWizard.php:850
+#: src/Setup/SetupWizard.php:584
+#: src/Setup/SetupWizard.php:856
 msgid "Default language"
 msgstr ""
 
@@ -2439,166 +2439,166 @@ msgid "Add custom language"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:340
-#: src/Setup/SetupWizard.php:689
+#: src/Setup/SetupWizard.php:697
 msgid "Search languages"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:340
-#: src/Setup/SetupWizard.php:689
+#: src/Setup/SetupWizard.php:697
 msgid "Search by name, code, locale, or region"
 msgstr ""
 
 #: src/Languages/LanguageManager.php:341
-#: src/Setup/SetupWizard.php:690
+#: src/Setup/SetupWizard.php:698
 msgid "Language catalog"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:349
-#: src/Setup/SetupWizard.php:699
+#: src/Languages/LanguageManager.php:357
+#: src/Setup/SetupWizard.php:715
 msgid "No catalog language matches that search."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:366
+#: src/Languages/LanguageManager.php:374
 msgid "Display Order"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:367
+#: src/Languages/LanguageManager.php:375
 msgid "Lower numbers appear first in language lists and switcher choices."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:379
+#: src/Languages/LanguageManager.php:387
 msgid "Save Order"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:394
+#: src/Languages/LanguageManager.php:402
 msgid "Language Directory"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:395
+#: src/Languages/LanguageManager.php:403
 msgid "These languages are stored by mcLogiora and are available to its translation and routing features."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:400
+#: src/Languages/LanguageManager.php:408
 msgid "Language Code"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:401
-#: src/Languages/LanguageManager.php:501
+#: src/Languages/LanguageManager.php:409
+#: src/Languages/LanguageManager.php:513
 msgid "Locale"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:402
+#: src/Languages/LanguageManager.php:410
 msgid "Native Name"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:403
+#: src/Languages/LanguageManager.php:411
 msgid "English Name"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:404
-#: src/Languages/LanguageManager.php:513
+#: src/Languages/LanguageManager.php:412
+#: src/Languages/LanguageManager.php:525
 msgid "Direction"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:406
-#: src/Languages/LanguageManager.php:527
+#: src/Languages/LanguageManager.php:414
+#: src/Languages/LanguageManager.php:539
 msgid "Order"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:407
+#: src/Languages/LanguageManager.php:415
 #: src/Relations/TranslationManager.php:195
 #: src/Relations/TranslationManager.php:279
 msgid "Actions"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:413
+#: src/Languages/LanguageManager.php:421
 msgid "No languages have been added yet."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:443
+#: src/Languages/LanguageManager.php:451
 msgid "Language actions"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:445
+#: src/Languages/LanguageManager.php:453
 msgid "Edit"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:450
+#: src/Languages/LanguageManager.php:458
 msgid "Save Changes"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:455
+#: src/Languages/LanguageManager.php:463
 msgid "Disable"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:457
+#: src/Languages/LanguageManager.php:465
 msgid "Enable"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:460
+#: src/Languages/LanguageManager.php:468
 msgid "Set Default"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:461
+#: src/Languages/LanguageManager.php:469
 msgid "Delete is intentionally disabled until integrity rules are visible in the UI."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:461
+#: src/Languages/LanguageManager.php:469
 msgid "Delete"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:476
+#: src/Languages/LanguageManager.php:484
 msgid "Changing the primary language can affect existing content ownership and language URLs. Continue?"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:497
+#: src/Languages/LanguageManager.php:509
 msgid "Language code"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:498
+#: src/Languages/LanguageManager.php:510
 msgid "en"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:502
+#: src/Languages/LanguageManager.php:514
 msgid "en_US"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:505
+#: src/Languages/LanguageManager.php:517
 msgid "Native name"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:506
-#: src/Languages/LanguageManager.php:510
+#: src/Languages/LanguageManager.php:518
+#: src/Languages/LanguageManager.php:522
 msgid "English"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:509
+#: src/Languages/LanguageManager.php:521
 msgid "English name"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:515
+#: src/Languages/LanguageManager.php:527
 msgid "Left to right"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:516
+#: src/Languages/LanguageManager.php:528
 msgid "Right to left"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:522
-#: src/Languages/LanguageManager.php:547
+#: src/Languages/LanguageManager.php:534
+#: src/Languages/LanguageManager.php:559
 msgid "Active"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:523
-#: src/Languages/LanguageManager.php:547
+#: src/Languages/LanguageManager.php:535
+#: src/Languages/LanguageManager.php:559
 msgid "Inactive"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:533
+#: src/Languages/LanguageManager.php:545
 msgid "Make this the default language"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:551
+#: src/Languages/LanguageManager.php:563
 msgid "Default"
 msgstr ""
 
@@ -2606,666 +2606,699 @@ msgstr ""
 msgid "Language code is required."
 msgstr ""
 
-#: src/Manual/ManualModule.php:36
-#: src/Manual/ManualModule.php:63
+#: src/Manual/ManualModule.php:43
+#: src/Manual/ManualModule.php:72
 msgid "mcLogiora Manual"
 msgstr ""
 
-#: src/Manual/ManualModule.php:62
+#: src/Manual/ManualModule.php:71
 msgid "Help & Guide"
 msgstr ""
 
-#: src/Manual/ManualModule.php:64
+#: src/Manual/ManualModule.php:73
 msgid "Find practical guidance for languages, translations, URLs, suggestions, and diagnostics without leaving WordPress."
 msgstr ""
 
-#: src/Manual/ManualModule.php:67
+#: src/Manual/ManualModule.php:76
 msgid "How can we help?"
 msgstr ""
 
-#: src/Manual/ManualModule.php:68
+#: src/Manual/ManualModule.php:77
 msgid "Search language, missing, + English, hreflang, provider, 404…"
 msgstr ""
 
-#: src/Manual/ManualModule.php:74
+#. translators: %d: number of matching manual articles.
+#: src/Manual/ManualModule.php:84
 #, php-format
 msgid "%d result"
 msgid_plural "%d results"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Manual/ManualModule.php:77
+#: src/Manual/ManualModule.php:87
 msgid "Start here"
 msgstr ""
 
-#: src/Manual/ManualModule.php:78
+#: src/Manual/ManualModule.php:88
 msgid "Manual categories"
 msgstr ""
 
-#: src/Manual/ManualModule.php:78
+#: src/Manual/ManualModule.php:88
 msgid "Browse by topic"
 msgstr ""
 
-#: src/Manual/ManualModule.php:92
+#: src/Manual/ManualModule.php:108
 msgid "No matching articles. Try a language name, locale, missing, URL, or provider search."
 msgstr ""
 
-#: src/Manual/ManualModule.php:113
+#: src/Manual/ManualModule.php:131
 msgid "Manual breadcrumbs"
 msgstr ""
 
-#: src/Manual/ManualModule.php:117
+#: src/Manual/ManualModule.php:143
 msgid "Related articles"
 msgstr ""
 
-#: src/Manual/ManualModule.php:146
+#: src/Manual/ManualModule.php:206
 msgid "Tip"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:78
+#: src/Manual/ManualRegistry.php:87
 msgid "Quick Start"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:78
+#: src/Manual/ManualRegistry.php:88
 msgid "Configure languages and create your first translation in a few focused steps."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:78
-#: src/Manual/ManualRegistry.php:85
+#: src/Manual/ManualRegistry.php:89
+#: src/Manual/ManualRegistry.php:118
 msgid "Start Here"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:80
+#: src/Manual/ManualRegistry.php:94
 msgid "A practical first session"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:80
+#: src/Manual/ManualRegistry.php:95
 msgid "Open Setup Wizard and choose the primary language of your existing content."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:80
+#: src/Manual/ManualRegistry.php:95
 msgid "Add one or more translation languages. mcLogiora supplies the locale, URL tag, and direction for each catalog choice."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:80
+#: src/Manual/ManualRegistry.php:95
 msgid "Review language URLs and finish setup."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:80
+#: src/Manual/ManualRegistry.php:95
 msgid "Open Translation Manager, find a page, and use + Language to create a translated draft."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:81
-#: src/Setup/SetupWizard.php:657
+#: src/Manual/ManualRegistry.php:99
+#: src/Setup/SetupWizard.php:662
 msgid "Good to know"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:81
+#: src/Manual/ManualRegistry.php:100
 msgid "Choosing a language does not translate or publish content automatically. You remain in control of every translation draft."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:85
+#: src/Manual/ManualRegistry.php:107
+msgid "WordPress admin setup completion screen with next-step guidance."
+msgstr ""
+
+#: src/Manual/ManualRegistry.php:108
+msgid "After setup, the wizard points you to discovery, translation, review, and navigation."
+msgstr ""
+
+#: src/Manual/ManualRegistry.php:116
 msgid "What is mcLogiora?"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:85
+#: src/Manual/ManualRegistry.php:117
 msgid "Understand the translation relationships, language-aware URLs, and review workflow mcLogiora provides."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:87
+#: src/Manual/ManualRegistry.php:123
 msgid "mcLogiora connects separate WordPress objects that represent the same content in different languages. It adds language metadata, translation actions, multilingual URLs, a switcher, and review-oriented suggestion tools."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:88
+#: src/Manual/ManualRegistry.php:127
 msgid "Existing eligible content can be discovered by Translation Manager. Discovery is not translation: mcLogiora does not duplicate, translate, or publish existing content without an explicit action."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:92
+#: src/Manual/ManualRegistry.php:134
 msgid "Choosing languages"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:92
+#: src/Manual/ManualRegistry.php:135
 msgid "Select a primary language and translation targets without entering locale codes."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:94
-#: src/Setup/SetupWizard.php:639
+#: src/Manual/ManualRegistry.php:141
+#: src/Setup/SetupWizard.php:644
 msgid "Primary language"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:94
+#: src/Manual/ManualRegistry.php:142
 msgid "Choose the language most of your existing content is written in. mcLogiora uses it as the starting point for translation relationships. If it can confidently match your WordPress site language, the wizard shows that choice as a suggestion; you still confirm it before saving."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:95
-#: src/Setup/SetupWizard.php:639
+#: src/Manual/ManualRegistry.php:146
+#: src/Setup/SetupWizard.php:644
 msgid "Translation languages"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:95
+#: src/Manual/ManualRegistry.php:147
 msgid "Search by the native name, English name, locale, code, or region, then select one or more targets. The primary language is not offered as a target and duplicate locales are rejected."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:96
+#: src/Manual/ManualRegistry.php:151
 msgid "Why does this matter?"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:96
+#: src/Manual/ManualRegistry.php:152
 msgid "The catalog keeps technical values consistent for URLs, hreflang, OpenGraph metadata, and right-to-left presentation while you work with recognizable language names."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:100
+#: src/Manual/ManualRegistry.php:159
+msgid "WordPress setup language picker with Turkish primary language and English and German targets selected."
+msgstr ""
+
+#: src/Manual/ManualRegistry.php:160
+msgid "The picker keeps the primary language separate from selected translation targets."
+msgstr ""
+
+#: src/Manual/ManualRegistry.php:168
 msgid "Language codes and locales"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:100
+#: src/Manual/ManualRegistry.php:169
 msgid "A gentle explanation of the technical metadata mcLogiora resolves for you."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:102
+#: src/Manual/ManualRegistry.php:175
 msgid "tr_TR is the WordPress locale for Turkish. You normally do not need to enter this yourself; mcLogiora selects it from the bundled catalog. The catalog also provides the BCP-47 form tr for language attributes and hreflang."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:103
+#: src/Manual/ManualRegistry.php:179
 msgid "What each value is for"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:103
+#: src/Manual/ManualRegistry.php:180
 msgid "Language code: mcLogiora’s stable identifier and URL language key."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:103
+#: src/Manual/ManualRegistry.php:180
 msgid "WordPress locale: the locale convention used by WordPress."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:103
+#: src/Manual/ManualRegistry.php:180
 msgid "Hreflang: the standards-compatible language tag emitted for search engines."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:103
+#: src/Manual/ManualRegistry.php:180
 msgid "Direction: ltr or rtl, selected from the catalog."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:107
+#: src/Manual/ManualRegistry.php:187
 msgid "Adding and removing languages"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:107
+#: src/Manual/ManualRegistry.php:188
 msgid "Manage catalog languages after setup and understand the safety checks around changes."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:109
+#: src/Manual/ManualRegistry.php:194
 msgid "Add a standard language"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:109
+#: src/Manual/ManualRegistry.php:195
 msgid "Open mcLogiora → Languages."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:109
+#: src/Manual/ManualRegistry.php:195
 msgid "Use Add Language, search the catalog, and choose a language."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:109
+#: src/Manual/ManualRegistry.php:195
 msgid "Review the name and direction, then select Add Language."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:110
+#: src/Manual/ManualRegistry.php:199
 msgid "Disabling a language keeps its records but prevents new translation relationships. The default language cannot be disabled. Deleting a referenced language is blocked so existing relationships remain safe."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:114
+#: src/Manual/ManualRegistry.php:206
+msgid "WordPress Languages administration screen showing configured language records."
+msgstr ""
+
+#: src/Manual/ManualRegistry.php:207
+msgid "Review configured names, locales, directions, and default-language state from Languages."
+msgstr ""
+
+#: src/Manual/ManualRegistry.php:215
 msgid "Right-to-left languages"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:114
+#: src/Manual/ManualRegistry.php:216
 msgid "Arabic, Hebrew, Persian, and other RTL choices receive their direction metadata automatically."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:115
+#: src/Manual/ManualRegistry.php:222
 msgid "Select an RTL language from the catalog just like any other language. mcLogiora stores the direction with the language and exposes it to admin and front-end language context. You do not need to type rtl or maintain a separate direction setting."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:115
+#: src/Manual/ManualRegistry.php:226
 msgid "Mixed language sites"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:115
+#: src/Manual/ManualRegistry.php:227
 msgid "A site can use LTR and RTL languages together. The selected language determines the relevant direction; keep translations readable in the editor and preview each public URL."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:119
+#: src/Manual/ManualRegistry.php:234
 msgid "Create your first translation"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:119
+#: src/Manual/ManualRegistry.php:235
 msgid "Use the real list-table workflow to create, edit, review, and publish a translated draft."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:119
-#: src/Manual/ManualRegistry.php:124
-#: src/Manual/ManualRegistry.php:129
-#: src/Manual/ManualRegistry.php:134
-#: src/Manual/ManualRegistry.php:169
-#: src/Manual/ManualRegistry.php:174
-#: src/Manual/ManualRegistry.php:179
-#: src/Manual/ManualRegistry.php:184
+#: src/Manual/ManualRegistry.php:236
+#: src/Manual/ManualRegistry.php:255
+#: src/Manual/ManualRegistry.php:283
+#: src/Manual/ManualRegistry.php:301
+#: src/Manual/ManualRegistry.php:422
+#: src/Manual/ManualRegistry.php:440
+#: src/Manual/ManualRegistry.php:459
+#: src/Manual/ManualRegistry.php:477
 msgid "Workflows"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:120
+#: src/Manual/ManualRegistry.php:241
 msgid "From a page to a translated draft"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:120
+#: src/Manual/ManualRegistry.php:242
 msgid "Open Translation Manager or the Pages list and find the source page."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:120
+#: src/Manual/ManualRegistry.php:242
 msgid "In the Languages column, select + Language for the target you need."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:120
+#: src/Manual/ManualRegistry.php:242
 msgid "mcLogiora creates a separate draft object for that language and opens it for editing."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:120
+#: src/Manual/ManualRegistry.php:242
 msgid "Translate the content, review its status, and publish it when it is ready."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:120
+#: src/Manual/ManualRegistry.php:246
 msgid "The source and target remain separate WordPress objects connected by a translation relationship. Unlinking a relationship does not delete either object."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:124
+#: src/Manual/ManualRegistry.php:253
 msgid "Understanding Translation Manager"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:124
+#: src/Manual/ManualRegistry.php:254
 msgid "Find eligible content, see missing translations, and act from one searchable inventory."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:125
+#: src/Manual/ManualRegistry.php:260
 msgid "Translation Manager is a read-first inventory of eligible posts, pages, public custom post types, and supported taxonomies. Objects may appear before a translation relationship exists."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:125
+#: src/Manual/ManualRegistry.php:264
 msgid "What you can inspect"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:125
+#: src/Manual/ManualRegistry.php:265
 msgid "Search by title or object name."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:125
+#: src/Manual/ManualRegistry.php:265
 msgid "Filter by kind, post type, taxonomy, and source language."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:125
+#: src/Manual/ManualRegistry.php:265
 msgid "See existing target translations and missing targets."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:125
+#: src/Manual/ManualRegistry.php:265
 msgid "Open a target draft or use + Language to create one."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:129
+#: src/Manual/ManualRegistry.php:272
+msgid "WordPress Translation Manager inventory with source content and missing English translation action."
+msgstr ""
+
+#: src/Manual/ManualRegistry.php:273
+msgid "The inventory shows eligible content before a relationship exists and exposes an explicit target action."
+msgstr ""
+
+#: src/Manual/ManualRegistry.php:281
 msgid "Editors and supported content"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:129
+#: src/Manual/ManualRegistry.php:282
 msgid "Where translation controls appear in Gutenberg, Classic Editor, and supported public content types."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:130
+#: src/Manual/ManualRegistry.php:288
 msgid "Gutenberg uses the mcLogiora translation panel. Classic Editor uses the translation metabox. The same relationship and status rules apply whichever editor you use."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:130
+#: src/Manual/ManualRegistry.php:292
 msgid "Public custom post types are supported when WordPress exposes them as eligible content. Internal types and excluded WooCommerce objects follow the product compatibility rules shown by the Compatibility screen."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:134
+#: src/Manual/ManualRegistry.php:299
 msgid "Taxonomies, media, and strings"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:134
+#: src/Manual/ManualRegistry.php:300
 msgid "Learn which specialized translation surfaces are available and where to find them."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:135
+#: src/Manual/ManualRegistry.php:306
 msgid "Categories, tags, and supported public taxonomies use the taxonomy translation workflow."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:135
+#: src/Manual/ManualRegistry.php:306
 msgid "Media keeps one shared attachment while translated title, alt text, caption, and description are stored per language."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:135
+#: src/Manual/ManualRegistry.php:306
 msgid "String Translation, Menus & Widgets provide their own focused admin screens for supported interface content."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:135
+#: src/Manual/ManualRegistry.php:310
 msgid "Scope matters"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:135
+#: src/Manual/ManualRegistry.php:311
 msgid "The available actions depend on the object type and current integration. The UI is the source of truth; mcLogiora does not claim support for content it cannot safely translate."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:139
+#: src/Manual/ManualRegistry.php:318
 msgid "Language URLs and switcher"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:139
+#: src/Manual/ManualRegistry.php:319
 msgid "Understand directory URLs, default-language behavior, missing translations, and the front-end switcher."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:139
-#: src/Manual/ManualRegistry.php:144
+#: src/Manual/ManualRegistry.php:320
+#: src/Manual/ManualRegistry.php:338
 msgid "URLs & SEO"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:140
+#: src/Manual/ManualRegistry.php:325
 msgid "The directory strategy uses paths such as /de/about/. By default the primary language can keep existing root URLs; the setup choice can add its directory as well. The exact pattern is shown in Review and Languages & URLs."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:140
+#: src/Manual/ManualRegistry.php:329
 msgid "The switcher only links to translations that exist. If a target is missing, it is not presented as a working URL. After changing permalink settings, refresh WordPress rewrite rules from Permalinks."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:144
+#: src/Manual/ManualRegistry.php:336
 msgid "SEO language metadata"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:144
+#: src/Manual/ManualRegistry.php:337
 msgid "See how canonical URLs, hreflang, x-default, sitemaps, and OpenGraph locale are handled."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:145
+#: src/Manual/ManualRegistry.php:343
 msgid "mcLogiora emits metadata from the same translated URL and language context used by the front end. Hreflang annotations are emitted only for real translated URLs; x-default points to the default-language URL when one exists."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:145
+#: src/Manual/ManualRegistry.php:347
 msgid "The plugin also exposes the current OpenGraph locale and alternates where a region is known. Compatible SEO plugins are detected so duplicate concerns can be avoided."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:149
+#: src/Manual/ManualRegistry.php:354
 msgid "Translation Suggestions and providers"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:149
+#: src/Manual/ManualRegistry.php:355
 msgid "Use optional Generate, Preview, Review, and Apply suggestions with your own provider credentials."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:149
-#: src/Manual/ManualRegistry.php:154
-#: src/Manual/ManualRegistry.php:189
+#: src/Manual/ManualRegistry.php:356
+#: src/Manual/ManualRegistry.php:380
+#: src/Manual/ManualRegistry.php:495
 msgid "Advanced"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:150
+#: src/Manual/ManualRegistry.php:361
 msgid "Translation Suggestions are optional. Manual translation and the normal translation workflow work without any provider. When configured, the supported provider choices are OpenAI, Anthropic, Gemini, and DeepL."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:150
+#: src/Manual/ManualRegistry.php:365
 msgid "Safe suggestion workflow"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:150
+#: src/Manual/ManualRegistry.php:366
 msgid "Configure a provider and credentials that you control."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:150
+#: src/Manual/ManualRegistry.php:366
 msgid "Generate a suggestion and preview it."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:150
+#: src/Manual/ManualRegistry.php:366
 msgid "Review the proposed content and apply it deliberately."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:150
+#: src/Manual/ManualRegistry.php:366
 msgid "Publish only through the normal WordPress workflow when ready."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:150
+#: src/Manual/ManualRegistry.php:370
 msgid "Privacy"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:150
+#: src/Manual/ManualRegistry.php:371
 msgid "There is no default telemetry. A provider request is made only when you explicitly use a configured suggestion action; the request may include the selected source content. Review each provider’s terms before sending content."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:154
+#: src/Manual/ManualRegistry.php:378
 msgid "Privacy and external requests"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:154
+#: src/Manual/ManualRegistry.php:379
 msgid "Know when mcLogiora communicates with an external translation provider."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:155
+#: src/Manual/ManualRegistry.php:385
 msgid "mcLogiora does not enable telemetry or tracking by default."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:155
+#: src/Manual/ManualRegistry.php:385
 msgid "Language setup, the local manual, and local manual search do not call translation providers."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:155
+#: src/Manual/ManualRegistry.php:385
 msgid "Provider calls happen only after you configure credentials and explicitly request a suggestion."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:155
+#: src/Manual/ManualRegistry.php:385
 msgid "Credentials remain under your WordPress configuration and should be handled as sensitive values."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:159
+#: src/Manual/ManualRegistry.php:392
 msgid "Troubleshooting"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:159
+#: src/Manual/ManualRegistry.php:393
 msgid "Resolve common setup, language, URL, translation, and suggestion states."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:159
-#: src/Manual/ManualRegistry.php:164
+#: src/Manual/ManualRegistry.php:394
+#: src/Manual/ManualRegistry.php:408
 msgid "Help"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:160
+#: src/Manual/ManualRegistry.php:399
 msgid "No languages configured: run Setup Wizard and confirm a primary language."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:160
+#: src/Manual/ManualRegistry.php:399
 msgid "Translation Manager is empty: check that eligible post types or taxonomies exist and review the filters."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:160
+#: src/Manual/ManualRegistry.php:399
 msgid "Content shows Unassigned: assign its source language through the supported content workflow before creating a target."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:160
+#: src/Manual/ManualRegistry.php:399
 msgid "I cannot see + English: confirm English is active, the object is eligible, and a translation does not already exist."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:160
+#: src/Manual/ManualRegistry.php:399
 msgid "A language URL returns 404: save Permalinks again and confirm the translated object is published."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:160
+#: src/Manual/ManualRegistry.php:399
 msgid "Suggestions are disabled: manual translation remains available; configure a provider only if you need suggestions."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:160
+#: src/Manual/ManualRegistry.php:399
 msgid "A translation needs review/update: inspect the source-change status and review the target before publishing."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:164
+#: src/Manual/ManualRegistry.php:406
 msgid "Frequently asked questions"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:164
+#: src/Manual/ManualRegistry.php:407
 msgid "Short answers to common multilingual workflow questions."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:165
+#: src/Manual/ManualRegistry.php:413
 msgid "Does mcLogiora translate automatically? No. Suggestions are optional and always review-first."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:165
+#: src/Manual/ManualRegistry.php:413
 msgid "Does creating a language duplicate content? No. It only makes a language available."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:165
+#: src/Manual/ManualRegistry.php:413
 msgid "Can I translate manually? Yes. The normal editor and translation workflow do not require a provider."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:165
+#: src/Manual/ManualRegistry.php:413
 msgid "Can I add languages later? Yes, from Languages."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:165
+#: src/Manual/ManualRegistry.php:413
 msgid "Does unlinking delete content? No. The relationship is removed while the WordPress objects remain."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:165
+#: src/Manual/ManualRegistry.php:413
 msgid "Can I use mcLogiora without providers? Yes."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:165
+#: src/Manual/ManualRegistry.php:413
 msgid "Does it publish translations automatically? No."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:165
+#: src/Manual/ManualRegistry.php:413
 msgid "What about WooCommerce? Use the Compatibility screen and current UI policy; mcLogiora does not claim unsupported WooCommerce objects are translatable."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:169
+#: src/Manual/ManualRegistry.php:420
 msgid "Categories and tags"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:169
+#: src/Manual/ManualRegistry.php:421
 msgid "Translate supported public taxonomies while keeping term relationships safe."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:170
+#: src/Manual/ManualRegistry.php:427
 msgid "Open Translation Manager and filter the kind to Taxonomies."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:170
+#: src/Manual/ManualRegistry.php:427
 msgid "Find the source category or tag and choose the missing target language."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:170
+#: src/Manual/ManualRegistry.php:427
 msgid "Review the translated term and its parent relationship before saving."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:170
+#: src/Manual/ManualRegistry.php:431
 msgid "The workflow avoids attaching a translated term to a parent in another language. Unsupported or internal taxonomies remain excluded."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:174
+#: src/Manual/ManualRegistry.php:438
 msgid "Media translation"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:174
+#: src/Manual/ManualRegistry.php:439
 msgid "Translate attachment metadata without duplicating the underlying media file."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:175
+#: src/Manual/ManualRegistry.php:445
 msgid "mcLogiora keeps one shared attachment and stores translated title, alt text, caption, and description per language. The binary and URL remain shared."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:175
+#: src/Manual/ManualRegistry.php:449
 msgid "Accessibility"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:175
+#: src/Manual/ManualRegistry.php:450
 msgid "Translate alt text as carefully as visible copy. It is part of the language-specific media experience."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:179
+#: src/Manual/ManualRegistry.php:458
 msgid "Review interface strings discovered from your theme and plugins."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:180
+#: src/Manual/ManualRegistry.php:464
 msgid "String Translation is for supported interface text rather than post content. Scan only when you ask; normal front-end traffic does not trigger a scan."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:180
+#: src/Manual/ManualRegistry.php:468
 msgid "Review source context and target language before saving. Provider suggestions are optional and are not required for manual string translation."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:184
+#: src/Manual/ManualRegistry.php:475
 msgid "Menus and widgets"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:184
+#: src/Manual/ManualRegistry.php:476
 msgid "Understand the supported navigation and widget translation surfaces."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:185
+#: src/Manual/ManualRegistry.php:482
 msgid "Menus & Widgets provides focused actions for supported navigation menus and widget text fields. The front end uses the configured WordPress menu and widget settings."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:185
+#: src/Manual/ManualRegistry.php:486
 msgid "If a widget type has no translation adapter, it remains unchanged and is shown as unsupported rather than being guessed at."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:189
+#: src/Manual/ManualRegistry.php:493
 msgid "System Status and diagnostics"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:189
+#: src/Manual/ManualRegistry.php:494
 msgid "Use read-only diagnostics to understand database, language, routing, and compatibility state."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:190
+#: src/Manual/ManualRegistry.php:500
 msgid "System Status reports configuration and capability checks without changing site data. Use an actionable Settings link first when a finding identifies missing language or routing configuration."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:190
+#: src/Manual/ManualRegistry.php:504
 msgid "If a result is unclear, capture the status details and compare the active language records, default language, permalink settings, and current WordPress environment."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:194
+#: src/Manual/ManualRegistry.php:511
 msgid "Developer Guide"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:194
+#: src/Manual/ManualRegistry.php:512
 msgid "Verified extension points and interfaces for developers integrating with mcLogiora."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:194
+#: src/Manual/ManualRegistry.php:513
 msgid "Developers"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:195
+#: src/Manual/ManualRegistry.php:518
 msgid "PHP Public API: read configured languages, current/default language, translations, URLs, and the switcher."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:195
+#: src/Manual/ManualRegistry.php:518
 msgid "Hooks: use documented mclogiora_* filters and actions; the language catalog extension point is mclogiora_language_catalog."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:195
+#: src/Manual/ManualRegistry.php:518
 msgid "REST API and WP-CLI expose the configured language and translation contracts described in the Developer API document."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:195
+#: src/Manual/ManualRegistry.php:518
 msgid "Import/Export carries canonical language fields and relation records; validate packages before applying them."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:195
+#: src/Manual/ManualRegistry.php:518
 msgid "Diagnostics is read-only and suitable for support evidence."
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:195
+#: src/Manual/ManualRegistry.php:522
 msgid "Catalog extensions"
 msgstr ""
 
-#: src/Manual/ManualRegistry.php:195
+#: src/Manual/ManualRegistry.php:523
 msgid "Use the mclogiora_language_catalog filter to add or adjust definitions. Return code, locale, hreflang, native_name, english_name, direction, and optional region; invalid or duplicate entries are ignored."
 msgstr ""
 
@@ -3590,7 +3623,7 @@ msgid "None"
 msgstr ""
 
 #: src/Relations/TranslationManager.php:347
-#: src/Setup/SetupWizard.php:853
+#: src/Setup/SetupWizard.php:859
 msgid "Complete"
 msgstr ""
 
@@ -3796,7 +3829,7 @@ msgid "Step %1$d of %2$d: %3$s"
 msgstr ""
 
 #: src/Setup/SetupWizard.php:506
-#: src/Setup/SetupWizard.php:637
+#: src/Setup/SetupWizard.php:642
 msgid "Review setup"
 msgstr ""
 
@@ -3820,267 +3853,267 @@ msgstr ""
 msgid "Start setup"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:539
+#: src/Setup/SetupWizard.php:540
 msgid "Choose your site languages"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:540
+#: src/Setup/SetupWizard.php:541
 msgid "Choose the languages your site uses. mcLogiora resolves the technical locale, language tag, and direction for you."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:542
+#: src/Setup/SetupWizard.php:543
 msgid "Configured languages"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:546
+#: src/Setup/SetupWizard.php:551
 msgid "Primary"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:552
+#: src/Setup/SetupWizard.php:557
 msgid "What is the primary language of this site?"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:553
+#: src/Setup/SetupWizard.php:558
 msgid "Choose the language most of your existing content is written in. mcLogiora will use this as the starting point for translation relationships."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:555
+#: src/Setup/SetupWizard.php:560
 msgid "Which languages would you like to translate into?"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:556
+#: src/Setup/SetupWizard.php:561
 msgid "You can add or remove languages later. Choosing a language does not translate or publish any content automatically."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:558
+#: src/Setup/SetupWizard.php:563
 msgid "Save languages and continue"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:561
+#: src/Setup/SetupWizard.php:566
 msgid "Continue to default language"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:580
+#: src/Setup/SetupWizard.php:585
 msgid "This is the language used for your existing content and site-wide defaults. It must be chosen before setup can be finished."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:584
+#: src/Setup/SetupWizard.php:589
 msgid "Current default:"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:588
+#: src/Setup/SetupWizard.php:593
 msgid "Choose a configured language"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:593
+#: src/Setup/SetupWizard.php:598
 msgid "Save and continue"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:595
+#: src/Setup/SetupWizard.php:600
 msgid "Add or review languages"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:596
-#: src/Setup/SetupWizard.php:621
-#: src/Setup/SetupWizard.php:640
+#: src/Setup/SetupWizard.php:601
+#: src/Setup/SetupWizard.php:626
+#: src/Setup/SetupWizard.php:645
 msgid "Back"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:611
-#: src/Setup/SetupWizard.php:639
-#: src/Setup/SetupWizard.php:851
+#: src/Setup/SetupWizard.php:616
+#: src/Setup/SetupWizard.php:644
+#: src/Setup/SetupWizard.php:857
 msgid "Language URLs"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:612
+#: src/Setup/SetupWizard.php:617
 msgid "mcLogiora uses language directories, such as /tr/about/. The default language can keep your existing root URLs, or you can include its directory too."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:616
+#: src/Setup/SetupWizard.php:621
 msgid "URL structure"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:618
+#: src/Setup/SetupWizard.php:623
 msgid "Leaving this off keeps default-language URLs at the site root. If your site uses plain permalinks, review WordPress Permalinks after setup so rewrite rules can be refreshed."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:619
+#: src/Setup/SetupWizard.php:624
 msgid "Save and review"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:638
+#: src/Setup/SetupWizard.php:643
 msgid "Check the choices that mcLogiora will use. Translation Suggestions remain optional and are not part of core setup."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:639
+#: src/Setup/SetupWizard.php:644
 msgid "Not selected"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:639
+#: src/Setup/SetupWizard.php:644
 msgid "Directories for every configured language, such as /en-us/ and /de/"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:639
+#: src/Setup/SetupWizard.php:644
 msgid "Translated languages use directories such as /de/; the primary language stays at the site root"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:639
+#: src/Setup/SetupWizard.php:644
 msgid "Not configured — optional"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:653
+#: src/Setup/SetupWizard.php:658
 msgid "Your multilingual foundation is ready."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:654
+#: src/Setup/SetupWizard.php:659
 msgid "mcLogiora now knows your site languages and default language. You can build translation relationships when you are ready."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:655
+#: src/Setup/SetupWizard.php:660
 msgid "Languages configured"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:655
+#: src/Setup/SetupWizard.php:660
 msgid "Default language set"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:655
+#: src/Setup/SetupWizard.php:660
 msgid "Language URL behavior saved"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:656
+#: src/Setup/SetupWizard.php:661
 msgid "How mcLogiora works"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:656
+#: src/Setup/SetupWizard.php:661
 msgid "Discover existing content."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:656
+#: src/Setup/SetupWizard.php:661
 msgid "Translation Manager can show supported posts, pages, public custom post types, and taxonomies."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:656
+#: src/Setup/SetupWizard.php:661
 msgid "Create or link a translation."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:656
+#: src/Setup/SetupWizard.php:661
 msgid "Use + Language to create a translated draft; each language version remains its own WordPress object."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:656
+#: src/Setup/SetupWizard.php:661
 msgid "Translate and review."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:656
+#: src/Setup/SetupWizard.php:661
 msgid "Edit translations manually, or optionally request a suggestion that you review before using."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:656
+#: src/Setup/SetupWizard.php:661
 msgid "Publish and navigate."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:656
+#: src/Setup/SetupWizard.php:661
 msgid "The relationship, language switcher, URLs, and multilingual metadata stay connected around your content."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:656
+#: src/Setup/SetupWizard.php:661
 msgid "ABOUT PAGE"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:656
+#: src/Setup/SetupWizard.php:661
 msgid "Türkçe"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:656
+#: src/Setup/SetupWizard.php:661
 msgid "+ EN"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:656
+#: src/Setup/SetupWizard.php:661
 msgid "+ DE"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:656
+#: src/Setup/SetupWizard.php:661
 msgid "+ EN creates an English translation draft and opens it for editing."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:657
+#: src/Setup/SetupWizard.php:662
 msgid "Translations are independent WordPress objects; mcLogiora does not duplicate or publish content automatically."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:657
+#: src/Setup/SetupWizard.php:662
 msgid "Unlinking a relationship does not delete the content."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:657
+#: src/Setup/SetupWizard.php:662
 msgid "Translation Suggestions are optional and use providers you configure yourself."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:658
+#: src/Setup/SetupWizard.php:663
 msgid "Open Translation Manager"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:658
+#: src/Setup/SetupWizard.php:663
 msgid "Read the 3-minute getting started guide"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:670
+#: src/Setup/SetupWizard.php:675
 msgid "Exit for now"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:688
+#: src/Setup/SetupWizard.php:696
 msgid "Suggested from your WordPress site language"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:711
+#: src/Setup/SetupWizard.php:727
 msgid "Enter a language code."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:712
+#: src/Setup/SetupWizard.php:728
 msgid "Enter a valid WordPress locale such as en_US or tr_TR."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:713
+#: src/Setup/SetupWizard.php:729
 msgid "Enter both the native and English language names."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:714
+#: src/Setup/SetupWizard.php:730
 msgid "That WordPress locale is already in use."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:755
+#: src/Setup/SetupWizard.php:772
 msgid "No languages configured"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:848
+#: src/Setup/SetupWizard.php:854
 msgid "Welcome"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:852
+#: src/Setup/SetupWizard.php:858
 msgid "Review"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:867
+#: src/Setup/SetupWizard.php:873
 msgid "A short introduction to the setup choices."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:868
+#: src/Setup/SetupWizard.php:874
 msgid "Add the languages your site will use."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:869
+#: src/Setup/SetupWizard.php:875
 msgid "Choose the language used for existing content."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:870
+#: src/Setup/SetupWizard.php:876
 msgid "Choose how translated URLs are organized."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:871
+#: src/Setup/SetupWizard.php:877
 msgid "Check the choices before finishing."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:872
+#: src/Setup/SetupWizard.php:878
 msgid "See what to do next."
 msgstr ""
 
