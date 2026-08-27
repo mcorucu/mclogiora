@@ -134,6 +134,7 @@ final class ManualModule implements ModuleInterface {
 			foreach ( $article->sections() as $section ) :
 				$this->render_section( $section );
 endforeach;
+			$this->render_media( $article );
 			?>
 		</article>
 		<?php
@@ -141,6 +142,39 @@ endforeach;
 			?>
 			<div class="mclogiora-manual-related"><h3><?php esc_html_e( 'Related articles', 'mclogiora' ); ?></h3><?php $this->render_article_cards( $related ); ?></div><?php endif; ?>
 		<?php
+	}
+
+	/**
+	 * Renders curated, locally bundled screenshots attached to an article.
+	 *
+	 * @param ManualArticle $article Article.
+	 * @return void
+	 */
+	private function render_media( ManualArticle $article ) {
+		foreach ( $article->media() as $media ) {
+			if ( ! is_array( $media ) || empty( $media['file'] ) || empty( $media['alt'] ) ) {
+				continue;
+			}
+
+			$file = sanitize_file_name( $media['file'] );
+			$path = MCLOGIORA_PATH . 'assets/manual/' . $file;
+			if ( ! file_exists( $path ) ) {
+				continue;
+			}
+
+			echo '<figure class="mclogiora-manual-media">';
+			printf(
+				'<img src="%1$s" alt="%2$s" loading="lazy" width="%3$d" height="%4$d">',
+				esc_url( MCLOGIORA_URL . 'assets/manual/' . $file ),
+				esc_attr( $media['alt'] ),
+				(int) ( $media['width'] ?? 960 ),
+				(int) ( $media['height'] ?? 600 )
+			);
+			if ( ! empty( $media['caption'] ) ) {
+				printf( '<figcaption>%s</figcaption>', esc_html( $media['caption'] ) );
+			}
+			echo '</figure>';
+		}
 	}
 
 	/**

@@ -34,6 +34,7 @@ final class ManualArticle {
 			'keywords'         => isset( $data['keywords'] ) && is_array( $data['keywords'] ) ? array_values( $data['keywords'] ) : array(),
 			'sections'         => isset( $data['sections'] ) && is_array( $data['sections'] ) ? array_values( $data['sections'] ) : array(),
 			'related_articles' => isset( $data['related_articles'] ) && is_array( $data['related_articles'] ) ? array_values( $data['related_articles'] ) : array(),
+			'media'            => isset( $data['media'] ) && is_array( $data['media'] ) ? array_values( $data['media'] ) : array(),
 		);
 	}
 
@@ -58,6 +59,9 @@ final class ManualArticle {
 	/** Returns related article slugs. @return string[] */
 	public function related_articles() {
 		return $this->data['related_articles']; }
+	/** Returns bundled instructional media descriptors. @return array<int,array<string,string>> */
+	public function media() {
+		return $this->data['media']; }
 
 	/**
 	 * Returns plain text used by the local index.
