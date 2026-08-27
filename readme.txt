@@ -4,7 +4,7 @@ Tags: multilingual, translation, localization, language
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.16.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -84,13 +84,13 @@ mcLogiora contacts an external service only if you switch on Translation Suggest
 
 == Screenshots ==
 
-1. Translation Manager for reviewing translation relations and explicit actions.
-2. Define the default language and manage active site languages.
-3. Search and manage interface strings in String Translation.
-4. Configure language URL prefixes and the presentation of the language switcher.
-5. Optional translation suggestions stay off until explicitly enabled and are reviewed before applying.
-6. Read-only System Status diagnostics show environment readiness without provider requests.
-7. Compatibility overview for editors, builders, plugins, themes, and multilingual SEO.
+1. Review pages, posts, and translation status in one place.
+2. Create missing translations directly from WordPress content lists.
+3. Choose your site language and translation languages from a built-in catalog.
+4. Manage active languages with native names and locale details.
+5. Keep translation context close to the content you are editing.
+6. Learn the workflow with a searchable guide inside WordPress.
+7. Set language URL structure and switcher presentation with confidence.
 
 == External Services ==
 
@@ -265,6 +265,12 @@ No. If Yoast SEO, Rank Math, All in One SEO, The SEO Framework, or Slim SEO is a
 Each translation points at itself. Sending every language back to the default one would tell search engines your translations are duplicates to ignore, which is the opposite of what translating a site is for.
 
 == Changelog ==
+
+= 1.0.1 =
+
+* Polished the first-run language setup, multilingual content inventory, and local manual experience.
+* Added WordPress.org compatibility and security hardening, including prepared table identifiers and explicit nonce handling.
+* Refreshed the WordPress.org visual presentation with a premium, restrained spacewave direction.
 
 = 0.16.0 =
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1
+
+- Polished the first-run language setup, multilingual content inventory, and local manual experience.
+- Added WordPress.org compatibility and security hardening, including prepared table identifiers and explicit nonce handling.
+- Refreshed the WordPress.org visual presentation with a premium, restrained spacewave direction.
+
 ## 0.16.0
 
 - Added the public read API and reviewed developer hook contracts.
