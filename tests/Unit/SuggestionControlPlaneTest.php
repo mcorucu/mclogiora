@@ -10,12 +10,68 @@ namespace McLogiora\Tests\Unit;
 use McLogiora\Suggestions\CredentialStore;
 use McLogiora\Suggestions\LlmInstructions;
 use McLogiora\Suggestions\ModelCache;
+use McLogiora\Suggestions\Providers\AbstractProvider;
 use McLogiora\Suggestions\Providers\DeepLProvider;
-use McLogiora\Suggestions\Providers\OpenAiProvider;
 use McLogiora\Suggestions\ProviderReadiness;
+use McLogiora\Suggestions\SuggestionRequest;
+use McLogiora\Suggestions\SuggestionResult;
 use McLogiora\Suggestions\SuggestionSettings;
 use McLogiora\Tests\Support\FakeTransport;
 use PHPUnit\Framework\TestCase;
+
+/**
+ * Configurable provider double for control-plane tests.
+ *
+ * @package McLogiora
+ */
+final class ControlPlaneTestProvider extends AbstractProvider {
+	/**
+	 * Stable synthetic provider identifier.
+	 */
+	const ID = 'test-provider';
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function get_id() {
+		return self::ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function get_label() {
+		return 'Test provider';
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function available_models() {
+		return array();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function supports_language_pair( $source_language, $target_language ) {
+		return '' !== (string) $source_language && '' !== (string) $target_language && $source_language !== $target_language;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function test_connection() {
+		return true;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function suggest( SuggestionRequest $request ) {
+		return new SuggestionResult( $request->source_text(), self::ID, $this->selected_model() );
+	}
+}
 
 /**
  * Covers the configuration layer the settings screen draws from.
@@ -88,7 +144,7 @@ final class SuggestionControlPlaneTest extends TestCase {
 		delete_option( SuggestionSettings::OPTION_ENABLED );
 		delete_option( SuggestionSettings::OPTION_PROVIDER );
 
-		foreach ( array( 'openai', 'anthropic', 'gemini', 'deepl' ) as $id ) {
+		foreach ( array( ControlPlaneTestProvider::ID, 'deepl' ) as $id ) {
 			$this->credentials->remove( $id );
 			delete_option( 'mclogiora_suggestion_model_' . $id );
 		}
@@ -97,12 +153,12 @@ final class SuggestionControlPlaneTest extends TestCase {
 	}
 
 	/**
-	 * Returns an OpenAI provider bound to the recording transport.
+	 * Returns a configurable provider bound to the recording transport.
 	 *
-	 * @return OpenAiProvider
+	 * @return ControlPlaneTestProvider
 	 */
-	private function openai() {
-		return new OpenAiProvider( $this->transport, $this->credentials, new LlmInstructions() );
+	private function model_provider() {
+		return new ControlPlaneTestProvider( $this->transport, $this->credentials );
 	}
 
 	/**
@@ -143,18 +199,18 @@ final class SuggestionControlPlaneTest extends TestCase {
 	 * @return void
 	 */
 	public function test_switching_provider_keeps_the_other_configuration() {
-		$this->credentials->save( 'openai', 'sk-openai' );
+		$this->credentials->save( ControlPlaneTestProvider::ID, 'test-provider-key' );
 		$this->credentials->save( 'deepl', 'deepl-key' );
 
-		$openai = $this->openai();
-		$openai->set_selected_model( 'gpt-5.4-mini' );
+		$provider = $this->model_provider();
+		$provider->set_selected_model( 'test-model' );
 
-		$this->settings->set_provider( 'openai' );
+		$this->settings->set_provider( ControlPlaneTestProvider::ID );
 		$this->settings->set_provider( 'deepl' );
 
 		$this->assertSame( 'deepl', $this->settings->provider_id() );
-		$this->assertTrue( $this->credentials->has( 'openai' ), 'Switching provider must not delete a credential.' );
-		$this->assertSame( 'gpt-5.4-mini', $openai->selected_model(), 'Switching provider must not clear a model choice.' );
+		$this->assertTrue( $this->credentials->has( ControlPlaneTestProvider::ID ), 'Switching provider must not delete a credential.' );
+		$this->assertSame( 'test-model', $provider->selected_model(), 'Switching provider must not clear a model choice.' );
 	}
 
 	/**
@@ -163,24 +219,24 @@ final class SuggestionControlPlaneTest extends TestCase {
 	 * @return void
 	 */
 	public function test_readiness_walks_from_unconfigured_to_ready() {
-		$openai = $this->openai();
+		$provider = $this->model_provider();
 
-		$this->assertSame( ProviderReadiness::NOT_CONFIGURED, $this->readiness->state( $openai ) );
-		$this->assertSame( '', $this->readiness->credential_source( $openai ) );
+		$this->assertSame( ProviderReadiness::NOT_CONFIGURED, $this->readiness->state( $provider ) );
+		$this->assertSame( '', $this->readiness->credential_source( $provider ) );
 
-		$this->credentials->save( 'openai', 'sk-openai' );
+		$this->credentials->save( ControlPlaneTestProvider::ID, 'test-provider-key' );
 
 		$this->assertSame(
 			ProviderReadiness::MODEL_REQUIRED,
-			$this->readiness->state( $openai ),
+			$this->readiness->state( $provider ),
 			'A key without a chosen model is not ready.'
 		);
-		$this->assertNotSame( '', $this->readiness->next_step( $openai ) );
+		$this->assertNotSame( '', $this->readiness->next_step( $provider ) );
 
-		$openai->set_selected_model( 'gpt-5.4-mini' );
+		$provider->set_selected_model( 'test-model' );
 
-		$this->assertSame( ProviderReadiness::READY, $this->readiness->state( $openai ) );
-		$this->assertSame( '', $this->readiness->next_step( $openai ) );
+		$this->assertSame( ProviderReadiness::READY, $this->readiness->state( $provider ) );
+		$this->assertSame( '', $this->readiness->next_step( $provider ) );
 	}
 
 	/**
@@ -221,10 +277,10 @@ final class SuggestionControlPlaneTest extends TestCase {
 	 * @return void
 	 */
 	public function test_computing_readiness_makes_no_request() {
-		$this->credentials->save( 'openai', 'sk-openai' );
+		$this->credentials->save( ControlPlaneTestProvider::ID, 'test-provider-key' );
 		$this->credentials->save( 'deepl', 'deepl-key' );
 
-		foreach ( array( $this->openai(), $this->deepl() ) as $provider ) {
+		foreach ( array( $this->model_provider(), $this->deepl() ) as $provider ) {
 			$this->readiness->state( $provider );
 			$this->readiness->label( $provider );
 			$this->readiness->next_step( $provider );
@@ -241,19 +297,19 @@ final class SuggestionControlPlaneTest extends TestCase {
 	 */
 	public function test_the_model_cache_stores_only_normalised_fields() {
 		$this->models->put(
-			'openai',
+			ControlPlaneTestProvider::ID,
 			array(
 				array(
 					'id'          => 'gpt-5.4-mini',
 					'label'       => 'GPT-5.4 mini',
 					'recommended' => true,
-					'owned_by'    => 'openai',
+					'owned_by'    => 'test-provider',
 					'created'     => 1700000000,
 				),
 			)
 		);
 
-		$cached = $this->models->get( 'openai' );
+		$cached = $this->models->get( ControlPlaneTestProvider::ID );
 
 		$this->assertCount( 1, $cached );
 		$this->assertSame( array( 'id', 'label', 'recommended' ), array_keys( $cached[0] ) );
@@ -266,11 +322,11 @@ final class SuggestionControlPlaneTest extends TestCase {
 	 * @return void
 	 */
 	public function test_only_offered_models_are_accepted() {
-		$this->models->put( 'openai', array( array( 'id' => 'gpt-5.4-mini', 'label' => 'mini', 'recommended' => true ) ) );
+		$this->models->put( ControlPlaneTestProvider::ID, array( array( 'id' => 'test-model', 'label' => 'Test model', 'recommended' => true ) ) );
 
-		$this->assertTrue( $this->models->offers( 'openai', 'gpt-5.4-mini' ) );
-		$this->assertFalse( $this->models->offers( 'openai', 'anything-the-form-posted' ) );
-		$this->assertFalse( $this->models->offers( 'openai', '' ) );
+		$this->assertTrue( $this->models->offers( ControlPlaneTestProvider::ID, 'test-model' ) );
+		$this->assertFalse( $this->models->offers( ControlPlaneTestProvider::ID, 'anything-the-form-posted' ) );
+		$this->assertFalse( $this->models->offers( ControlPlaneTestProvider::ID, '' ) );
 	}
 
 	/**
@@ -279,18 +335,18 @@ final class SuggestionControlPlaneTest extends TestCase {
 	 * @return void
 	 */
 	public function test_an_expired_model_cache_does_not_disturb_the_selection() {
-		$this->credentials->save( 'openai', 'sk-openai' );
+		$this->credentials->save( ControlPlaneTestProvider::ID, 'test-provider-key' );
 
-		$openai = $this->openai();
-		$openai->set_selected_model( 'gpt-5.4-mini' );
+		$provider = $this->model_provider();
+		$provider->set_selected_model( 'test-model' );
 
-		$this->models->put( 'openai', array( array( 'id' => 'gpt-5.4-mini', 'label' => 'mini', 'recommended' => true ) ) );
+		$this->models->put( ControlPlaneTestProvider::ID, array( array( 'id' => 'test-model', 'label' => 'Test model', 'recommended' => true ) ) );
 
 		$GLOBALS['mclogiora_test_clock_offset'] = ModelCache::LIFETIME + 60;
 
-		$this->assertSame( array(), $this->models->get( 'openai' ), 'The list lapses.' );
-		$this->assertSame( 'gpt-5.4-mini', $openai->selected_model(), 'The choice must not lapse with it.' );
-		$this->assertSame( ProviderReadiness::READY, $this->readiness->state( $openai ) );
+		$this->assertSame( array(), $this->models->get( ControlPlaneTestProvider::ID ), 'The list lapses.' );
+		$this->assertSame( 'test-model', $provider->selected_model(), 'The choice must not lapse with it.' );
+		$this->assertSame( ProviderReadiness::READY, $this->readiness->state( $provider ) );
 		$this->assertSame( array(), $this->transport->requests(), 'A lapsed cache must not trigger a refresh.' );
 	}
 
@@ -300,18 +356,18 @@ final class SuggestionControlPlaneTest extends TestCase {
 	 * @return void
 	 */
 	public function test_a_retired_model_leaves_the_provider_incomplete() {
-		$this->credentials->save( 'openai', 'sk-openai' );
+		$this->credentials->save( ControlPlaneTestProvider::ID, 'test-provider-key' );
 
-		$openai = $this->openai();
-		$openai->set_selected_model( 'gpt-5.4-mini' );
+		$provider = $this->model_provider();
+		$provider->set_selected_model( 'test-model' );
 
 		$refreshed = array( array( 'id' => 'gpt-5.4', 'label' => 'GPT-5.4', 'recommended' => false ) );
 
-		$this->assertTrue( $openai->reconcile_selected_model( $refreshed ) );
-		$this->models->put( 'openai', $refreshed );
+		$this->assertTrue( $provider->reconcile_selected_model( $refreshed ) );
+		$this->models->put( ControlPlaneTestProvider::ID, $refreshed );
 
-		$this->assertSame( '', $openai->selected_model(), 'No replacement may be chosen.' );
-		$this->assertSame( ProviderReadiness::MODEL_REQUIRED, $this->readiness->state( $openai ) );
+		$this->assertSame( '', $provider->selected_model(), 'No replacement may be chosen.' );
+		$this->assertSame( ProviderReadiness::MODEL_REQUIRED, $this->readiness->state( $provider ) );
 	}
 
 	/**
@@ -320,9 +376,7 @@ final class SuggestionControlPlaneTest extends TestCase {
 	 * @return void
 	 */
 	public function test_a_constant_backed_credential_is_named_in_the_source() {
-		$this->assertSame( 'MCLOGIORA_OPENAI_API_KEY', $this->credentials->constant_name( 'openai' ) );
-		$this->assertSame( 'MCLOGIORA_ANTHROPIC_API_KEY', $this->credentials->constant_name( 'anthropic' ) );
-		$this->assertSame( 'MCLOGIORA_GEMINI_API_KEY', $this->credentials->constant_name( 'gemini' ) );
+		$this->assertSame( 'MCLOGIORA_TEST_PROVIDER_API_KEY', $this->credentials->constant_name( ControlPlaneTestProvider::ID ) );
 		$this->assertSame( 'MCLOGIORA_DEEPL_API_KEY', $this->credentials->constant_name( 'deepl' ) );
 	}
 
@@ -332,12 +386,12 @@ final class SuggestionControlPlaneTest extends TestCase {
 	 * @return void
 	 */
 	public function test_masking_reveals_only_a_short_suffix() {
-		$this->credentials->save( 'openai', 'sk-live-SECRETBODY-AB12' );
+		$this->credentials->save( ControlPlaneTestProvider::ID, 'test-live-SECRETBODY-AB12' );
 
-		$masked = $this->credentials->masked( 'openai' );
+		$masked = $this->credentials->masked( ControlPlaneTestProvider::ID );
 
 		$this->assertStringNotContainsString( 'SECRETBODY', $masked );
-		$this->assertStringNotContainsString( 'sk-live', $masked, 'The start of a key identifies its type and owner.' );
+		$this->assertStringNotContainsString( 'test-live', $masked, 'The start of a key identifies its type and owner.' );
 		$this->assertStringEndsWith( 'AB12', $masked );
 	}
 
@@ -362,15 +416,15 @@ final class SuggestionControlPlaneTest extends TestCase {
 	 * @return void
 	 */
 	public function test_an_empty_save_never_deletes_a_credential() {
-		$this->credentials->save( 'openai', 'sk-openai' );
+		$this->credentials->save( ControlPlaneTestProvider::ID, 'test-provider-key' );
 
-		$this->assertFalse( $this->credentials->save( 'openai', '' ) );
-		$this->assertFalse( $this->credentials->save( 'openai', '   ' ) );
-		$this->assertTrue( $this->credentials->has( 'openai' ), 'Removal must be a deliberate, separate action.' );
+		$this->assertFalse( $this->credentials->save( ControlPlaneTestProvider::ID, '' ) );
+		$this->assertFalse( $this->credentials->save( ControlPlaneTestProvider::ID, '   ' ) );
+		$this->assertTrue( $this->credentials->has( ControlPlaneTestProvider::ID ), 'Removal must be a deliberate, separate action.' );
 
-		$this->credentials->remove( 'openai' );
+		$this->credentials->remove( ControlPlaneTestProvider::ID );
 
-		$this->assertFalse( $this->credentials->has( 'openai' ) );
+		$this->assertFalse( $this->credentials->has( ControlPlaneTestProvider::ID ) );
 	}
 
 	/**
@@ -379,8 +433,8 @@ final class SuggestionControlPlaneTest extends TestCase {
 	 * @return void
 	 */
 	public function test_a_pasted_credential_is_trimmed() {
-		$this->credentials->save( 'gemini', "  AIza-key\n" );
+		$this->credentials->save( ControlPlaneTestProvider::ID, "  test-key\n" );
 
-		$this->assertSame( 'AIza-key', $this->credentials->get( 'gemini' ) );
+		$this->assertSame( 'test-key', $this->credentials->get( ControlPlaneTestProvider::ID ) );
 	}
 }

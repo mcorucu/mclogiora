@@ -17,10 +17,8 @@ use McLogiora\Suggestions\CredentialStore;
 use McLogiora\Suggestions\HttpTransport;
 use McLogiora\Suggestions\LlmInstructions;
 use McLogiora\Suggestions\ProviderRegistry;
-use McLogiora\Suggestions\Providers\AnthropicProvider;
 use McLogiora\Suggestions\Providers\DeepLProvider;
-use McLogiora\Suggestions\Providers\GeminiProvider;
-use McLogiora\Suggestions\Providers\OpenAiProvider;
+use McLogiora\Suggestions\Providers\WordPressAiProvider;
 use McLogiora\Suggestions\SuggestionSettings;
 use McLogiora\Tests\Support\FakeTransport;
 use WP_UnitTestCase;
@@ -97,9 +95,7 @@ final class SuggestionEditorStateTest extends WP_UnitTestCase {
 				$credentials = new CredentialStore();
 				$prompts     = new LlmInstructions();
 
-				$registry->add( new OpenAiProvider( $this->transport, $credentials, $prompts ) );
-				$registry->add( new AnthropicProvider( $this->transport, $credentials, $prompts ) );
-				$registry->add( new GeminiProvider( $this->transport, $credentials, $prompts ) );
+				$registry->add( new WordPressAiProvider( $prompts ) );
 				$registry->add( new DeepLProvider( $this->transport, $credentials ) );
 
 				return $registry;
@@ -124,7 +120,7 @@ final class SuggestionEditorStateTest extends WP_UnitTestCase {
 	public function tear_down() {
 		$credentials = new CredentialStore();
 
-		foreach ( array( 'openai', 'anthropic', 'gemini', 'deepl' ) as $id ) {
+		foreach ( array( 'deepl' ) as $id ) {
 			$credentials->remove( $id );
 			delete_option( 'mclogiora_suggestion_model_' . $id );
 		}
@@ -208,16 +204,13 @@ final class SuggestionEditorStateTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Asserts every provider's credential stays out, not just the active one.
+	 * Asserts the dedicated service credential stays out of the editor.
 	 *
 	 * @return void
 	 */
-	public function test_no_providers_credential_reaches_the_editor() {
+	public function test_a_credential_never_reaches_the_editor() {
 		$credentials = new CredentialStore();
 
-		$credentials->save( 'openai', 'sk-openai-SECRET-A' );
-		$credentials->save( 'anthropic', 'sk-ant-SECRET-B' );
-		$credentials->save( 'gemini', 'AIza-SECRET-C' );
 		$credentials->save( 'deepl', 'deepl-SECRET-D' );
 
 		$settings = $this->container->get( SuggestionSettings::class );
@@ -226,7 +219,7 @@ final class SuggestionEditorStateTest extends WP_UnitTestCase {
 
 		$serialised = $this->serialised();
 
-		foreach ( array( 'SECRET-A', 'SECRET-B', 'SECRET-C', 'SECRET-D' ) as $secret ) {
+		foreach ( array( 'SECRET-D' ) as $secret ) {
 			$this->assertStringNotContainsString( $secret, $serialised );
 		}
 	}
@@ -267,16 +260,14 @@ final class SuggestionEditorStateTest extends WP_UnitTestCase {
 		$this->assertSame( '', $state['nonce'] );
 		$this->assertNotSame( '', $state['reason'], 'An unavailable feature must say why.' );
 
-		( new CredentialStore() )->save( 'openai', 'sk-openai' );
-
 		$settings = $this->container->get( SuggestionSettings::class );
 		$settings->set_enabled( true );
-		$settings->set_provider( 'openai' );
+		$settings->set_provider( 'wordpress-ai' );
 
-		$model_required = $this->state();
+		$core_unavailable = $this->state();
 
-		$this->assertFalse( $model_required['available'], 'A key without a model is not ready.' );
-		$this->assertSame( '', $model_required['nonce'] );
+		$this->assertFalse( $core_unavailable['available'], 'A site without a Core AI connection is not ready.' );
+		$this->assertSame( '', $core_unavailable['nonce'] );
 
 		$this->configure_deepl();
 
@@ -299,10 +290,9 @@ final class SuggestionEditorStateTest extends WP_UnitTestCase {
 
 		$this->assertStringContainsString( 'provider', strtolower( $this->state()['reason'] ) );
 
-		( new CredentialStore() )->save( 'openai', 'sk-openai' );
-		$settings->set_provider( 'openai' );
+		$settings->set_provider( 'wordpress-ai' );
 
-		$this->assertStringContainsString( 'model', strtolower( $this->state()['reason'] ) );
+		$this->assertStringContainsString( 'connect', strtolower( $this->state()['reason'] ) );
 	}
 
 	/**
@@ -319,9 +309,7 @@ final class SuggestionEditorStateTest extends WP_UnitTestCase {
 			$this->state();
 		}
 
-		( new CredentialStore() )->save( 'openai', 'sk-openai' );
-
-		$this->container->get( SuggestionSettings::class )->set_provider( 'openai' );
+		$this->container->get( SuggestionSettings::class )->set_provider( 'wordpress-ai' );
 
 		$this->state();
 

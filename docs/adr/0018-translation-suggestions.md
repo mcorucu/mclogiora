@@ -2,7 +2,8 @@
 
 ## Status
 
-Accepted. Implemented in Phase 16 (v0.15.0).
+Accepted. Implemented in Phase 16 (v0.15.0); requalified for WordPress 7.0 in
+v1.0.2 after the WordPress.org pre-review.
 
 ## Context
 
@@ -40,69 +41,51 @@ Nothing is contacted at boot, on activation, on an editor load, on an admin page
 load, or on a front-end request. The only thing that reaches a provider is an
 explicit click.
 
-### Bring your own credentials, direct from site to provider
+### WordPress-managed AI and a dedicated translation service
 
-The site owner supplies their own API key and is billed by the provider directly.
-mcLogiora ships no keys, no credits, no account, and no gateway. Requests go from
-the WordPress site to the provider the owner chose.
+WordPress AI suggestions use the WordPress 7.0 AI Client. WordPress owns provider
+discovery, model selection, connector credentials and response normalization.
+mcLogiora ships no AI keys, credits, SDKs or vendor-specific AI integration.
+
+DeepL remains available as a dedicated translation service. Its site-owner API key
+is managed by mcLogiora because it is not an AI Client provider.
 
 There is deliberately no mcLogiora hosted service in the path. That keeps the
 plugin's author out of the position of processing other people's content, and it
 means the feature cannot break because a vendor endpoint went away.
 
-### Provider-neutral interface, four adapters, WordPress HTTP APIs
+### Provider-neutral interface and WordPress APIs
 
 `TranslationProviderInterface` defines what the domain needs — is this provider
 configured, what models does it offer, translate this text, check this credential —
 and each provider implements it. `ProviderRegistry` holds them; nothing outside an
 adapter knows a provider's request or response shape.
 
-No vendor SDKs. Every request goes through the WordPress HTTP API behind a
-`TransportInterface`, which keeps the plugin installable without Composer
-dependencies at runtime, keeps it reviewable, and makes the transport substitutable
-in tests without touching provider logic.
+The `WordPressAiProvider` calls `wp_ai_client_prompt()` and uses the Core prompt
+builder's system-instruction and text methods. `DeepLProvider` uses the WordPress
+HTTP API behind `TransportInterface`. This keeps the plugin installable without
+runtime Composer dependencies and keeps the dedicated service transport
+substitutable in tests.
 
-Four adapters ship: OpenAI, Anthropic, Google Gemini and DeepL.
+### Core model selection and connection ownership
 
-### Explicit model selection, never inferred
+WordPress AI Client owns provider discovery, model selection and credentials.
+mcLogiora does not fetch a vendor model list, choose a default, store an AI key or
+call a vendor endpoint directly. The settings screen links the site owner to
+Settings → Connectors, and the adapter reports readiness using the Core client.
 
-For the three LLM providers the owner must fetch the model list and choose a model.
-Until they do, the provider reports `MODEL_REQUIRED` and suggestions stay
-unavailable.
+The dedicated DeepL adapter remains separately configured because DeepL is not a
+WordPress AI Client provider and has no model selector.
 
-No model is ever selected automatically, including "sensible defaults". Model choice
-determines cost and quality, and a plugin that picks one silently is spending
-somebody else's money on an opinion they did not express. When a stored model
-disappears from a refreshed list the selection is cleared and the owner is told,
-rather than quietly substituted.
+### Upgrade cleanup
 
-DeepL is a dedicated translation service with no model concept, so it has no model
-selector and says so on screen.
-
-### OpenAI: Responses API with `store` pinned to false
-
-The OpenAI adapter uses the Responses API and sends `store => false` on every
-request, as a policy constant (`REQUIRED_STORE`) rather than a default parameter.
-A unit test asserts the key is present and that the value is boolean `false`, not
-merely falsy.
-
-No stateful OpenAI features are used: no `previous_response_id`, no `conversation`,
-no `background`, no tools, no files, no attachments. Each request carries the one
-field being translated and nothing else.
-
-What mcLogiora can honestly claim is that it explicitly asks for no retention. It
-cannot make claims on OpenAI's behalf about what OpenAI does, and the documentation
-does not.
-
-### Gemini and Anthropic: response shapes stay inside adapters
-
-Gemini uses `generateContent` on the v1beta endpoint with the key in the
-`x-goog-api-key` header rather than a query parameter, so it does not land in
-server access logs as part of the URL. Anthropic uses the Messages endpoint with an
-explicit `anthropic-version` header.
-
-Both providers' request and response structures are confined to their adapters. The
-service layer sees a `SuggestionResult`.
+Version 1.0.2 runs a one-time, idempotent cleanup for the old mcLogiora-owned
+OpenAI, Anthropic and Google Gemini credential and model options. If one of
+those retired providers was selected, the selection is cleared so the feature
+fails closed until the owner chooses an available provider. WordPress Connector
+options and the separate DeepL credential are not touched. PHP constants from
+`wp-config.php` cannot be deleted by a plugin; the retired constants are simply
+no longer read and are documented for manual removal.
 
 ### DeepL: placeholders survive by construction
 
@@ -128,9 +111,9 @@ no suggestion.
 
 ### CredentialStore, wp-config precedence, and an honest storage statement
 
-Credentials are read from a constant first — `MCLOGIORA_OPENAI_API_KEY`,
-`MCLOGIORA_ANTHROPIC_API_KEY`, `MCLOGIORA_GEMINI_API_KEY`,
-`MCLOGIORA_DEEPL_API_KEY` — and only then from the database. When a constant is
+The WordPress AI Client reads its credentials through WordPress Connectors.
+mcLogiora reads only the dedicated DeepL credential, from
+`MCLOGIORA_DEEPL_API_KEY` first and then from the database. When that constant is
 present the settings screen says so and does not pretend the field is editable.
 
 Keys entered in the admin are stored in the options table as entered. The plugin
@@ -266,18 +249,18 @@ provider request the owner explicitly triggered.
 
 **Not verified**
 
-Live provider qualification has not been performed. Every provider adapter is
-covered by unit tests against recorded response shapes, and the browser
-qualification used a deterministic local transport double. No request has been made
-to OpenAI, Anthropic, Google or DeepL with a real credential. That remains an
-explicit gap and is stated as such in the qualification record.
+Live provider qualification has not been performed. The WordPress AI Client and
+DeepL adapter are covered by unit tests, and browser qualification used a
+deterministic local transport double. No request has been made to a WordPress AI
+connection or DeepL with a real credential. That remains an explicit gap and is
+stated as such in the qualification record.
 
 ## Phase 18 requalification expectations
 
-- Live provider qualification with real credentials, per provider, including at
-  least one representative failure per normalized error category.
-- Re-run the placeholder refusal path against each live provider, since placeholder
-  fidelity is a model behaviour rather than an adapter behaviour.
+- Live provider qualification with real credentials, including at least one
+  representative failure per normalized error category.
+- Re-run the placeholder refusal path against the live AI connection and DeepL,
+  since placeholder fidelity is partly a model behaviour.
 - Revisit the media status model: either give media a review state in schema or
   document the divergence as permanent.
 - Language-switcher block registration is not idempotent when `init` is fired more

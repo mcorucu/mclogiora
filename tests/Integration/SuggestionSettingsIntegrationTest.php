@@ -23,7 +23,7 @@ use WP_UnitTestCase;
  * Proves the control plane's two hardest promises against real WordPress.
  *
  * The first is that looking at the settings screen costs nothing. A settings
- * page that quietly probed four providers on every load would bill the owner
+	 * page that quietly probed providers on every load would bill the owner
  * for curiosity and leak configuration state to third parties on every admin
  * page view.
  *
@@ -78,7 +78,7 @@ final class SuggestionSettingsIntegrationTest extends WP_UnitTestCase {
 		$this->transport = new FakeTransport();
 
 		/*
-		 * Only the transport is replaced. The registry still builds the four
+		 * Only the transport is replaced. The registry still builds the two
 		 * real providers, so the screen renders exactly what a site would show
 		 * and any stray outbound call is recorded rather than sent.
 		 */
@@ -96,7 +96,7 @@ final class SuggestionSettingsIntegrationTest extends WP_UnitTestCase {
 	public function tear_down() {
 		$credentials = new CredentialStore();
 
-		foreach ( array( 'openai', 'anthropic', 'gemini', 'deepl' ) as $id ) {
+		foreach ( array( 'deepl' ) as $id ) {
 			$credentials->remove( $id );
 			delete_option( 'mclogiora_suggestion_model_' . $id );
 		}
@@ -173,7 +173,7 @@ final class SuggestionSettingsIntegrationTest extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_rendering_the_settings_screen_makes_no_provider_request() {
-		( new CredentialStore() )->save( 'openai', 'sk-render-test' );
+		( new CredentialStore() )->save( 'deepl', 'deepl-render-test' );
 
 		$this->rendered();
 		$this->rendered();
@@ -193,7 +193,7 @@ final class SuggestionSettingsIntegrationTest extends WP_UnitTestCase {
 	public function test_a_stored_credential_never_reaches_the_browser() {
 		$secret = 'sk-live-DO-NOT-LEAK-THIS-VALUE-9911';
 
-		( new CredentialStore() )->save( 'openai', $secret );
+		( new CredentialStore() )->save( 'deepl', $secret );
 
 		$html = $this->rendered();
 

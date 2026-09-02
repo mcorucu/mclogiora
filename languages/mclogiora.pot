@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: mcLogiora 1.0.1\n"
+"Project-Id-Version: mcLogiora 1.0.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mclogiora\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-27T19:35:11+00:00\n"
+"POT-Creation-Date: 2026-09-02T00:42:36+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mclogiora\n"
@@ -91,7 +91,7 @@ msgstr ""
 #: src/Manual/ManualRegistry.php:170
 #: src/Manual/ManualRegistry.php:189
 #: src/Manual/ManualRegistry.php:217
-#: src/Setup/SetupWizard.php:855
+#: src/Setup/SetupWizard.php:895
 msgid "Languages"
 msgstr ""
 
@@ -116,7 +116,7 @@ msgid "Choose a default language before configuring translated URLs or creating 
 msgstr ""
 
 #: src/Admin/AdminMenu.php:182
-#: src/Setup/SetupWizard.php:645
+#: src/Setup/SetupWizard.php:653
 msgid "Finish setup"
 msgstr ""
 
@@ -129,7 +129,7 @@ msgid "mcLogiora quick actions"
 msgstr ""
 
 #: src/Admin/AdminMenu.php:189
-#: src/Setup/SetupWizard.php:663
+#: src/Setup/SetupWizard.php:671
 msgid "Manage Languages"
 msgstr ""
 
@@ -147,7 +147,7 @@ msgid "String Translation"
 msgstr ""
 
 #: src/Admin/AdminMenu.php:192
-#: src/Setup/SetupWizard.php:663
+#: src/Setup/SetupWizard.php:671
 msgid "Configure URLs"
 msgstr ""
 
@@ -161,7 +161,7 @@ msgstr ""
 #: src/Diagnostics/SiteHealthIntegration.php:57
 #: src/Editors/ClassicEditorMetabox.php:264
 #: src/Relations/TranslationManager.php:627
-#: src/Setup/SetupWizard.php:644
+#: src/Setup/SetupWizard.php:652
 #: assets/js/editor-panel.js:399
 msgid "Translation Suggestions"
 msgstr ""
@@ -211,7 +211,7 @@ msgid "Configure language directories and the language switcher used on the fron
 msgstr ""
 
 #: src/Admin/AdminMenu.php:224
-msgid "Keep optional provider suggestions disabled or configure your own provider credentials."
+msgid "Keep optional suggestions disabled or configure WordPress AI or a dedicated translation service."
 msgstr ""
 
 #: src/Admin/AdminMenu.php:225
@@ -226,7 +226,7 @@ msgstr ""
 
 #: src/Admin/AdminMenu.php:226
 #: src/Manual/ManualModule.php:45
-#: src/Manual/ManualModule.php:131
+#: src/Manual/ManualModule.php:132
 msgid "Manual"
 msgstr ""
 
@@ -368,12 +368,12 @@ msgid "Strategy"
 msgstr ""
 
 #: src/Admin/RoutingSettingsScreen.php:111
-#: src/Setup/SetupWizard.php:621
+#: src/Setup/SetupWizard.php:629
 msgid "Language directory"
 msgstr ""
 
 #: src/Admin/RoutingSettingsScreen.php:118
-#: src/Setup/SetupWizard.php:622
+#: src/Setup/SetupWizard.php:630
 msgid "Also add a directory for the default language"
 msgstr ""
 
@@ -479,7 +479,7 @@ msgid "String filters"
 msgstr ""
 
 #: src/Admin/StringManager.php:123
-#: src/Manual/ManualModule.php:77
+#: src/Manual/ManualModule.php:78
 #: src/Relations/TranslationManager.php:262
 msgid "Search"
 msgstr ""
@@ -513,7 +513,7 @@ msgid "Source strings discovered by scanning or registered manually."
 msgstr ""
 
 #: src/Admin/StringManager.php:152
-#: src/Languages/LanguageManager.php:298
+#: src/Languages/LanguageManager.php:341
 #: src/Relations/TranslationManager.php:176
 msgid "Active Languages"
 msgstr ""
@@ -706,9 +706,15 @@ msgstr ""
 msgid "The chosen provider still needs a model."
 msgstr ""
 
-#: src/Admin/SuggestionAdminState.php:136
-#: src/Editors/SuggestionEditorState.php:141
+#: src/Admin/SuggestionAdminState.php:137
+#: src/Editors/SuggestionEditorState.php:142
 msgid "The chosen provider still needs an API key."
+msgstr ""
+
+#: src/Admin/SuggestionAdminState.php:138
+#: src/Editors/SuggestionEditorState.php:143
+#: src/Suggestions/ProviderReadiness.php:165
+msgid "Connect an AI provider in Settings → Connectors."
 msgstr ""
 
 #: src/Admin/SuggestionSettingsScreen.php:136
@@ -716,8 +722,8 @@ msgid "mcLogiora Translation Suggestions"
 msgstr ""
 
 #: src/Admin/SuggestionSettingsScreen.php:165
-#: src/Admin/SuggestionSettingsScreen.php:604
-#: src/Admin/SuggestionSettingsScreen.php:626
+#: src/Admin/SuggestionSettingsScreen.php:615
+#: src/Admin/SuggestionSettingsScreen.php:637
 msgid "You are not allowed to manage these settings."
 msgstr ""
 
@@ -742,7 +748,7 @@ msgid "These providers are optional external services, switched off until you tu
 msgstr ""
 
 #: src/Admin/SuggestionSettingsScreen.php:186
-msgid "You supply your own credentials and the provider bills you directly. mcLogiora ships no keys and no credits."
+msgid "WordPress manages AI provider connections in Settings → Connectors. Dedicated translation services use credentials you supply here."
 msgstr ""
 
 #: src/Admin/SuggestionSettingsScreen.php:187
@@ -754,7 +760,7 @@ msgid "Translating by hand needs none of this and is unaffected by anything on t
 msgstr ""
 
 #: src/Admin/SuggestionSettingsScreen.php:189
-msgid "mcLogiora itself receives nothing. Requests go from your site straight to the provider you chose."
+msgid "mcLogiora itself receives nothing. Requests are sent by WordPress or directly to the dedicated service you chose."
 msgstr ""
 
 #: src/Admin/SuggestionSettingsScreen.php:198
@@ -774,7 +780,7 @@ msgid "Provider used for suggestions"
 msgstr ""
 
 #: src/Admin/SuggestionSettingsScreen.php:212
-#: src/Admin/SuggestionSettingsScreen.php:415
+#: src/Admin/SuggestionSettingsScreen.php:418
 msgid "— None chosen —"
 msgstr ""
 
@@ -826,76 +832,89 @@ msgstr ""
 msgid "That model is not in the current list for this provider. Refresh the list and choose again."
 msgstr ""
 
-#: src/Admin/SuggestionSettingsScreen.php:311
+#: src/Admin/SuggestionSettingsScreen.php:312
 msgid "Status:"
 msgstr ""
 
+#: src/Admin/SuggestionSettingsScreen.php:324
+msgid "WordPress chooses a compatible configured AI provider and model through its native AI Client. Manage that connection in Settings → Connectors."
+msgstr ""
+
 #. translators: %s: PHP constant name.
-#: src/Admin/SuggestionSettingsScreen.php:327
+#: src/Admin/SuggestionSettingsScreen.php:330
 #, php-format
 msgid "This key comes from the %s constant in wp-config.php. It is never copied into the database and cannot be viewed or changed from here."
 msgstr ""
 
-#: src/Admin/SuggestionSettingsScreen.php:339
+#: src/Admin/SuggestionSettingsScreen.php:342
 msgid "API key"
 msgstr ""
 
-#: src/Admin/SuggestionSettingsScreen.php:347
+#: src/Admin/SuggestionSettingsScreen.php:350
 msgid "Not set"
 msgstr ""
 
-#: src/Admin/SuggestionSettingsScreen.php:351
+#: src/Admin/SuggestionSettingsScreen.php:354
 msgid "A saved key is never shown again. Leaving this empty changes nothing."
 msgstr ""
 
-#: src/Admin/SuggestionSettingsScreen.php:353
+#: src/Admin/SuggestionSettingsScreen.php:356
 msgid "Save key"
 msgstr ""
 
-#: src/Admin/SuggestionSettingsScreen.php:361
+#: src/Admin/SuggestionSettingsScreen.php:364
 msgid "Remove stored key"
 msgstr ""
 
-#: src/Admin/SuggestionSettingsScreen.php:372
+#: src/Admin/SuggestionSettingsScreen.php:375
 msgid "Test connection"
 msgstr ""
 
-#: src/Admin/SuggestionSettingsScreen.php:373
+#: src/Admin/SuggestionSettingsScreen.php:376
 msgid "Checks the key against the provider. Sends none of your content."
 msgstr ""
 
-#: src/Admin/SuggestionSettingsScreen.php:381
+#: src/Admin/SuggestionSettingsScreen.php:376
+msgid "Checks whether WordPress has a usable AI connection. Sends none of your content."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:384
 msgid "This provider is a dedicated translation service and offers no model choice."
 msgstr ""
 
-#: src/Admin/SuggestionSettingsScreen.php:402
+#: src/Admin/SuggestionSettingsScreen.php:405
 msgid "Refresh model list"
 msgstr ""
 
-#: src/Admin/SuggestionSettingsScreen.php:406
+#: src/Admin/SuggestionSettingsScreen.php:409
 msgid "No models have been fetched yet. Refresh the list to choose one."
 msgstr ""
 
-#: src/Admin/SuggestionSettingsScreen.php:413
+#: src/Admin/SuggestionSettingsScreen.php:416
 msgid "Model"
 msgstr ""
 
 #. translators: %s: model name.
-#: src/Admin/SuggestionSettingsScreen.php:423
+#: src/Admin/SuggestionSettingsScreen.php:426
 #, php-format
 msgid "%s (recommended)"
 msgstr ""
 
-#: src/Admin/SuggestionSettingsScreen.php:433
+#: src/Admin/SuggestionSettingsScreen.php:436
 msgid "Save model"
 msgstr ""
 
-#: src/Admin/SuggestionSettingsScreen.php:610
-#: src/Admin/SuggestionSettingsScreen.php:640
+#: src/Admin/SuggestionSettingsScreen.php:488
+#: src/Admin/SuggestionSettingsScreen.php:523
+msgid "This provider is managed by WordPress in Settings → Connectors."
+msgstr ""
+
+#: src/Admin/SuggestionSettingsScreen.php:621
+#: src/Admin/SuggestionSettingsScreen.php:651
 msgid "That request could not be verified. Please try again."
 msgstr ""
 
-#: src/Admin/SuggestionSettingsScreen.php:634
+#: src/Admin/SuggestionSettingsScreen.php:645
 msgid "That translation provider is not available."
 msgstr ""
 
@@ -916,8 +935,8 @@ msgid "Learn more about troubleshooting"
 msgstr ""
 
 #: src/Admin/SystemStatusDashboard.php:82
-#: src/Languages/LanguageManager.php:413
-#: src/Languages/LanguageManager.php:532
+#: src/Languages/LanguageManager.php:456
+#: src/Languages/LanguageManager.php:575
 msgid "Status"
 msgstr ""
 
@@ -1573,8 +1592,8 @@ msgstr ""
 
 #: src/Diagnostics/DiagnosticsService.php:482
 #: src/Diagnostics/SiteHealthIntegration.php:54
-#: src/Setup/SetupWizard.php:584
-#: src/Setup/SetupWizard.php:856
+#: src/Setup/SetupWizard.php:592
+#: src/Setup/SetupWizard.php:896
 msgid "Default language"
 msgstr ""
 
@@ -1615,11 +1634,11 @@ msgid "Translation Suggestions need configuration"
 msgstr ""
 
 #: src/Diagnostics/DiagnosticsService.php:541
-msgid "Suggestions are enabled, but the selected provider is missing a credential, model, or provider selection."
+msgid "Suggestions are enabled, but the selected provider is not ready. Configure WordPress AI in Settings → Connectors or configure the dedicated translation service."
 msgstr ""
 
 #: src/Diagnostics/DiagnosticsService.php:546
-msgid "Suggestions are enabled and the selected provider is locally configured."
+msgid "Suggestions are enabled and the selected provider is ready."
 msgstr ""
 
 #: src/Diagnostics/SiteHealthIntegration.php:50
@@ -1635,7 +1654,7 @@ msgid "PHP version"
 msgstr ""
 
 #: src/Diagnostics/SiteHealthIntegration.php:54
-#: src/Suggestions/ProviderReadiness.php:102
+#: src/Suggestions/ProviderReadiness.php:135
 msgid "Not configured"
 msgstr ""
 
@@ -1684,7 +1703,7 @@ msgid "Review WordPress Settings → Permalinks and choose a pretty permalink st
 msgstr ""
 
 #: src/Diagnostics/SiteHealthIntegration.php:129
-msgid "Select a provider and configure its credential/model locally; no connection test is performed."
+msgid "Configure WordPress AI in Settings → Connectors or configure the dedicated translation service locally; no connection test is performed."
 msgstr ""
 
 #: src/Diagnostics/SiteHealthIntegration.php:175
@@ -2254,28 +2273,28 @@ msgstr ""
 msgid "The package was produced by mcLogiora %1$s and is being read by %2$s. Format version %3$d is supported by both."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:164
+#: src/Languages/DatabaseLanguageRepository.php:172
 #: src/Languages/InMemoryLanguageRepository.php:127
 msgid "A language with this language code already exists."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:168
-#: src/Languages/DatabaseLanguageRepository.php:257
+#: src/Languages/DatabaseLanguageRepository.php:176
+#: src/Languages/DatabaseLanguageRepository.php:265
 msgid "A language with this locale already exists."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:193
+#: src/Languages/DatabaseLanguageRepository.php:201
 msgid "The language could not be created."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:214
+#: src/Languages/DatabaseLanguageRepository.php:222
 msgid "The language was created but could not be loaded afterwards."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:245
-#: src/Languages/DatabaseLanguageRepository.php:332
-#: src/Languages/DatabaseLanguageRepository.php:369
-#: src/Languages/DatabaseLanguageRepository.php:446
+#: src/Languages/DatabaseLanguageRepository.php:253
+#: src/Languages/DatabaseLanguageRepository.php:340
+#: src/Languages/DatabaseLanguageRepository.php:377
+#: src/Languages/DatabaseLanguageRepository.php:454
 #: src/Languages/InMemoryLanguageRepository.php:158
 #: src/Languages/InMemoryLanguageRepository.php:197
 #: src/Languages/InMemoryLanguageRepository.php:225
@@ -2284,58 +2303,58 @@ msgstr ""
 msgid "The language could not be found."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:261
+#: src/Languages/DatabaseLanguageRepository.php:269
 msgid "Use Set Default to move the default marker before changing this language."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:286
+#: src/Languages/DatabaseLanguageRepository.php:294
 msgid "The language could not be updated."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:316
+#: src/Languages/DatabaseLanguageRepository.php:324
 #: src/Languages/InMemoryLanguageRepository.php:181
 msgid "The default language cannot be disabled."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:336
+#: src/Languages/DatabaseLanguageRepository.php:344
 #: src/Languages/InMemoryLanguageRepository.php:201
 msgid "The default language cannot be deleted."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:340
+#: src/Languages/DatabaseLanguageRepository.php:348
 msgid "This language is still referenced by translation records and cannot be deleted safely."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:353
+#: src/Languages/DatabaseLanguageRepository.php:361
 msgid "The language could not be deleted."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:390
+#: src/Languages/DatabaseLanguageRepository.php:398
 msgid "The default language could not be updated."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:463
+#: src/Languages/DatabaseLanguageRepository.php:471
 msgid "The language status could not be updated."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:481
+#: src/Languages/DatabaseLanguageRepository.php:489
 msgid "Use a valid language code such as en, tr, or pt-br."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:485
+#: src/Languages/DatabaseLanguageRepository.php:493
 #: src/Languages/LanguageService.php:229
 msgid "Use a valid WordPress locale such as en_US or tr_TR."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:489
+#: src/Languages/DatabaseLanguageRepository.php:497
 msgid "Native and English language names are required."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:493
+#: src/Languages/DatabaseLanguageRepository.php:501
 msgid "More than one default language is currently configured. Resolve this before saving."
 msgstr ""
 
-#: src/Languages/DatabaseLanguageRepository.php:594
+#: src/Languages/DatabaseLanguageRepository.php:606
 msgid "The language table is not available. Reactivate the plugin to run database migrations."
 msgstr ""
 
@@ -2355,250 +2374,245 @@ msgstr ""
 msgid "Learn more about choosing languages"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:117
-#: src/Setup/SetupWizard.php:230
+#: src/Languages/LanguageManager.php:129
+#: src/Setup/SetupWizard.php:242
 msgid "You do not have permission to perform this action."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:123
-#: src/Setup/SetupWizard.php:236
-msgid "Security check failed. Please try again."
-msgstr ""
-
-#: src/Languages/LanguageManager.php:127
+#: src/Languages/LanguageManager.php:133
 msgid "Language services are not available."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:142
+#: src/Languages/LanguageManager.php:148
 msgid "Choose a language from the catalog."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:170
+#: src/Languages/LanguageManager.php:176
 msgid "Unknown language action."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:238
+#: src/Languages/LanguageManager.php:281
 msgid "Language added."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:239
+#: src/Languages/LanguageManager.php:282
 msgid "Language updated."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:240
+#: src/Languages/LanguageManager.php:283
 msgid "Language enabled."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:241
+#: src/Languages/LanguageManager.php:284
 msgid "Language disabled."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:242
+#: src/Languages/LanguageManager.php:285
 msgid "Default language updated."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:243
+#: src/Languages/LanguageManager.php:286
 msgid "Language order saved."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:246
+#: src/Languages/LanguageManager.php:289
 msgid "Language action completed."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:277
+#: src/Languages/LanguageManager.php:320
 msgid "Default Language"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:282
+#: src/Languages/LanguageManager.php:325
 msgid "No default language has been configured yet."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:283
+#: src/Languages/LanguageManager.php:326
 msgid "Run Setup Wizard"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:317
-#: src/Languages/LanguageManager.php:323
+#: src/Languages/LanguageManager.php:360
+#: src/Languages/LanguageManager.php:366
 msgid "Add Language"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:318
+#: src/Languages/LanguageManager.php:361
 msgid "Choose a standard language by name. mcLogiora supplies its locale, language tag, and text direction automatically."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:325
+#: src/Languages/LanguageManager.php:368
 msgid "Advanced: add a custom locale"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:325
+#: src/Languages/LanguageManager.php:368
 msgid "Use this only when the language you need is not in the bundled catalog. Custom values are validated before they are stored."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:325
+#: src/Languages/LanguageManager.php:368
 msgid "Add custom language"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:340
-#: src/Setup/SetupWizard.php:697
+#: src/Languages/LanguageManager.php:383
+#: src/Setup/SetupWizard.php:705
 msgid "Search languages"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:340
-#: src/Setup/SetupWizard.php:697
+#: src/Languages/LanguageManager.php:383
+#: src/Setup/SetupWizard.php:705
 msgid "Search by name, code, locale, or region"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:341
-#: src/Setup/SetupWizard.php:698
+#: src/Languages/LanguageManager.php:384
+#: src/Setup/SetupWizard.php:706
 msgid "Language catalog"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:357
-#: src/Setup/SetupWizard.php:715
+#: src/Languages/LanguageManager.php:400
+#: src/Setup/SetupWizard.php:723
 msgid "No catalog language matches that search."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:374
+#: src/Languages/LanguageManager.php:417
 msgid "Display Order"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:375
+#: src/Languages/LanguageManager.php:418
 msgid "Lower numbers appear first in language lists and switcher choices."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:387
+#: src/Languages/LanguageManager.php:430
 msgid "Save Order"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:402
+#: src/Languages/LanguageManager.php:445
 msgid "Language Directory"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:403
+#: src/Languages/LanguageManager.php:446
 msgid "These languages are stored by mcLogiora and are available to its translation and routing features."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:408
+#: src/Languages/LanguageManager.php:451
 msgid "Language Code"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:409
-#: src/Languages/LanguageManager.php:513
+#: src/Languages/LanguageManager.php:452
+#: src/Languages/LanguageManager.php:556
 msgid "Locale"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:410
+#: src/Languages/LanguageManager.php:453
 msgid "Native Name"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:411
+#: src/Languages/LanguageManager.php:454
 msgid "English Name"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:412
-#: src/Languages/LanguageManager.php:525
+#: src/Languages/LanguageManager.php:455
+#: src/Languages/LanguageManager.php:568
 msgid "Direction"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:414
-#: src/Languages/LanguageManager.php:539
+#: src/Languages/LanguageManager.php:457
+#: src/Languages/LanguageManager.php:582
 msgid "Order"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:415
+#: src/Languages/LanguageManager.php:458
 #: src/Relations/TranslationManager.php:195
 #: src/Relations/TranslationManager.php:279
 msgid "Actions"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:421
+#: src/Languages/LanguageManager.php:464
 msgid "No languages have been added yet."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:451
+#: src/Languages/LanguageManager.php:494
 msgid "Language actions"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:453
+#: src/Languages/LanguageManager.php:496
 msgid "Edit"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:458
+#: src/Languages/LanguageManager.php:501
 msgid "Save Changes"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:463
+#: src/Languages/LanguageManager.php:506
 msgid "Disable"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:465
+#: src/Languages/LanguageManager.php:508
 msgid "Enable"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:468
+#: src/Languages/LanguageManager.php:511
 msgid "Set Default"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:469
+#: src/Languages/LanguageManager.php:512
 msgid "Delete is intentionally disabled until integrity rules are visible in the UI."
 msgstr ""
 
-#: src/Languages/LanguageManager.php:469
+#: src/Languages/LanguageManager.php:512
 msgid "Delete"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:484
+#: src/Languages/LanguageManager.php:527
 msgid "Changing the primary language can affect existing content ownership and language URLs. Continue?"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:509
+#: src/Languages/LanguageManager.php:552
 msgid "Language code"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:510
+#: src/Languages/LanguageManager.php:553
 msgid "en"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:514
+#: src/Languages/LanguageManager.php:557
 msgid "en_US"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:517
+#: src/Languages/LanguageManager.php:560
 msgid "Native name"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:518
-#: src/Languages/LanguageManager.php:522
+#: src/Languages/LanguageManager.php:561
+#: src/Languages/LanguageManager.php:565
 msgid "English"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:521
+#: src/Languages/LanguageManager.php:564
 msgid "English name"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:527
+#: src/Languages/LanguageManager.php:570
 msgid "Left to right"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:528
+#: src/Languages/LanguageManager.php:571
 msgid "Right to left"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:534
-#: src/Languages/LanguageManager.php:559
+#: src/Languages/LanguageManager.php:577
+#: src/Languages/LanguageManager.php:602
 msgid "Active"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:535
-#: src/Languages/LanguageManager.php:559
+#: src/Languages/LanguageManager.php:578
+#: src/Languages/LanguageManager.php:602
 msgid "Inactive"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:545
+#: src/Languages/LanguageManager.php:588
 msgid "Make this the default language"
 msgstr ""
 
-#: src/Languages/LanguageManager.php:563
+#: src/Languages/LanguageManager.php:606
 msgid "Default"
 msgstr ""
 
@@ -2607,59 +2621,59 @@ msgid "Language code is required."
 msgstr ""
 
 #: src/Manual/ManualModule.php:43
-#: src/Manual/ManualModule.php:72
+#: src/Manual/ManualModule.php:73
 msgid "mcLogiora Manual"
 msgstr ""
 
-#: src/Manual/ManualModule.php:71
+#: src/Manual/ManualModule.php:72
 msgid "Help & Guide"
 msgstr ""
 
-#: src/Manual/ManualModule.php:73
+#: src/Manual/ManualModule.php:74
 msgid "Find practical guidance for languages, translations, URLs, suggestions, and diagnostics without leaving WordPress."
 msgstr ""
 
-#: src/Manual/ManualModule.php:76
+#: src/Manual/ManualModule.php:77
 msgid "How can we help?"
 msgstr ""
 
-#: src/Manual/ManualModule.php:77
+#: src/Manual/ManualModule.php:78
 msgid "Search language, missing, + English, hreflang, provider, 404…"
 msgstr ""
 
 #. translators: %d: number of matching manual articles.
-#: src/Manual/ManualModule.php:84
+#: src/Manual/ManualModule.php:85
 #, php-format
 msgid "%d result"
 msgid_plural "%d results"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Manual/ManualModule.php:87
+#: src/Manual/ManualModule.php:88
 msgid "Start here"
 msgstr ""
 
-#: src/Manual/ManualModule.php:88
+#: src/Manual/ManualModule.php:89
 msgid "Manual categories"
 msgstr ""
 
-#: src/Manual/ManualModule.php:88
+#: src/Manual/ManualModule.php:89
 msgid "Browse by topic"
 msgstr ""
 
-#: src/Manual/ManualModule.php:108
+#: src/Manual/ManualModule.php:109
 msgid "No matching articles. Try a language name, locale, missing, URL, or provider search."
 msgstr ""
 
-#: src/Manual/ManualModule.php:131
+#: src/Manual/ManualModule.php:132
 msgid "Manual breadcrumbs"
 msgstr ""
 
-#: src/Manual/ManualModule.php:143
+#: src/Manual/ManualModule.php:144
 msgid "Related articles"
 msgstr ""
 
-#: src/Manual/ManualModule.php:206
+#: src/Manual/ManualModule.php:207
 msgid "Tip"
 msgstr ""
 
@@ -2697,7 +2711,7 @@ msgid "Open Translation Manager, find a page, and use + Language to create a tra
 msgstr ""
 
 #: src/Manual/ManualRegistry.php:99
-#: src/Setup/SetupWizard.php:662
+#: src/Setup/SetupWizard.php:670
 msgid "Good to know"
 msgstr ""
 
@@ -2738,7 +2752,7 @@ msgid "Select a primary language and translation targets without entering locale
 msgstr ""
 
 #: src/Manual/ManualRegistry.php:141
-#: src/Setup/SetupWizard.php:644
+#: src/Setup/SetupWizard.php:652
 msgid "Primary language"
 msgstr ""
 
@@ -2747,7 +2761,7 @@ msgid "Choose the language most of your existing content is written in. mcLogior
 msgstr ""
 
 #: src/Manual/ManualRegistry.php:146
-#: src/Setup/SetupWizard.php:644
+#: src/Setup/SetupWizard.php:652
 msgid "Translation languages"
 msgstr ""
 
@@ -3028,7 +3042,7 @@ msgid "Translation Suggestions and providers"
 msgstr ""
 
 #: src/Manual/ManualRegistry.php:355
-msgid "Use optional Generate, Preview, Review, and Apply suggestions with your own provider credentials."
+msgid "Use optional Generate, Preview, Review, and Apply suggestions with WordPress AI or a dedicated translation service."
 msgstr ""
 
 #: src/Manual/ManualRegistry.php:356
@@ -3038,7 +3052,7 @@ msgid "Advanced"
 msgstr ""
 
 #: src/Manual/ManualRegistry.php:361
-msgid "Translation Suggestions are optional. Manual translation and the normal translation workflow work without any provider. When configured, the supported provider choices are OpenAI, Anthropic, Gemini, and DeepL."
+msgid "Translation Suggestions are optional. Manual translation and the normal translation workflow work without any provider. Configure WordPress AI in Settings → Connectors or configure DeepL in mcLogiora settings."
 msgstr ""
 
 #: src/Manual/ManualRegistry.php:365
@@ -3046,7 +3060,7 @@ msgid "Safe suggestion workflow"
 msgstr ""
 
 #: src/Manual/ManualRegistry.php:366
-msgid "Configure a provider and credentials that you control."
+msgid "Configure WordPress AI in Settings → Connectors or configure DeepL here."
 msgstr ""
 
 #: src/Manual/ManualRegistry.php:366
@@ -3086,11 +3100,11 @@ msgid "Language setup, the local manual, and local manual search do not call tra
 msgstr ""
 
 #: src/Manual/ManualRegistry.php:385
-msgid "Provider calls happen only after you configure credentials and explicitly request a suggestion."
+msgid "Provider calls happen only after you configure WordPress AI or DeepL and explicitly request a suggestion."
 msgstr ""
 
 #: src/Manual/ManualRegistry.php:385
-msgid "Credentials remain under your WordPress configuration and should be handled as sensitive values."
+msgid "Credentials remain under WordPress Connectors or your DeepL configuration and should be handled as sensitive values."
 msgstr ""
 
 #: src/Manual/ManualRegistry.php:392
@@ -3367,49 +3381,49 @@ msgid "The translation group could not be created."
 msgstr ""
 
 #: src/Relations/DatabaseTranslationRelationRepository.php:139
-#: src/Relations/DatabaseTranslationRelationRepository.php:336
+#: src/Relations/DatabaseTranslationRelationRepository.php:342
 #: src/Relations/InMemoryTranslationRelationRepository.php:73
 #: src/Relations/InMemoryTranslationRelationRepository.php:230
 msgid "This object is already assigned to an active translation group."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:257
-#: src/Relations/DatabaseTranslationRelationRepository.php:317
+#: src/Relations/DatabaseTranslationRelationRepository.php:263
+#: src/Relations/DatabaseTranslationRelationRepository.php:323
 #: src/Relations/InMemoryTranslationRelationRepository.php:189
 #: src/Relations/InMemoryTranslationRelationRepository.php:202
 #: src/Relations/InMemoryTranslationRelationRepository.php:216
 msgid "The translation group could not be found."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:267
+#: src/Relations/DatabaseTranslationRelationRepository.php:273
 msgid "The translation group status is invalid."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:283
+#: src/Relations/DatabaseTranslationRelationRepository.php:289
 msgid "The translation group could not be updated."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:328
+#: src/Relations/DatabaseTranslationRelationRepository.php:334
 #: src/Relations/InMemoryTranslationRelationRepository.php:220
 msgid "A translation group can only have one original item."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:332
-#: src/Relations/DatabaseTranslationRelationRepository.php:419
-#: src/Relations/DatabaseTranslationRelationRepository.php:912
+#: src/Relations/DatabaseTranslationRelationRepository.php:338
+#: src/Relations/DatabaseTranslationRelationRepository.php:425
+#: src/Relations/DatabaseTranslationRelationRepository.php:936
 #: src/Relations/InMemoryTranslationRelationRepository.php:225
 msgid "This translation group already has an item for that language."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:365
+#: src/Relations/DatabaseTranslationRelationRepository.php:371
 #: src/Relations/InMemoryTranslationRelationRepository.php:254
 msgid "The translation status is invalid."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:371
-#: src/Relations/DatabaseTranslationRelationRepository.php:407
-#: src/Relations/DatabaseTranslationRelationRepository.php:599
-#: src/Relations/DatabaseTranslationRelationRepository.php:796
+#: src/Relations/DatabaseTranslationRelationRepository.php:377
+#: src/Relations/DatabaseTranslationRelationRepository.php:413
+#: src/Relations/DatabaseTranslationRelationRepository.php:616
+#: src/Relations/DatabaseTranslationRelationRepository.php:820
 #: src/Relations/InMemoryTranslationRelationRepository.php:260
 #: src/Relations/InMemoryTranslationRelationRepository.php:300
 #: src/Relations/InMemoryTranslationRelationRepository.php:329
@@ -3417,54 +3431,54 @@ msgstr ""
 msgid "The translation item could not be found."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:375
+#: src/Relations/DatabaseTranslationRelationRepository.php:381
 #: src/Relations/InMemoryTranslationRelationRepository.php:264
 msgid "The original item status cannot be changed from this screen."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:379
+#: src/Relations/DatabaseTranslationRelationRepository.php:385
 #: src/Relations/InMemoryTranslationRelationRepository.php:268
 msgid "Only the source item may use the original status."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:413
+#: src/Relations/DatabaseTranslationRelationRepository.php:419
 msgid "Only active configured languages can receive relation items."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:603
+#: src/Relations/DatabaseTranslationRelationRepository.php:620
 #: src/Relations/InMemoryTranslationRelationRepository.php:446
 msgid "The original item cannot be detached from its translation relationship."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:619
+#: src/Relations/DatabaseTranslationRelationRepository.php:636
 msgid "The translation relation could not be removed."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:775
+#: src/Relations/DatabaseTranslationRelationRepository.php:799
 msgid "The translation item could not be added."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:812
+#: src/Relations/DatabaseTranslationRelationRepository.php:836
 msgid "The translation item could not be updated."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:890
+#: src/Relations/DatabaseTranslationRelationRepository.php:914
 msgid "Object type and object ID are required."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:896
+#: src/Relations/DatabaseTranslationRelationRepository.php:920
 msgid "The item language must exist before a relation item is created."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:900
+#: src/Relations/DatabaseTranslationRelationRepository.php:924
 msgid "Disabled languages cannot receive new relation items."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:908
+#: src/Relations/DatabaseTranslationRelationRepository.php:932
 msgid "Only the original item may use the original status."
 msgstr ""
 
-#: src/Relations/DatabaseTranslationRelationRepository.php:1002
+#: src/Relations/DatabaseTranslationRelationRepository.php:1030
 msgid "The relation tables are not available. Reactivate the plugin to run database migrations."
 msgstr ""
 
@@ -3623,7 +3637,7 @@ msgid "None"
 msgstr ""
 
 #: src/Relations/TranslationManager.php:347
-#: src/Setup/SetupWizard.php:859
+#: src/Setup/SetupWizard.php:899
 msgid "Complete"
 msgstr ""
 
@@ -3790,330 +3804,330 @@ msgstr ""
 msgid "A few focused choices will prepare mcLogiora for your multilingual content. You can change them later in the dedicated settings screens."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:248
+#: src/Setup/SetupWizard.php:253
 msgid "Setup services are not available. Please try again later."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:263
+#: src/Setup/SetupWizard.php:268
 msgid "That language is already available. Continue when you are ready."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:292
+#: src/Setup/SetupWizard.php:297
 msgid "Choose a primary language from the catalog before continuing."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:359
+#: src/Setup/SetupWizard.php:363
 msgid "Add at least one language before choosing the default."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:403
+#: src/Setup/SetupWizard.php:407
 msgid "Choose a default language before saving URL settings."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:422
+#: src/Setup/SetupWizard.php:426
 msgid "Choose a default language before finishing setup."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:431
+#: src/Setup/SetupWizard.php:435
 msgid "That setup action is not available. Please try again."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:471
+#: src/Setup/SetupWizard.php:475
 msgid "Setup progress"
 msgstr ""
 
 #. translators: 1: current step number, 2: total step count, 3: step name.
-#: src/Setup/SetupWizard.php:486
+#: src/Setup/SetupWizard.php:490
 #, php-format
 msgid "Step %1$d of %2$d: %3$s"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:506
-#: src/Setup/SetupWizard.php:642
+#: src/Setup/SetupWizard.php:514
+#: src/Setup/SetupWizard.php:650
 msgid "Review setup"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:506
+#: src/Setup/SetupWizard.php:514
 msgid "Welcome to mcLogiora"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:507
+#: src/Setup/SetupWizard.php:515
 msgid "Your current languages and URL choices are safe. Open the settings below whenever you want to review them."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:507
+#: src/Setup/SetupWizard.php:515
 msgid "This short setup helps mcLogiora understand the languages your site uses and how visitors should reach them."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:509
+#: src/Setup/SetupWizard.php:517
 msgid "Review current setup"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:509
+#: src/Setup/SetupWizard.php:517
 msgid "Start setup"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:540
+#: src/Setup/SetupWizard.php:548
 msgid "Choose your site languages"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:541
+#: src/Setup/SetupWizard.php:549
 msgid "Choose the languages your site uses. mcLogiora resolves the technical locale, language tag, and direction for you."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:543
+#: src/Setup/SetupWizard.php:551
 msgid "Configured languages"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:551
+#: src/Setup/SetupWizard.php:559
 msgid "Primary"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:557
+#: src/Setup/SetupWizard.php:565
 msgid "What is the primary language of this site?"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:558
+#: src/Setup/SetupWizard.php:566
 msgid "Choose the language most of your existing content is written in. mcLogiora will use this as the starting point for translation relationships."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:560
+#: src/Setup/SetupWizard.php:568
 msgid "Which languages would you like to translate into?"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:561
+#: src/Setup/SetupWizard.php:569
 msgid "You can add or remove languages later. Choosing a language does not translate or publish any content automatically."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:563
+#: src/Setup/SetupWizard.php:571
 msgid "Save languages and continue"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:566
+#: src/Setup/SetupWizard.php:574
 msgid "Continue to default language"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:585
+#: src/Setup/SetupWizard.php:593
 msgid "This is the language used for your existing content and site-wide defaults. It must be chosen before setup can be finished."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:589
+#: src/Setup/SetupWizard.php:597
 msgid "Current default:"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:593
+#: src/Setup/SetupWizard.php:601
 msgid "Choose a configured language"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:598
+#: src/Setup/SetupWizard.php:606
 msgid "Save and continue"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:600
+#: src/Setup/SetupWizard.php:608
 msgid "Add or review languages"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:601
-#: src/Setup/SetupWizard.php:626
-#: src/Setup/SetupWizard.php:645
+#: src/Setup/SetupWizard.php:609
+#: src/Setup/SetupWizard.php:634
+#: src/Setup/SetupWizard.php:653
 msgid "Back"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:616
-#: src/Setup/SetupWizard.php:644
-#: src/Setup/SetupWizard.php:857
+#: src/Setup/SetupWizard.php:624
+#: src/Setup/SetupWizard.php:652
+#: src/Setup/SetupWizard.php:897
 msgid "Language URLs"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:617
+#: src/Setup/SetupWizard.php:625
 msgid "mcLogiora uses language directories, such as /tr/about/. The default language can keep your existing root URLs, or you can include its directory too."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:621
+#: src/Setup/SetupWizard.php:629
 msgid "URL structure"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:623
+#: src/Setup/SetupWizard.php:631
 msgid "Leaving this off keeps default-language URLs at the site root. If your site uses plain permalinks, review WordPress Permalinks after setup so rewrite rules can be refreshed."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:624
+#: src/Setup/SetupWizard.php:632
 msgid "Save and review"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:643
+#: src/Setup/SetupWizard.php:651
 msgid "Check the choices that mcLogiora will use. Translation Suggestions remain optional and are not part of core setup."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:644
+#: src/Setup/SetupWizard.php:652
 msgid "Not selected"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:644
+#: src/Setup/SetupWizard.php:652
 msgid "Directories for every configured language, such as /en-us/ and /de/"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:644
+#: src/Setup/SetupWizard.php:652
 msgid "Translated languages use directories such as /de/; the primary language stays at the site root"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:644
+#: src/Setup/SetupWizard.php:652
 msgid "Not configured — optional"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:658
+#: src/Setup/SetupWizard.php:666
 msgid "Your multilingual foundation is ready."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:659
+#: src/Setup/SetupWizard.php:667
 msgid "mcLogiora now knows your site languages and default language. You can build translation relationships when you are ready."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:660
+#: src/Setup/SetupWizard.php:668
 msgid "Languages configured"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:660
+#: src/Setup/SetupWizard.php:668
 msgid "Default language set"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:660
+#: src/Setup/SetupWizard.php:668
 msgid "Language URL behavior saved"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:661
+#: src/Setup/SetupWizard.php:669
 msgid "How mcLogiora works"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:661
+#: src/Setup/SetupWizard.php:669
 msgid "Discover existing content."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:661
+#: src/Setup/SetupWizard.php:669
 msgid "Translation Manager can show supported posts, pages, public custom post types, and taxonomies."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:661
+#: src/Setup/SetupWizard.php:669
 msgid "Create or link a translation."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:661
+#: src/Setup/SetupWizard.php:669
 msgid "Use + Language to create a translated draft; each language version remains its own WordPress object."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:661
+#: src/Setup/SetupWizard.php:669
 msgid "Translate and review."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:661
+#: src/Setup/SetupWizard.php:669
 msgid "Edit translations manually, or optionally request a suggestion that you review before using."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:661
+#: src/Setup/SetupWizard.php:669
 msgid "Publish and navigate."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:661
+#: src/Setup/SetupWizard.php:669
 msgid "The relationship, language switcher, URLs, and multilingual metadata stay connected around your content."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:661
+#: src/Setup/SetupWizard.php:669
 msgid "ABOUT PAGE"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:661
+#: src/Setup/SetupWizard.php:669
 msgid "Türkçe"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:661
+#: src/Setup/SetupWizard.php:669
 msgid "+ EN"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:661
+#: src/Setup/SetupWizard.php:669
 msgid "+ DE"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:661
+#: src/Setup/SetupWizard.php:669
 msgid "+ EN creates an English translation draft and opens it for editing."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:662
+#: src/Setup/SetupWizard.php:670
 msgid "Translations are independent WordPress objects; mcLogiora does not duplicate or publish content automatically."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:662
+#: src/Setup/SetupWizard.php:670
 msgid "Unlinking a relationship does not delete the content."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:662
+#: src/Setup/SetupWizard.php:670
 msgid "Translation Suggestions are optional and use providers you configure yourself."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:663
+#: src/Setup/SetupWizard.php:671
 msgid "Open Translation Manager"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:663
+#: src/Setup/SetupWizard.php:671
 msgid "Read the 3-minute getting started guide"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:675
+#: src/Setup/SetupWizard.php:683
 msgid "Exit for now"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:696
+#: src/Setup/SetupWizard.php:704
 msgid "Suggested from your WordPress site language"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:727
+#: src/Setup/SetupWizard.php:735
 msgid "Enter a language code."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:728
+#: src/Setup/SetupWizard.php:736
 msgid "Enter a valid WordPress locale such as en_US or tr_TR."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:729
+#: src/Setup/SetupWizard.php:737
 msgid "Enter both the native and English language names."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:730
+#: src/Setup/SetupWizard.php:738
 msgid "That WordPress locale is already in use."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:772
+#: src/Setup/SetupWizard.php:780
 msgid "No languages configured"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:854
+#: src/Setup/SetupWizard.php:894
 msgid "Welcome"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:858
+#: src/Setup/SetupWizard.php:898
 msgid "Review"
 msgstr ""
 
-#: src/Setup/SetupWizard.php:873
+#: src/Setup/SetupWizard.php:913
 msgid "A short introduction to the setup choices."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:874
+#: src/Setup/SetupWizard.php:914
 msgid "Add the languages your site will use."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:875
+#: src/Setup/SetupWizard.php:915
 msgid "Choose the language used for existing content."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:876
+#: src/Setup/SetupWizard.php:916
 msgid "Choose how translated URLs are organized."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:877
+#: src/Setup/SetupWizard.php:917
 msgid "Check the choices before finishing."
 msgstr ""
 
-#: src/Setup/SetupWizard.php:878
+#: src/Setup/SetupWizard.php:918
 msgid "See what to do next."
 msgstr ""
 
@@ -4227,55 +4241,52 @@ msgstr ""
 msgid "The provider invented a placeholder that was not in the source text."
 msgstr ""
 
-#: src/Suggestions/ProviderReadiness.php:96
+#: src/Suggestions/ProviderReadiness.php:120
 msgid "Ready"
 msgstr ""
 
-#: src/Suggestions/ProviderReadiness.php:99
+#: src/Suggestions/ProviderReadiness.php:123
 msgid "Model required"
 msgstr ""
 
-#: src/Suggestions/ProviderReadiness.php:118
+#: src/Suggestions/ProviderReadiness.php:126
+msgid "No AI provider available"
+msgstr ""
+
+#: src/Suggestions/ProviderReadiness.php:129
+msgid "AI support disabled"
+msgstr ""
+
+#: src/Suggestions/ProviderReadiness.php:132
+msgid "AI connector not configured"
+msgstr ""
+
+#: src/Suggestions/ProviderReadiness.php:151
 msgid "Refresh the model list, then choose a model and save."
 msgstr ""
 
-#: src/Suggestions/ProviderReadiness.php:121
+#: src/Suggestions/ProviderReadiness.php:154
+msgid "Install or activate a compatible AI provider, then configure it in Settings → Connectors."
+msgstr ""
+
+#: src/Suggestions/ProviderReadiness.php:157
+msgid "Enable AI support in WordPress, then configure a provider in Settings → Connectors."
+msgstr ""
+
+#: src/Suggestions/ProviderReadiness.php:160
+msgid "Configure a connected AI provider in Settings → Connectors."
+msgstr ""
+
+#: src/Suggestions/ProviderReadiness.php:164
 msgid "Add an API key for this provider."
 msgstr ""
 
-#: src/Suggestions/ProviderReadiness.php:133
+#: src/Suggestions/ProviderReadiness.php:181
 msgid "Configured via wp-config.php"
 msgstr ""
 
-#: src/Suggestions/ProviderReadiness.php:137
+#: src/Suggestions/ProviderReadiness.php:185
 msgid "Saved in the database"
-msgstr ""
-
-#: src/Suggestions/Providers/AnthropicProvider.php:99
-msgid "Anthropic"
-msgstr ""
-
-#: src/Suggestions/Providers/AnthropicProvider.php:144
-msgid "Add an Anthropic API key before testing the connection."
-msgstr ""
-
-#: src/Suggestions/Providers/AnthropicProvider.php:164
-msgid "Add an Anthropic API key before refreshing the model list."
-msgstr ""
-
-#: src/Suggestions/Providers/AnthropicProvider.php:177
-msgid "Anthropic returned a model list mcLogiora could not read."
-msgstr ""
-
-#: src/Suggestions/Providers/AnthropicProvider.php:219
-#: src/Suggestions/Providers/DeepLProvider.php:207
-#: src/Suggestions/Providers/GeminiProvider.php:230
-#: src/Suggestions/Providers/OpenAiProvider.php:239
-msgid "The source text could not be prepared safely for translation."
-msgstr ""
-
-#: src/Suggestions/Providers/AnthropicProvider.php:273
-msgid "the translation was longer than the allowed output"
 msgstr ""
 
 #: src/Suggestions/Providers/DeepLProvider.php:91
@@ -4294,64 +4305,51 @@ msgstr ""
 msgid "DeepL does not accept the target language for this translation."
 msgstr ""
 
-#: src/Suggestions/Providers/GeminiProvider.php:92
-msgid "Google Gemini"
+#: src/Suggestions/Providers/DeepLProvider.php:207
+#: src/Suggestions/Providers/WordPressAiProvider.php:251
+msgid "The source text could not be prepared safely for translation."
 msgstr ""
 
-#: src/Suggestions/Providers/GeminiProvider.php:140
-msgid "Add a Google Gemini API key before testing the connection."
+#: src/Suggestions/Providers/WordPressAiProvider.php:84
+msgid "WordPress AI Client"
 msgstr ""
 
-#: src/Suggestions/Providers/GeminiProvider.php:160
-msgid "Add a Google Gemini API key before refreshing the model list."
+#: src/Suggestions/Providers/WordPressAiProvider.php:219
+msgid "Connect an AI provider in Settings → Connectors before testing WordPress AI Client."
 msgstr ""
 
-#: src/Suggestions/Providers/GeminiProvider.php:173
-msgid "Google Gemini returned a model list mcLogiora could not read."
-msgstr ""
-
-#: src/Suggestions/Providers/OpenAiProvider.php:95
-msgid "OpenAI"
-msgstr ""
-
-#: src/Suggestions/Providers/OpenAiProvider.php:149
-msgid "Add an OpenAI API key before testing the connection."
-msgstr ""
-
-#: src/Suggestions/Providers/OpenAiProvider.php:169
-msgid "Add an OpenAI API key before refreshing the model list."
-msgstr ""
-
-#: src/Suggestions/Providers/OpenAiProvider.php:182
-msgid "OpenAI returned a model list mcLogiora could not read."
+#: src/Suggestions/Providers/WordPressAiProvider.php:301
+#: src/Suggestions/Providers/WordPressAiProvider.php:308
+#: src/Suggestions/Providers/WordPressAiProvider.php:318
+msgid "No compatible WordPress AI provider is available or connected."
 msgstr ""
 
 #. translators: %s: provider name.
-#: src/Suggestions/SuggestionError.php:108
+#: src/Suggestions/SuggestionError.php:105
 #, php-format
 msgid "%s declined this translation request."
 msgstr ""
 
 #. translators: %s: provider name.
-#: src/Suggestions/SuggestionError.php:127
+#: src/Suggestions/SuggestionError.php:124
 #, php-format
 msgid "%s returned an incomplete translation. Try again, or choose another model."
 msgstr ""
 
 #. translators: %s: provider name.
-#: src/Suggestions/SuggestionError.php:145
+#: src/Suggestions/SuggestionError.php:142
 #, php-format
 msgid "%s returned an invalid response."
 msgstr ""
 
 #. translators: %s: provider name.
-#: src/Suggestions/SuggestionError.php:163
+#: src/Suggestions/SuggestionError.php:160
 #, php-format
-msgid "%s needs an API key and a selected model before it can suggest translations."
+msgid "%s is not available for translation suggestions. Configure a connection in WordPress or in mcLogiora settings."
 msgstr ""
 
 #. translators: %s: short reason reported by the provider.
-#: src/Suggestions/SuggestionError.php:189
+#: src/Suggestions/SuggestionError.php:186
 #, php-format
 msgid "Reason given: %s"
 msgstr ""

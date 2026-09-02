@@ -1,6 +1,6 @@
 # mcLogiora Planning
 
-Current phase: Phase 18, Slice 2 complete (Performance, Accessibility, RTL & WordPress.org Compliance Hardening), on the `1.0.1` version line. Phase 17 is complete (Developer & Operations Layer). The 1.0.1 pre-submission candidate declares `Tested up to: 7.1`; WordPress.org submission remains a separate manual step.
+Current phase: Phase 18, Slice 2 complete (Performance, Accessibility, RTL & WordPress.org Compliance Hardening), on the `1.0.2` version line. Phase 17 is complete (Developer & Operations Layer). The 1.0.2 pre-submission candidate declares `Tested up to: 7.1`; WordPress.org submission remains a separate manual step.
 
 This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 
@@ -686,7 +686,7 @@ Phase 15: Extended Builder Compatibility
 
 Phase 16: Translation Suggestions — complete (v0.15.0)
 
-- Delivered a provider-neutral suggestion interface with four adapters (OpenAI, Anthropic, Google Gemini, DeepL) over the WordPress HTTP API, an AJAX review workflow, bring-your-own credentials, and a review-only UI. Suggestions never auto-publish, and manual translation is fully functional with no provider configured.
+- Delivered a provider-neutral suggestion interface with WordPress AI Client and DeepL adapters, an AJAX review workflow, Core-managed AI connections, and a review-only UI. Suggestions never auto-publish, and manual translation is fully functional with no provider configured.
 - Delivered per-field Generate/Preview/Apply/Regenerate/Discard on six surfaces: Settings control plane, the block editor, the Classic editor, String Translation, taxonomy terms, and media metadata.
 - Language-model providers require explicit model selection; no model is ever chosen automatically. DeepL has no model selector.
 - Scope held deliberately at named fields. Raw `post_content`, whole block documents, page-builder payloads and arbitrary meta are **not** machine-translated; see `docs/adr/0018-translation-suggestions.md`.

@@ -352,18 +352,18 @@ final class ManualRegistry {
 			array(
 				'slug'             => 'suggestions-and-providers',
 				'title'            => __( 'Translation Suggestions and providers', 'mclogiora' ),
-				'summary'          => __( 'Use optional Generate, Preview, Review, and Apply suggestions with your own provider credentials.', 'mclogiora' ),
+				'summary'          => __( 'Use optional Generate, Preview, Review, and Apply suggestions with WordPress AI or a dedicated translation service.', 'mclogiora' ),
 				'category'         => __( 'Advanced', 'mclogiora' ),
-				'keywords'         => array( 'suggestions', 'provider', 'OpenAI', 'Anthropic', 'Gemini', 'DeepL', 'API key' ),
+				'keywords'         => array( 'suggestions', 'provider', 'WordPress AI', 'Connectors', 'DeepL', 'API key' ),
 				'sections'         => array(
 					array(
 						'type' => 'paragraph',
-						'text' => __( 'Translation Suggestions are optional. Manual translation and the normal translation workflow work without any provider. When configured, the supported provider choices are OpenAI, Anthropic, Gemini, and DeepL.', 'mclogiora' ),
+						'text' => __( 'Translation Suggestions are optional. Manual translation and the normal translation workflow work without any provider. Configure WordPress AI in Settings → Connectors or configure DeepL in mcLogiora settings.', 'mclogiora' ),
 					),
 					array(
 						'type'    => 'steps',
 						'heading' => __( 'Safe suggestion workflow', 'mclogiora' ),
-						'items'   => array( __( 'Configure a provider and credentials that you control.', 'mclogiora' ), __( 'Generate a suggestion and preview it.', 'mclogiora' ), __( 'Review the proposed content and apply it deliberately.', 'mclogiora' ), __( 'Publish only through the normal WordPress workflow when ready.', 'mclogiora' ) ),
+						'items'   => array( __( 'Configure WordPress AI in Settings → Connectors or configure DeepL here.', 'mclogiora' ), __( 'Generate a suggestion and preview it.', 'mclogiora' ), __( 'Review the proposed content and apply it deliberately.', 'mclogiora' ), __( 'Publish only through the normal WordPress workflow when ready.', 'mclogiora' ) ),
 					),
 					array(
 						'type'    => 'tip',
@@ -382,7 +382,7 @@ final class ManualRegistry {
 				'sections'         => array(
 					array(
 						'type'  => 'list',
-						'items' => array( __( 'mcLogiora does not enable telemetry or tracking by default.', 'mclogiora' ), __( 'Language setup, the local manual, and local manual search do not call translation providers.', 'mclogiora' ), __( 'Provider calls happen only after you configure credentials and explicitly request a suggestion.', 'mclogiora' ), __( 'Credentials remain under your WordPress configuration and should be handled as sensitive values.', 'mclogiora' ) ),
+						'items' => array( __( 'mcLogiora does not enable telemetry or tracking by default.', 'mclogiora' ), __( 'Language setup, the local manual, and local manual search do not call translation providers.', 'mclogiora' ), __( 'Provider calls happen only after you configure WordPress AI or DeepL and explicitly request a suggestion.', 'mclogiora' ), __( 'Credentials remain under WordPress Connectors or your DeepL configuration and should be handled as sensitive values.', 'mclogiora' ) ),
 					),
 				),
 				'related_articles' => array( 'suggestions-and-providers', 'troubleshooting' ),

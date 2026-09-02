@@ -1,10 +1,10 @@
 === mcLogiora ===
 Contributors: mcorucu
 Tags: multilingual, translation, localization, language
-Requires at least: 6.5
+Requires at least: 7.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -64,7 +64,7 @@ A translated URL with no translation behind it returns a normal 404 rather than 
 
 mcLogiora never guesses your visitors' language from their location and never redirects them automatically. Flags are off by default, because a language is not a country.
 
-This release adds the developer and operations layer as well as optional Translation Suggestions. If you switch suggestions on and supply your own API key, mcLogiora can ask OpenAI, Anthropic, Google Gemini or DeepL to draft a translation of one field at a time, which you review before anything changes. The feature is off until you configure it, and translating by hand is unaffected. See "External Services" below for exactly what is sent and when.
+This release adds the developer and operations layer as well as optional Translation Suggestions. If you switch suggestions on and configure a WordPress AI connection or DeepL, mcLogiora can draft a translation of one field at a time, which you review before anything changes. The feature is off until you configure it, and translating by hand is unaffected. See "External Services" below for exactly what is sent and when.
 
 Developer and operations surfaces:
 
@@ -80,7 +80,7 @@ The REST layer does not expose strings, suggestions, switcher, import/export, or
 
 mcLogiora does not track users, does not collect telemetry, does not send beacon requests, and contains no analytics of any kind.
 
-mcLogiora contacts an external service only if you switch on Translation Suggestions, choose a provider and save your own API key, and then click a button that asks for a suggestion. Nothing is sent when a page loads, when the plugin is activated, when an editor opens, or when a visitor views your site. There is no mcLogiora server in the path: requests go from your site directly to the provider you chose.
+mcLogiora contacts an external service only if you switch on Translation Suggestions, choose a provider, configure its connection, and then click a button that asks for a suggestion. Nothing is sent when a page loads, when the plugin is activated, when an editor opens, or when a visitor views your site. There is no mcLogiora server in the path: WordPress AI Client or the dedicated translation service sends the request from your site.
 
 == Screenshots ==
 
@@ -98,37 +98,28 @@ mcLogiora's Translation Suggestions feature can connect to one external translat
 provider that you choose and configure. It is switched off by default. If you never
 enable it, mcLogiora makes no external requests at all.
 
-For every provider below, the following is true:
+For every service below, the following is true:
 
-* The service is optional and is not used unless you enable suggestions, select that provider, and save a credential.
-* You supply your own API key and the provider bills you directly. mcLogiora ships no keys and no credits.
-* Requests go from your site straight to the provider. mcLogiora does not proxy your content through any mcLogiora service, and no data is sent to the plugin author.
+* The service is optional and is not used unless you enable suggestions, select that provider, and configure its connection.
+* WordPress manages AI provider credentials in Settings → Connectors. DeepL uses an API key you supply in mcLogiora settings, and the provider bills you directly. mcLogiora ships no keys and no credits.
+* Requests go from your site through WordPress AI Client or straight to DeepL. mcLogiora does not proxy your content through any mcLogiora service, and no data is sent to the plugin author.
 * Only the single field you asked about is sent, and only at the moment you click a button. Generating a suggestion for a post title sends that title; it does not send the post body, the rest of your site, or any other field.
-* Your API key is sent to that provider so it can authenticate the request.
+* Any required credential is handled by WordPress AI Client or sent to DeepL so the selected service can authenticate the request.
 * Translating by hand needs none of this and works exactly the same whether the feature is on or off.
 
-= OpenAI =
+= WordPress AI Client =
 
-Used when you select OpenAI as your suggestion provider. Your selected source text and your API key are sent to the OpenAI Responses API (`https://api.openai.com/v1/responses`) when you click Generate, so it can return a translation. Refreshing the model list and testing the connection contact `https://api.openai.com/v1/models`.
+Used when you select WordPress AI Client as your suggestion provider. The selected source text and translation instructions are passed to WordPress Core's provider-agnostic AI Client when you click Generate. WordPress selects the configured compatible provider and model, and manages its credentials in Settings → Connectors. mcLogiora does not receive or store those credentials and does not choose a vendor or model on your behalf.
 
-mcLogiora sends `store: false` on every suggestion request, which asks OpenAI not to retain the request. mcLogiora uses no stateful OpenAI features: no conversations, no previous-response chaining, no background jobs, no tools, no file uploads.
+WordPress AI Client: https://developer.wordpress.org/reference/functions/wp_ai_client_prompt/
+WordPress AI overview: https://make.wordpress.org/core/2026/03/24/introducing-the-ai-client-in-wordpress-7-0/
 
-Terms: https://openai.com/policies/services-agreement/
-Privacy: https://openai.com/policies/row-privacy-policy/ (OpenAI publishes region-specific privacy policies; the full list is at https://openai.com/policies/)
-
-= Anthropic =
-
-Used when you select Anthropic as your suggestion provider. Your selected source text and your API key are sent to the Anthropic Messages API (`https://api.anthropic.com/v1/messages`) when you click Generate, so it can return a translation. Refreshing the model list and testing the connection contact `https://api.anthropic.com/v1/models`.
-
-Terms: https://www.anthropic.com/legal/commercial-terms
-Privacy: https://www.anthropic.com/legal/privacy
-
-= Google Gemini =
-
-Used when you select Google Gemini as your suggestion provider. Your selected source text and your API key are sent to the Gemini API (`https://generativelanguage.googleapis.com`) when you click Generate, so it can return a translation. Refreshing the model list and testing the connection contact the same API's model listing.
-
-Terms: https://ai.google.dev/gemini-api/terms
-Privacy: https://policies.google.com/privacy
+When updating from a version that stored an OpenAI, Anthropic or Google Gemini
+mcLogiora credential, 1.0.2 removes those retired mcLogiora-owned credential
+and model options once. It does not remove WordPress Connector settings or the
+DeepL credential. The retired PHP constants are no longer read; PHP constants
+cannot be removed by a plugin, so remove those old lines from `wp-config.php`
+manually if you still have them.
 
 = DeepL =
 
@@ -145,9 +136,6 @@ If you paste an API key into the mcLogiora settings screen it is stored in your 
 
 If you prefer not to store a key in the database, define it in `wp-config.php` instead and mcLogiora will use that and tell you it is doing so:
 
-`define( 'MCLOGIORA_OPENAI_API_KEY', '...' );`
-`define( 'MCLOGIORA_ANTHROPIC_API_KEY', '...' );`
-`define( 'MCLOGIORA_GEMINI_API_KEY', '...' );`
 `define( 'MCLOGIORA_DEEPL_API_KEY', '...' );`
 
 A saved key is never shown again in the admin. The screen displays only a masked suffix so you can tell which key is installed.
@@ -161,10 +149,14 @@ translation of one field, which you then review before anything changes.
 
 1. Open **mcLogiora → Translation Suggestions**.
 2. Tick **Allow translation suggestions on this site**.
-3. Choose a provider. Nothing is chosen for you.
-4. Save your API key for that provider, or define it in `wp-config.php`.
-5. Use **Test connection** to check the key. This sends none of your content.
-6. For OpenAI, Anthropic or Gemini, use **Refresh model list**, then choose a model and save it. Suggestions stay unavailable until you pick one — no model is selected for you, because that choice affects what you are billed. DeepL has no model selection.
+3. Choose WordPress AI Client or DeepL. Nothing is chosen for you.
+4. For WordPress AI Client, configure an AI provider in **Settings → Connectors**. For DeepL, save your API key here or define it in `wp-config.php`.
+5. Use **Test connection** to check the connection. This sends none of your content.
+6. WordPress AI Client chooses a compatible provider and model; DeepL has no model selection.
+
+The WordPress AI Client status distinguishes no registered AI provider, a
+registered provider that still needs its Connector configuration, and AI
+support disabled for the site. These checks are local and do not send content.
 
 = Using it =
 
@@ -254,7 +246,7 @@ Yes. On activation, mcLogiora creates its language, translation relation, string
 
 = Does this version use external services? =
 
-Only if you ask it to. Translation Suggestions are off by default; with them off, mcLogiora makes no external requests at all. If you enable them, choose a provider and save your own API key, then the single field you click Generate on is sent to that provider. Nothing is sent on page loads, editor loads, activation, or visitor requests, and nothing is ever sent to the plugin author. The SEO features still work entirely through WordPress hooks and send nothing anywhere. See "External Services" above for per-provider detail.
+Only if you ask it to. Translation Suggestions are off by default; with them off, mcLogiora makes no external requests at all. If you enable them, configure WordPress AI Client in Settings → Connectors or save a DeepL API key, then the single field you click Generate on is sent through that selected service. Nothing is sent on page loads, editor loads, activation, or visitor requests, and nothing is ever sent to the plugin author. The SEO features still work entirely through WordPress hooks and send nothing anywhere. See "External Services" above for per-provider detail.
 
 = Will this conflict with my SEO plugin? =
 
@@ -265,6 +257,13 @@ No. If Yoast SEO, Rank Math, All in One SEO, The SEO Framework, or Slim SEO is a
 Each translation points at itself. Sending every language back to the default one would tell search engines your translations are duplicates to ignore, which is the opposite of what translating a site is for.
 
 == Changelog ==
+
+= 1.0.2 =
+
+* Routed AI translation suggestions through the WordPress 7.0 AI Client and Connectors APIs.
+* Removed vendor-specific AI endpoints, model catalogues, and AI credentials from mcLogiora.
+* Kept DeepL as an explicitly configured dedicated translation service.
+* Removed retired mcLogiora-owned AI credential and model options once during upgrade without touching WordPress Connector settings.
 
 = 1.0.1 =
 

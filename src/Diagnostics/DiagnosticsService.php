@@ -538,12 +538,12 @@ final class DiagnosticsService {
 
 		if ( '' === $status['selected_provider'] || ! $status['selected_ready'] ) {
 			return array(
-				$this->finding( 'suggestions', self::RECOMMENDED, __( 'Translation Suggestions need configuration', 'mclogiora' ), __( 'Suggestions are enabled, but the selected provider is missing a credential, model, or provider selection.', 'mclogiora' ) ),
+				$this->finding( 'suggestions', self::RECOMMENDED, __( 'Translation Suggestions need configuration', 'mclogiora' ), __( 'Suggestions are enabled, but the selected provider is not ready. Configure WordPress AI in Settings → Connectors or configure the dedicated translation service.', 'mclogiora' ) ),
 			);
 		}
 
 		return array(
-			$this->finding( 'suggestions', self::GOOD, __( 'Translation Suggestions', 'mclogiora' ), __( 'Suggestions are enabled and the selected provider is locally configured.', 'mclogiora' ) ),
+			$this->finding( 'suggestions', self::GOOD, __( 'Translation Suggestions', 'mclogiora' ), __( 'Suggestions are enabled and the selected provider is ready.', 'mclogiora' ) ),
 		);
 	}
 

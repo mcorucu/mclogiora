@@ -78,9 +78,9 @@ final class SwitcherWidget extends \WP_Widget {
 	 * Renders the widget form.
 	 *
 	 * @param array<string,mixed> $instance Widget instance.
-	 * @return void
+	 * @return string|null
 	 */
-	public function form( $instance ) {
+	public function form( $instance ): ?string {
 		$title = isset( $instance['title'] ) ? (string) $instance['title'] : '';
 		$style = isset( $instance['style'] ) ? (string) $instance['style'] : SwitcherStyle::INLINE;
 
@@ -103,6 +103,8 @@ final class SwitcherWidget extends \WP_Widget {
 			</select>
 		</p>
 		<?php
+
+		return null;
 	}
 
 	/**

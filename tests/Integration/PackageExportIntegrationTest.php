@@ -334,24 +334,20 @@ final class PackageExportIntegrationTest extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_an_export_carries_no_credential_or_provider_material() {
-		update_option( 'mclogiora_suggestion_key_openai', 'sk-test-not-a-real-key-000' );
+		update_option( 'mclogiora_suggestion_key_deepl', 'deepl-test-not-a-real-key-000' );
 		update_option( 'mclogiora_suggestions_enabled', 1 );
-		update_option( 'mclogiora_suggestions_provider', 'openai' );
-		update_option( 'mclogiora_suggestion_model_openai', 'gpt-test' );
+		update_option( 'mclogiora_suggestions_provider', 'deepl' );
 
 		$encoded = ( new PackageEncoder() )->encode( $this->exporter->export() );
 
 		foreach (
 			array(
-				'sk-test-not-a-real-key-000',
+				'deepl-test-not-a-real-key-000',
 				'api_key',
 				'apikey',
 				'credential',
 				'Authorization',
 				'DeepL-Auth-Key',
-				'MCLOGIORA_OPENAI_API_KEY',
-				'MCLOGIORA_ANTHROPIC_API_KEY',
-				'MCLOGIORA_GEMINI_API_KEY',
 				'MCLOGIORA_DEEPL_API_KEY',
 				'mclogiora_suggestion_key_',
 				'mclogiora_suggestions_provider',
@@ -364,10 +360,9 @@ final class PackageExportIntegrationTest extends WP_UnitTestCase {
 			$this->assertStringNotContainsString( $needle, $encoded, $needle . ' must never appear in a package' );
 		}
 
-		delete_option( 'mclogiora_suggestion_key_openai' );
+		delete_option( 'mclogiora_suggestion_key_deepl' );
 		delete_option( 'mclogiora_suggestions_enabled' );
 		delete_option( 'mclogiora_suggestions_provider' );
-		delete_option( 'mclogiora_suggestion_model_openai' );
 	}
 
 	/**

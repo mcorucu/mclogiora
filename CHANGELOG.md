@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.2
+
+- Routed AI translation suggestions through the WordPress 7.0 AI Client and Connectors APIs.
+- Removed vendor-specific AI endpoints, model catalogues, and AI credentials from mcLogiora.
+- Kept DeepL as an explicitly configured dedicated translation service.
+- Added a one-time upgrade cleanup for retired mcLogiora-owned AI credential and model options; WordPress Connector settings and DeepL remain untouched.
+
 ## 1.0.1
 
 - Polished the first-run language setup, multilingual content inventory, and local manual experience.

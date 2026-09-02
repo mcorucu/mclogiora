@@ -298,7 +298,7 @@ endif;
 				<?php
 				for ( $i = 1; $i <= $result['total_pages']; $i++ ) :
 					?>
-				<a class="button <?php echo $i === $result['page'] ? 'button-primary' : ''; ?>" href="
+				<a class="button <?php echo esc_attr( $i === $result['page'] ? 'button-primary' : '' ); ?>" href="
 					<?php
 					echo esc_url(
 						add_query_arg(

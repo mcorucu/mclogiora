@@ -221,7 +221,7 @@ final class AdminMenu implements ModuleInterface {
 				<div class="mclogiora-card-grid mclogiora-card-grid--two">
 					<?php $this->render_settings_link_card( 'mclogiora-languages', __( 'Languages', 'mclogiora' ), __( 'Add languages, choose the default, and control the active language list.', 'mclogiora' ) ); ?>
 					<?php $this->render_settings_link_card( 'mclogiora-routing', __( 'Languages & URLs', 'mclogiora' ), __( 'Configure language directories and the language switcher used on the front end.', 'mclogiora' ) ); ?>
-					<?php $this->render_settings_link_card( 'mclogiora-suggestions', __( 'Translation Suggestions', 'mclogiora' ), __( 'Keep optional provider suggestions disabled or configure your own provider credentials.', 'mclogiora' ) ); ?>
+				<?php $this->render_settings_link_card( 'mclogiora-suggestions', __( 'Translation Suggestions', 'mclogiora' ), __( 'Keep optional suggestions disabled or configure WordPress AI or a dedicated translation service.', 'mclogiora' ) ); ?>
 					<?php $this->render_settings_link_card( 'mclogiora-compatibility', __( 'Compatibility', 'mclogiora' ), __( 'Review the editors, builders, plugins, and theme detected on this site.', 'mclogiora' ) ); ?>
 					<?php $this->render_settings_link_card( 'mclogiora-manual', __( 'Manual', 'mclogiora' ), __( 'Read the local, searchable guide for everyday multilingual work.', 'mclogiora' ) ); ?>
 				</div>

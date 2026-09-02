@@ -726,7 +726,7 @@ final class RestMutationApiTest extends WP_UnitTestCase {
 	 *
 	 * Relation management is not Translation Suggestions. Moving a status to
 	 * `machine_suggested` is a bookkeeping change and must not, by itself,
-	 * reach OpenAI, Anthropic, Gemini or DeepL.
+	 * reach a translation provider.
 	 *
 	 * @return void
 	 */

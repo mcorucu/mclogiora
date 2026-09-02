@@ -14,7 +14,7 @@
 	<rule ref="WordPress-Extra"/>
 	<rule ref="WordPress-Docs"/>
 
-	<config name="minimum_supported_wp_version" value="6.5"/>
+	<config name="minimum_supported_wp_version" value="7.0"/>
 
 	<!--
 		Errors block the build; warnings are reported but do not fail it. The

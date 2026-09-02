@@ -22,9 +22,7 @@ use McLogiora\Suggestions\HttpTransport;
 use McLogiora\Suggestions\LlmInstructions;
 use McLogiora\Suggestions\ProviderRegistry;
 use McLogiora\Suggestions\Providers\DeepLProvider;
-use McLogiora\Suggestions\Providers\OpenAiProvider;
-use McLogiora\Suggestions\Providers\GeminiProvider;
-use McLogiora\Suggestions\Providers\AnthropicProvider;
+use McLogiora\Suggestions\Providers\WordPressAiProvider;
 use McLogiora\Suggestions\SuggestionSettings;
 use McLogiora\Suggestions\SuggestionSurface;
 use McLogiora\Suggestions\TranslationSuggestionService;
@@ -128,9 +126,7 @@ final class MediaSuggestionIntegrationTest extends WP_Ajax_UnitTestCase {
 				$credentials = new CredentialStore();
 				$prompts     = new LlmInstructions();
 
-				$registry->add( new OpenAiProvider( $this->transport, $credentials, $prompts ) );
-				$registry->add( new AnthropicProvider( $this->transport, $credentials, $prompts ) );
-				$registry->add( new GeminiProvider( $this->transport, $credentials, $prompts ) );
+				$registry->add( new WordPressAiProvider( $prompts ) );
 				$registry->add( new DeepLProvider( $this->transport, $credentials ) );
 
 				return $registry;

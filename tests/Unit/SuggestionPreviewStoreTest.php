@@ -67,7 +67,7 @@ final class SuggestionPreviewStoreTest extends TestCase {
 	 */
 	private function create() {
 		$preview = $this->store->create(
-			new SuggestionResult( 'Merhaba dunya', 'openai', 'gpt-5.4-mini' ),
+			new SuggestionResult( 'Merhaba dunya', 'wordpress-ai' ),
 			$this->context()
 		);
 
@@ -87,8 +87,8 @@ final class SuggestionPreviewStoreTest extends TestCase {
 
 		$this->assertInstanceOf( SuggestionPreview::class, $found );
 		$this->assertSame( 'Merhaba dunya', $found->text() );
-		$this->assertSame( 'openai', $found->provider_id() );
-		$this->assertSame( 'gpt-5.4-mini', $found->model() );
+		$this->assertSame( 'wordpress-ai', $found->provider_id() );
+		$this->assertSame( '', $found->model() );
 		$this->assertSame( 'post', $found->object_type() );
 		$this->assertSame( '11', $found->target_id() );
 		$this->assertSame( 7, $found->user_id() );
@@ -127,7 +127,7 @@ final class SuggestionPreviewStoreTest extends TestCase {
 		 * The distinctive, multi-character facts are still worth checking,
 		 * because those cannot appear by accident.
 		 */
-		foreach ( array( 'post_title', 'openai', 'gpt-5.4-mini' ) as $secret ) {
+		foreach ( array( 'post_title', 'wordpress-ai' ) as $secret ) {
 			$this->assertStringNotContainsString( $secret, $tokens[0] );
 		}
 	}
@@ -193,7 +193,7 @@ final class SuggestionPreviewStoreTest extends TestCase {
 		$context            = $this->context();
 		$context['user_id'] = 0;
 
-		$result = $this->store->create( new SuggestionResult( 'x', 'openai', 'm' ), $context );
+		$result = $this->store->create( new SuggestionResult( 'x', 'wordpress-ai' ), $context );
 
 		$this->assertTrue( is_wp_error( $result ) );
 		$this->assertSame( array(), $GLOBALS['mclogiora_test_transients'], 'Nothing may be stored without an owner.' );

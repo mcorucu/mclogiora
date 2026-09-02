@@ -272,10 +272,17 @@ jobs:
 
       - name: Configure exact WordPress 7.1 environment
         run: |
+          set -euo pipefail
           rm -rf /tmp/mclogiora-package
           mkdir -p /tmp/mclogiora-package
-          git archive HEAD | tar -x -C /tmp/mclogiora-package
-          export PACKAGE_DIR=/tmp/mclogiora-package
+          git archive --format=zip --worktree-attributes --prefix=mclogiora/ HEAD > mclogiora-1.0.2-pr.zip
+          unzip -q mclogiora-1.0.2-pr.zip -d /tmp/mclogiora-package
+          sha256sum mclogiora-1.0.2-pr.zip > mclogiora-1.0.2-pr.zip.sha256
+          test -f /tmp/mclogiora-package/mclogiora/mclogiora.php
+          test ! -e /tmp/mclogiora-package/mclogiora/vendor
+          test ! -e /tmp/mclogiora-package/mclogiora/tests
+          find /tmp/mclogiora-package/mclogiora -name '*.php' -print0 | xargs -0 -n1 php -l
+          export PACKAGE_DIR=/tmp/mclogiora-package/mclogiora
           node -e '
             const fs = require("fs");
             fs.writeFileSync(".wp-env.json", JSON.stringify({
@@ -332,6 +339,93 @@ jobs:
           path: |
             plugin-check-results.json
             plugin-check-disposition.json
+            mclogiora-1.0.2-pr.zip
+            mclogiora-1.0.2-pr.zip.sha256
+
+  upgrade:
+    # Exercise the real file replacement path from the last release. The
+    # current package is loaded only after 1.0.1 has been activated and its
+    # legacy state has been seeded.
+    name: 1.0.1 to 1.0.2 upgrade
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Prepare 1.0.1 package and WordPress 7.1
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/mclogiora-upgrade
+          mkdir -p /tmp/mclogiora-upgrade
+          git archive --worktree-attributes 35da688 | tar -x -C /tmp/mclogiora-upgrade
+          node -e '
+            const fs = require("fs");
+            fs.writeFileSync(".wp-env.json", JSON.stringify({
+              core: "https://wordpress.org/wordpress-7.1.zip",
+              port: 8880,
+              testsPort: 8881,
+              mappings: { "wp-content/plugins/mclogiora": "/tmp/mclogiora-upgrade" }
+            }, null, 2) + "\n");
+          '
+          npm -g --no-fund i @wordpress/env
+          npx wp-env start --update
+          version="$(npx wp-env run cli wp core version)"
+          test "$version" = '7.1'
+
+      - name: Activate 1.0.1 and seed legacy state
+        run: |
+          set -euo pipefail
+          npx wp-env run cli wp plugin activate mclogiora
+          npx wp-env run cli wp option update mclogiora_suggestion_key_openai legacy-openai --quiet
+          npx wp-env run cli wp option update mclogiora_suggestion_key_anthropic legacy-anthropic --quiet
+          npx wp-env run cli wp option update mclogiora_suggestion_key_gemini legacy-gemini --quiet
+          npx wp-env run cli wp option update mclogiora_suggestion_model_openai legacy-model --quiet
+          npx wp-env run cli wp option update mclogiora_suggestions_provider gemini --quiet
+          npx wp-env run cli wp option update mclogiora_suggestion_key_deepl preserve-this --quiet
+
+      - name: Replace package with exact 1.0.2 tree
+        run: |
+          set -euo pipefail
+          find /tmp/mclogiora-upgrade -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+          git archive --format=zip --worktree-attributes --prefix=mclogiora/ HEAD > /tmp/mclogiora-1.0.2-upgrade.zip
+          unzip -q /tmp/mclogiora-1.0.2-upgrade.zip -d /tmp/mclogiora-upgrade-staged
+          cp -a /tmp/mclogiora-upgrade-staged/mclogiora/. /tmp/mclogiora-upgrade/
+          rm -rf /tmp/mclogiora-upgrade-staged
+
+      - name: Assert upgrade cleanup and preservation
+        run: |
+          set -euo pipefail
+          npx wp-env run cli wp eval '
+          $removed = array(
+            "mclogiora_suggestion_key_openai",
+            "mclogiora_suggestion_key_anthropic",
+            "mclogiora_suggestion_key_gemini",
+            "mclogiora_suggestion_model_openai",
+            "mclogiora_suggestions_provider",
+          );
+          foreach ( $removed as $option ) {
+            if ( false !== get_option( $option, false ) ) {
+              WP_CLI::error( "Legacy option was retained: " . $option );
+            }
+          }
+          if ( "preserve-this" !== get_option( "mclogiora_suggestion_key_deepl", "" ) ) {
+            WP_CLI::error( "DeepL credential was not preserved." );
+          }
+          if ( 1 !== (int) get_option( "mclogiora_suggestion_legacy_cleanup_102", 0 ) ) {
+            WP_CLI::error( "Upgrade cleanup marker was not written." );
+          }
+          if ( "1.0.2" !== MCLOGIORA_VERSION ) {
+            WP_CLI::error( "The active plugin is not 1.0.2." );
+          }
+          WP_CLI::success( "1.0.1 to 1.0.2 upgrade gate passed." );
+          '
 
   hygiene:
     name: Repository hygiene

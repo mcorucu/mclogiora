@@ -138,7 +138,9 @@ final class SuggestionEditorState {
 		if ( ! $provider->is_configured() ) {
 			$state['reason'] = ProviderReadiness::MODEL_REQUIRED === $this->readiness->state( $provider )
 				? __( 'The chosen provider still needs a model.', 'mclogiora' )
-				: __( 'The chosen provider still needs an API key.', 'mclogiora' );
+				: ( $provider->manages_credentials()
+					? __( 'The chosen provider still needs an API key.', 'mclogiora' )
+					: __( 'Connect an AI provider in Settings → Connectors.', 'mclogiora' ) );
 
 			return $state;
 		}

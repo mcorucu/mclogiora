@@ -680,8 +680,8 @@ final class RestReadApiTest extends WP_UnitTestCase {
 	/**
 	 * Asserts a REST read contacts no translation provider.
 	 *
-	 * There is no reason for a developer reading relations to reach OpenAI,
-	 * Anthropic, Gemini or DeepL, so the assertion is zero requests, not few.
+	 * There is no reason for a developer reading relations to reach a translation
+	 * provider, so the assertion is zero requests, not few.
 	 *
 	 * @return void
 	 */

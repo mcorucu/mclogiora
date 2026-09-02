@@ -1,6 +1,6 @@
 <?php
 /**
- * Instruction text shared by the language-model providers.
+ * Instruction text for the WordPress AI Client provider.
  *
  * @package McLogiora
  */
@@ -10,7 +10,7 @@ namespace McLogiora\Suggestions;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Builds the system instruction the three language-model providers send.
+ * Builds the system instruction sent through the WordPress AI Client.
  *
  * Shared by the language models and deliberately never used for a dedicated
  * translation service, which takes no instructions at all and protects text

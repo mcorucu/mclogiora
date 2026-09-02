@@ -27,7 +27,7 @@ use McLogiora\Suggestions\CredentialStore;
 use McLogiora\Suggestions\LlmInstructions;
 use McLogiora\Suggestions\ProviderReadiness;
 use McLogiora\Suggestions\ProviderRegistry;
-use McLogiora\Suggestions\Providers\OpenAiProvider;
+use McLogiora\Suggestions\Providers\WordPressAiProvider;
 use McLogiora\Suggestions\SuggestionSettings;
 use McLogiora\Tests\Support\FakeTransport;
 use PHPUnit\Framework\TestCase;
@@ -68,8 +68,6 @@ final class DiagnosticsServiceTest extends TestCase {
 		delete_option( DatabaseVersionManager::OPTION_NAME );
 		delete_option( SuggestionSettings::OPTION_ENABLED );
 		delete_option( SuggestionSettings::OPTION_PROVIDER );
-		$this->credentials->remove( 'openai' );
-		delete_option( 'mclogiora_suggestion_model_openai' );
 		parent::tearDown();
 	}
 
@@ -122,21 +120,19 @@ final class DiagnosticsServiceTest extends TestCase {
 	public function test_suggestion_states_are_local_and_conservative() {
 		$settings = new SuggestionSettings();
 		$providers = new ProviderRegistry();
-		$providers->add( new OpenAiProvider( new FakeTransport(), $this->credentials, new LlmInstructions() ) );
+		$providers->add( new WordPressAiProvider( new LlmInstructions() ) );
 
 		$disabled = $this->service( null, $providers, $settings )->collect();
 		$this->assertFalse( $disabled['suggestions']['enabled'] );
 		$this->assertSame( DiagnosticsService::INFORMATIONAL, $this->finding( $disabled, 'suggestions' )['status'] );
 
 		$settings->set_enabled( true );
-		$settings->set_provider( 'openai' );
-		$this->credentials->save( 'openai', 'sk-unit-secret' );
+		$settings->set_provider( 'wordpress-ai' );
 		$incomplete = $this->service( null, $providers, $settings )->collect();
 
 		$this->assertSame( DiagnosticsService::RECOMMENDED, $this->finding( $incomplete, 'suggestions' )['status'] );
 		$this->assertFalse( $incomplete['suggestions']['selected_ready'] );
 		$this->assertStringNotContainsString( 'FakeTransport', serialize( $incomplete ) );
-		$this->assertStringNotContainsString( 'sk-unit-secret', serialize( $incomplete ) );
 	}
 
 	/**
