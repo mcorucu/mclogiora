@@ -20,7 +20,7 @@ use McLogiora\Suggestions\SuggestionSettings;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Lets a site owner configure optional translation providers.
+ * Lets a site owner configure optional translation services.
  *
  * Every outbound request this feature can make begins with a deliberate click
  * on this screen, so the screen's own restraint is part of the security story:
@@ -39,9 +39,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * There is no default provider and no default model. A fresh install shows the
  * feature switched off, and manual translation -- the whole rest of the plugin
- * -- works with none of this configured. The screen is written to inform
- * rather than to sell: it says what a provider would cost the owner in
- * privacy terms and leaves the decision alone.
+ * -- works with none of this configured. WordPress AI connections are
+ * managed by Core's Connectors screen; only dedicated translation services
+ * expose credentials here.
  */
 final class SuggestionSettingsScreen implements ModuleInterface {
 	/**
@@ -183,10 +183,10 @@ final class SuggestionSettingsScreen implements ModuleInterface {
 					<h2><?php esc_html_e( 'What this sends, and when', 'mclogiora' ); ?></h2>
 					<ul>
 						<li><?php esc_html_e( 'These providers are optional external services, switched off until you turn them on.', 'mclogiora' ); ?></li>
-						<li><?php esc_html_e( 'You supply your own credentials and the provider bills you directly. mcLogiora ships no keys and no credits.', 'mclogiora' ); ?></li>
+						<li><?php esc_html_e( 'WordPress manages AI provider connections in Settings → Connectors. Dedicated translation services use credentials you supply here.', 'mclogiora' ); ?></li>
 						<li><?php esc_html_e( 'Text leaves your site only when you explicitly ask for a suggestion, and only the single field you asked about.', 'mclogiora' ); ?></li>
 						<li><?php esc_html_e( 'Translating by hand needs none of this and is unaffected by anything on this page.', 'mclogiora' ); ?></li>
-						<li><?php esc_html_e( 'mcLogiora itself receives nothing. Requests go from your site straight to the provider you chose.', 'mclogiora' ); ?></li>
+						<li><?php esc_html_e( 'mcLogiora itself receives nothing. Requests are sent by WordPress or directly to the dedicated service you chose.', 'mclogiora' ); ?></li>
 					</ul>
 				</article>
 
@@ -297,8 +297,9 @@ final class SuggestionSettingsScreen implements ModuleInterface {
 	 */
 	private function render_provider( TranslationProviderInterface $provider ) {
 		$id          = $provider->get_id();
-		$by_config   = $this->credentials->is_defined_by_constant( $id );
-		$masked      = $this->credentials->masked( $id );
+		$manages_key = $provider->manages_credentials();
+		$by_config   = $manages_key && $this->credentials->is_defined_by_constant( $id );
+		$masked      = $manages_key ? $this->credentials->masked( $id ) : '';
 		$state       = $this->readiness->state( $provider );
 		$next_step   = $this->readiness->next_step( $provider );
 		$source      = $this->readiness->credential_source( $provider );
@@ -319,13 +320,15 @@ final class SuggestionSettingsScreen implements ModuleInterface {
 				<p class="mclogiora-muted-line"><?php echo esc_html( $next_step ); ?></p>
 			<?php endif; ?>
 
-			<?php if ( $by_config ) : ?>
+			<?php if ( ! $manages_key ) : ?>
+				<p><?php esc_html_e( 'WordPress chooses a compatible configured AI provider and model through its native AI Client. Manage that connection in Settings → Connectors.', 'mclogiora' ); ?></p>
+			<?php elseif ( $by_config ) : ?>
 				<p>
 					<?php
 					printf(
 						/* translators: %s: PHP constant name. */
 						esc_html__( 'This key comes from the %s constant in wp-config.php. It is never copied into the database and cannot be viewed or changed from here.', 'mclogiora' ),
-						'<code>' . esc_html( $this->credentials->constant_name( $id ) ) . '</code>'
+						esc_html( $this->credentials->constant_name( $id ) )
 					);
 					?>
 				</p>
@@ -363,21 +366,21 @@ final class SuggestionSettingsScreen implements ModuleInterface {
 				<?php endif; ?>
 			<?php endif; ?>
 
-			<?php if ( '' !== $masked ) : ?>
+			<?php if ( ! $manages_key || '' !== $masked ) : ?>
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="mclogiora_test_suggestion_connection" />
 					<input type="hidden" name="provider" value="<?php echo esc_attr( $id ); ?>" />
 					<?php wp_nonce_field( self::NONCE_TEST . '_' . $id, self::NONCE_TEST . '_nonce' ); ?>
 					<p>
 						<button type="submit" class="button"><?php esc_html_e( 'Test connection', 'mclogiora' ); ?></button>
-						<span class="mclogiora-muted-line"><?php esc_html_e( 'Checks the key against the provider. Sends none of your content.', 'mclogiora' ); ?></span>
+						<span class="mclogiora-muted-line"><?php echo esc_html( $manages_key ? __( 'Checks the key against the provider. Sends none of your content.', 'mclogiora' ) : __( 'Checks whether WordPress has a usable AI connection. Sends none of your content.', 'mclogiora' ) ); ?></span>
 					</p>
 				</form>
 			<?php endif; ?>
 
 			<?php if ( $needs_model && '' !== $masked ) : ?>
 				<?php $this->render_model_controls( $provider ); ?>
-			<?php elseif ( ! $needs_model ) : ?>
+			<?php elseif ( ! $needs_model && $manages_key ) : ?>
 				<p class="mclogiora-muted-line"><?php esc_html_e( 'This provider is a dedicated translation service and offers no model choice.', 'mclogiora' ); ?></p>
 			<?php endif; ?>
 		</article>
@@ -481,6 +484,10 @@ final class SuggestionSettingsScreen implements ModuleInterface {
 	public function handle_save_credential() {
 		$provider = $this->guarded_provider( self::NONCE_CREDENTIAL, self::NONCE_CREDENTIAL . '_nonce' );
 
+		if ( ! $provider->manages_credentials() ) {
+			wp_die( esc_html__( 'This provider is managed by WordPress in Settings → Connectors.', 'mclogiora' ) );
+		}
+
 		/*
 		 * A credential is an opaque secret and is kept byte-exact. Passing it
 		 * through sanitize_text_field() would silently corrupt keys that legally
@@ -511,6 +518,10 @@ final class SuggestionSettingsScreen implements ModuleInterface {
 	 */
 	public function handle_remove_credential() {
 		$provider = $this->guarded_provider( self::NONCE_REMOVE, self::NONCE_REMOVE . '_nonce' );
+
+		if ( ! $provider->manages_credentials() ) {
+			wp_die( esc_html__( 'This provider is managed by WordPress in Settings → Connectors.', 'mclogiora' ) );
+		}
 
 		$this->credentials->remove( $provider->get_id() );
 		$this->models->forget( $provider->get_id() );

@@ -22,10 +22,8 @@ use McLogiora\Suggestions\CredentialStore;
 use McLogiora\Suggestions\HttpTransport;
 use McLogiora\Suggestions\LlmInstructions;
 use McLogiora\Suggestions\ProviderRegistry;
-use McLogiora\Suggestions\Providers\AnthropicProvider;
 use McLogiora\Suggestions\Providers\DeepLProvider;
-use McLogiora\Suggestions\Providers\GeminiProvider;
-use McLogiora\Suggestions\Providers\OpenAiProvider;
+use McLogiora\Suggestions\Providers\WordPressAiProvider;
 use McLogiora\Suggestions\TranslationSuggestionService;
 use McLogiora\Suggestions\SuggestionSettings;
 use McLogiora\Tests\Support\FakeTransport;
@@ -136,9 +134,7 @@ final class SuggestionEditorControllerTest extends WP_Ajax_UnitTestCase {
 				$credentials = new CredentialStore();
 				$prompts     = new LlmInstructions();
 
-				$registry->add( new OpenAiProvider( $this->transport, $credentials, $prompts ) );
-				$registry->add( new AnthropicProvider( $this->transport, $credentials, $prompts ) );
-				$registry->add( new GeminiProvider( $this->transport, $credentials, $prompts ) );
+				$registry->add( new WordPressAiProvider( $prompts ) );
 				$registry->add( new DeepLProvider( $this->transport, $credentials ) );
 
 				return $registry;
@@ -447,14 +443,12 @@ final class SuggestionEditorControllerTest extends WP_Ajax_UnitTestCase {
 	}
 
 	/**
-	 * Asserts an LLM without a chosen model refuses before transport.
+	 * Asserts an unavailable WordPress AI connection refuses before transport.
 	 *
 	 * @return void
 	 */
-	public function test_an_llm_without_a_model_refuses_before_transport() {
-		( new CredentialStore() )->save( 'openai', 'sk-test' );
-
-		$this->container->get( SuggestionSettings::class )->set_provider( 'openai' );
+	public function test_an_unavailable_wordpress_ai_connection_refuses_before_transport() {
+		$this->container->get( SuggestionSettings::class )->set_provider( 'wordpress-ai' );
 
 		$this->post();
 
@@ -464,7 +458,6 @@ final class SuggestionEditorControllerTest extends WP_Ajax_UnitTestCase {
 		$this->assertFalse( $response['success'] );
 		$this->assertSame( array(), $this->transport->requests() );
 
-		( new CredentialStore() )->remove( 'openai' );
 	}
 
 	/**

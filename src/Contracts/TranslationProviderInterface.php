@@ -20,12 +20,9 @@ defined( 'ABSPATH' ) || exit;
  * because nothing implemented it yet. Evolving the existing contract rather
  * than adding a second one keeps a single name for a single idea.
  *
- * Everything here is per-provider on purpose. The four launch providers differ
- * in every way an HTTP API can: four different authentication schemes, two
- * different notions of "model", and one of them is not a language model at all.
- * A provider therefore owns its own request shaping, its own credential check,
- * and its own way of protecting text it must not translate, rather than having
- * a shared abstraction guess on its behalf.
+ * The contract supports both providers managed by mcLogiora and providers
+ * backed by a WordPress-managed connection. The latter deliberately expose no
+ * credential or model controls to this plugin.
  */
 interface TranslationProviderInterface {
 	/**
@@ -48,19 +45,29 @@ interface TranslationProviderInterface {
 	/**
 	 * Returns whether the provider has everything it needs to run.
 	 *
-	 * A provider with a stored credential but no chosen model is deliberately
-	 * not configured: mcLogiora never picks a model on the owner's behalf, so
-	 * until they choose one there is nothing to spend against.
+	 * A provider backed by WordPress may determine readiness from the site's
+	 * configured AI connection rather than from mcLogiora options.
 	 *
 	 * @return bool
 	 */
 	public function is_configured();
 
 	/**
+	 * Returns whether mcLogiora owns credential storage for this provider.
+	 *
+	 * Providers backed by a WordPress-managed connection must return false.
+	 * Their credentials are intentionally handled by WordPress rather than by
+	 * this plugin's options table or settings screen.
+	 *
+	 * @return bool
+	 */
+	public function manages_credentials();
+
+	/**
 	 * Returns whether the provider needs an explicit model choice.
 	 *
-	 * True for the language models, false for a dedicated translation service
-	 * that exposes no model menu.
+	 * True when the provider exposes a model menu in mcLogiora, false for a
+	 * WordPress-managed provider or a dedicated service with no model menu.
 	 *
 	 * @return bool
 	 */
@@ -69,9 +76,8 @@ interface TranslationProviderInterface {
 	/**
 	 * Returns the models the provider currently offers.
 	 *
-	 * Called only when the owner explicitly asks to refresh the list, never
-	 * while merely rendering a settings screen, because it is an outbound call
-	 * to a third party.
+	 * Called only when the owner explicitly asks to refresh the list for a
+	 * provider that owns its model catalogue.
 	 *
 	 * @return array<int,array{id:string,label:string,recommended:bool}>|\WP_Error
 	 */
@@ -121,11 +127,7 @@ interface TranslationProviderInterface {
 	public function supports_language_pair( $source_language, $target_language );
 
 	/**
-	 * Verifies the stored credential without spending translation quota.
-	 *
-	 * Every launch provider exposes a metadata endpoint that proves a key
-	 * works without translating anything, so a failed key costs the owner
-	 * nothing to diagnose.
+	 * Verifies provider readiness without translating content.
 	 *
 	 * @return true|\WP_Error
 	 */

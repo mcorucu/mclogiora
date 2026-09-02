@@ -12,8 +12,8 @@ defined( 'ABSPATH' ) || exit;
 /**
  * The narrow surface a provider needs to reach its API.
  *
- * Exists so the unit suite can exercise every provider against recorded
- * payloads instead of the network. That is not a testing nicety: these are
+ * Exists so the unit suite can exercise the dedicated service provider against
+ * recorded payloads instead of the network. That is not a testing nicety: these are
  * metered, chargeable APIs, and a test suite that could accidentally bill a
  * contributor is a test suite nobody runs.
  */

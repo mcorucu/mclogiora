@@ -18,10 +18,8 @@ use McLogiora\Suggestions\CredentialStore;
 use McLogiora\Suggestions\HttpTransport;
 use McLogiora\Suggestions\LlmInstructions;
 use McLogiora\Suggestions\ProviderRegistry;
-use McLogiora\Suggestions\Providers\AnthropicProvider;
 use McLogiora\Suggestions\Providers\DeepLProvider;
-use McLogiora\Suggestions\Providers\GeminiProvider;
-use McLogiora\Suggestions\Providers\OpenAiProvider;
+use McLogiora\Suggestions\Providers\WordPressAiProvider;
 use McLogiora\Suggestions\SuggestionSettings;
 use McLogiora\Tests\Support\FakeTransport;
 use McLogiora\Workflows\TranslationWorkflowService;
@@ -46,10 +44,7 @@ final class ClassicSuggestionIntegrationTest extends WP_UnitTestCase {
 	 * Credentials distinctive enough to find anywhere.
 	 */
 	const SECRETS = array(
-		'openai'    => 'sk-live-CLASSIC-OPENAI-MUST-NOT-LEAK-4401',
-		'anthropic' => 'sk-ant-CLASSIC-ANTHROPIC-MUST-NOT-LEAK-4402',
-		'gemini'    => 'AIza-CLASSIC-GEMINI-MUST-NOT-LEAK-4403',
-		'deepl'     => 'CLASSIC-DEEPL-MUST-NOT-LEAK-4404',
+		'deepl' => 'CLASSIC-DEEPL-MUST-NOT-LEAK-4404',
 	);
 
 	/**
@@ -106,9 +101,7 @@ final class ClassicSuggestionIntegrationTest extends WP_UnitTestCase {
 				$credentials = new CredentialStore();
 				$prompts     = new LlmInstructions();
 
-				$registry->add( new OpenAiProvider( $this->transport, $credentials, $prompts ) );
-				$registry->add( new AnthropicProvider( $this->transport, $credentials, $prompts ) );
-				$registry->add( new GeminiProvider( $this->transport, $credentials, $prompts ) );
+				$registry->add( new WordPressAiProvider( $prompts ) );
 				$registry->add( new DeepLProvider( $this->transport, $credentials ) );
 
 				return $registry;
@@ -180,7 +173,7 @@ final class ClassicSuggestionIntegrationTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Stores every provider credential.
+	 * Stores the dedicated translation-service credential.
 	 *
 	 * @return void
 	 */
@@ -191,7 +184,6 @@ final class ClassicSuggestionIntegrationTest extends WP_UnitTestCase {
 			$credentials->save( $id, $secret );
 		}
 
-		update_option( 'mclogiora_suggestion_model_openai', 'gpt-4o-mini' );
 	}
 
 	/**
@@ -372,22 +364,20 @@ final class ClassicSuggestionIntegrationTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Asserts a provider still needing a model offers no action.
+	 * Asserts an unavailable WordPress AI connection offers no action.
 	 *
 	 * @return void
 	 */
 	public function test_a_provider_needing_a_model_offers_no_action() {
-		( new CredentialStore() )->save( 'openai', self::SECRETS['openai'] );
-
 		$settings = $this->container->get( SuggestionSettings::class );
 
 		$settings->set_enabled( true );
-		$settings->set_provider( 'openai' );
+		$settings->set_provider( 'wordpress-ai' );
 
 		$pair = $this->translated_pair();
 		$html = $this->rendered( $pair['target'] );
 
-		$this->assertStringContainsString( 'still needs a model', $html );
+		$this->assertStringContainsString( 'Settings', $html );
 		$this->assertStringNotContainsString( 'data-mclogiora-generate', $html );
 		$this->assertSame( array(), $this->transport->requests(), 'A model-required state must fetch nothing.' );
 	}

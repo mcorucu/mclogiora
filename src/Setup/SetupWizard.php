@@ -489,7 +489,11 @@ final class SetupWizard implements ModuleInterface {
 				/* translators: 1: current step number, 2: total step count, 3: step name. */
 				$step_aria = sprintf( __( 'Step %1$d of %2$d: %3$s', 'mclogiora' ), $index + 1, count( $this->steps ), $this->label_for_step( $step ) );
 				?>
-				<li class="<?php echo esc_attr( $class ); ?>" <?php echo $is_current ? 'aria-current="step"' : ''; ?> aria-label="<?php echo esc_attr( $step_aria ); ?>">
+				<li class="<?php echo esc_attr( $class ); ?>"
+					<?php if ( $is_current ) : ?>
+						aria-current="step"
+					<?php endif; ?>
+					aria-label="<?php echo esc_attr( $step_aria ); ?>">
 					<span class="mclogiora-step__number" aria-hidden="true"><?php echo esc_html( (string) ( $index + 1 ) ); ?></span>
 					<div><h2><?php echo esc_html( $this->label_for_step( $step ) ); ?></h2><p><?php echo esc_html( $this->description_for_step( $step ) ); ?></p></div>
 				</li>
@@ -699,11 +703,11 @@ final class SetupWizard implements ModuleInterface {
 			?>
 			<p class="mclogiora-language-suggestion" role="status"><strong><?php esc_html_e( 'Suggested from your WordPress site language', 'mclogiora' ); ?></strong> <?php echo esc_html( $suggestion->display_name() ); ?> (<?php echo esc_html( $suggestion->locale() ); ?>)</p><?php endif; ?>
 		<label class="mclogiora-picker-search"><span><?php esc_html_e( 'Search languages', 'mclogiora' ); ?></span><input type="search" data-mclogiora-language-search placeholder="<?php esc_attr_e( 'Search by name, code, locale, or region', 'mclogiora' ); ?>"></label>
-		<div class="mclogiora-language-options" role="<?php echo $multi ? 'group' : 'radiogroup'; ?>" aria-label="<?php esc_attr_e( 'Language catalog', 'mclogiora' ); ?>" data-mclogiora-language-group="<?php echo $primary ? 'primary' : 'target'; ?>">
+		<div class="mclogiora-language-options" role="<?php echo esc_attr( $multi ? 'group' : 'radiogroup' ); ?>" aria-label="<?php esc_attr_e( 'Language catalog', 'mclogiora' ); ?>" data-mclogiora-language-group="<?php echo esc_attr( $primary ? 'primary' : 'target' ); ?>">
 			<?php foreach ( $catalog as $definition ) : ?>
 				<?php $is_checked = $primary ? $definition->code() === $checked_code : in_array( $definition->code(), $checked_codes, true ); ?>
 				<label class="mclogiora-language-option" data-mclogiora-language-option data-search="<?php echo esc_attr( strtolower( implode( ' ', array( $definition->code(), $definition->locale(), $definition->native_name(), $definition->english_name(), $definition->region() ) ) ) ); ?>">
-					<input type="<?php echo $multi ? 'checkbox' : 'radio'; ?>" name="<?php echo esc_attr( $name . ( $multi ? '[]' : '' ) ); ?>" value="<?php echo esc_attr( $definition->code() ); ?>" data-mclogiora-language-choice="<?php echo $primary ? 'primary' : 'target'; ?>" <?php checked( $is_checked ); ?>>
+					<input type="<?php echo esc_attr( $multi ? 'checkbox' : 'radio' ); ?>" name="<?php echo esc_attr( $name . ( $multi ? '[]' : '' ) ); ?>" value="<?php echo esc_attr( $definition->code() ); ?>" data-mclogiora-language-choice="<?php echo esc_attr( $primary ? 'primary' : 'target' ); ?>" <?php checked( $is_checked ); ?>>
 					<span><strong><?php echo esc_html( $definition->native_name() ); ?></strong>
 					<?php
 					if ( $definition->english_name() !== $definition->native_name() ) :

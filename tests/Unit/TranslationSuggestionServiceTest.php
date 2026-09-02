@@ -9,14 +9,97 @@ namespace McLogiora\Tests\Unit;
 
 use McLogiora\Suggestions\CredentialStore;
 use McLogiora\Suggestions\LlmInstructions;
-use McLogiora\Suggestions\Providers\OpenAiProvider;
+use McLogiora\Suggestions\Providers\AbstractProvider;
 use McLogiora\Suggestions\ProviderRegistry;
+use McLogiora\Suggestions\SuggestionError;
+use McLogiora\Suggestions\SuggestionRequest;
 use McLogiora\Suggestions\SuggestionResult;
 use McLogiora\Suggestions\SuggestionSettings;
 use McLogiora\Suggestions\SuggestionSurface;
 use McLogiora\Suggestions\TranslationSuggestionService;
 use McLogiora\Tests\Support\FakeTransport;
 use PHPUnit\Framework\TestCase;
+
+/**
+ * Transport-backed provider double for service tests.
+ *
+ * @package McLogiora
+ */
+final class ServiceTestProvider extends AbstractProvider {
+	/**
+	 * Stable synthetic provider identifier.
+	 */
+	const ID = 'test-provider';
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function get_id() {
+		return self::ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function get_label() {
+		return 'Test provider';
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function available_models() {
+		return array( array( 'id' => 'test-model', 'label' => 'Test model', 'recommended' => true ) );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function supports_language_pair( $source_language, $target_language ) {
+		return '' !== (string) $source_language && '' !== (string) $target_language && $source_language !== $target_language;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function test_connection() {
+		return true;
+	}
+
+	/**
+	 * Sends a minimal synthetic request through the recording transport.
+	 *
+	 * @param SuggestionRequest $request Request being translated.
+	 * @return SuggestionResult|\WP_Error
+	 */
+	public function suggest( SuggestionRequest $request ) {
+		$response = $this->transport->post_json(
+			'https://example.test/ai',
+			array( 'Authorization' => 'Bearer ' . $this->api_key() ),
+			array(
+				'model'        => $this->selected_model(),
+				'instructions' => ( new LlmInstructions() )->build( $request, false ),
+				'input'        => $request->source_text(),
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		if ( ! isset( $response['output'][0]['content'][0]['text'] ) || ! is_string( $response['output'][0]['content'][0]['text'] ) ) {
+			return SuggestionError::invalid_response( $this->get_label() );
+		}
+
+		$text = trim( $response['output'][0]['content'][0]['text'] );
+
+		if ( '' === $text ) {
+			return SuggestionError::invalid_response( $this->get_label() );
+		}
+
+		return new SuggestionResult( $text, self::ID, $this->selected_model() );
+	}
+}
 
 /**
  * Covers the single entry point, and the promises it makes.
@@ -50,6 +133,13 @@ final class TranslationSuggestionServiceTest extends TestCase {
 	private $service;
 
 	/**
+	 * Provider under test.
+	 *
+	 * @var ServiceTestProvider
+	 */
+	private $provider;
+
+	/**
 	 * Sets up an enabled, fully configured site.
 	 *
 	 * @return void
@@ -60,16 +150,16 @@ final class TranslationSuggestionServiceTest extends TestCase {
 		$this->transport = new FakeTransport();
 
 		$credentials = new CredentialStore();
-		$credentials->save( 'openai', 'sk-test-key' );
+		$credentials->save( ServiceTestProvider::ID, 'test-provider-key' );
 
-		$provider = new OpenAiProvider( $this->transport, $credentials, new LlmInstructions() );
-		$provider->set_selected_model( 'gpt-5.4-mini' );
+		$this->provider = new ServiceTestProvider( $this->transport, $credentials );
+		$this->provider->set_selected_model( 'test-model' );
 
 		$this->registry = new ProviderRegistry();
-		$this->registry->add( $provider );
+		$this->registry->add( $this->provider );
 
 		update_option( SuggestionSettings::OPTION_ENABLED, true );
-		update_option( SuggestionSettings::OPTION_PROVIDER, 'openai' );
+		update_option( SuggestionSettings::OPTION_PROVIDER, ServiceTestProvider::ID );
 
 		$this->service = new TranslationSuggestionService( new SuggestionSettings(), $this->registry );
 	}
@@ -83,13 +173,8 @@ final class TranslationSuggestionServiceTest extends TestCase {
 		delete_option( SuggestionSettings::OPTION_ENABLED );
 		delete_option( SuggestionSettings::OPTION_PROVIDER );
 
-		$provider = $this->registry->find( 'openai' );
-
-		if ( $provider instanceof OpenAiProvider ) {
-			$provider->clear_selected_model();
-		}
-
-		( new CredentialStore() )->remove( 'openai' );
+		$this->provider->clear_selected_model();
+		( new CredentialStore() )->remove( ServiceTestProvider::ID );
 
 		parent::tearDown();
 	}
@@ -135,9 +220,9 @@ final class TranslationSuggestionServiceTest extends TestCase {
 	 * @return void
 	 */
 	public function test_a_provider_without_a_model_makes_no_request() {
-		$provider = $this->registry->find( 'openai' );
+		$provider = $this->registry->find( ServiceTestProvider::ID );
 
-		$this->assertInstanceOf( OpenAiProvider::class, $provider );
+		$this->assertInstanceOf( ServiceTestProvider::class, $provider );
 
 		$provider->clear_selected_model();
 
@@ -313,8 +398,8 @@ final class TranslationSuggestionServiceTest extends TestCase {
 
 		$this->assertInstanceOf( SuggestionResult::class, $result );
 		$this->assertSame( 'Merhaba dunya', $result->text() );
-		$this->assertSame( 'openai', $result->provider_id() );
-		$this->assertSame( 'gpt-5.4-mini', $result->model() );
+		$this->assertSame( ServiceTestProvider::ID, $result->provider_id() );
+		$this->assertSame( 'test-model', $result->model() );
 	}
 
 	/**

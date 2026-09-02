@@ -170,7 +170,7 @@ final class SuggestionApplyIntegrationTest extends WP_UnitTestCase {
 	 */
 	private function preview( $text, $surface = SuggestionSurface::POST_TITLE ) {
 		$preview = $this->previews->create(
-			new SuggestionResult( $text, 'openai', 'gpt-5.4-mini' ),
+			new SuggestionResult( $text, 'wordpress-ai' ),
 			$this->context( $surface )
 		);
 

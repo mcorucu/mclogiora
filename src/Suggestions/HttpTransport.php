@@ -251,7 +251,7 @@ final class HttpTransport implements TransportInterface {
 	/**
 	 * Pulls a human-readable message out of a provider's error body.
 	 *
-	 * The four launch providers each nest it somewhere different, and a site
+	 * Providers may each nest it somewhere different, and a site
 	 * owner staring at a failing key benefits from the provider's own wording.
 	 * Anything unrecognised yields an empty string rather than a dump of the
 	 * response, so an unexpected body shape cannot spill into an admin notice.

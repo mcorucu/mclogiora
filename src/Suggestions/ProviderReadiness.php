@@ -8,6 +8,7 @@
 namespace McLogiora\Suggestions;
 
 use McLogiora\Contracts\TranslationProviderInterface;
+use McLogiora\Suggestions\Providers\WordPressAiProvider;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,15 +20,15 @@ defined( 'ABSPATH' ) || exit;
  * enforces, and the drift would show up as a provider the UI calls Ready that
  * refuses to generate.
  *
- * ## Readiness is configuration, not reachability
+ * ## Readiness is local configuration, not a live provider call
  *
  * There is deliberately no `Connected` state. A successful connection test
  * proves a credential worked at one moment against one endpoint; it says
  * nothing about the next request, and storing it would produce a settings
  * screen that cheerfully reports Connected while every suggestion fails. What
- * is reported here is only what the site itself can know without asking
- * anyone: whether a credential exists, where it came from, and whether a model
- * has been chosen.
+ * is reported here is only what the site itself can know without asking a
+ * provider: whether a managed credential exists, or whether a
+ * WordPress-managed connection can currently serve the request.
  */
 final class ProviderReadiness {
 	/**
@@ -44,6 +45,21 @@ final class ProviderReadiness {
 	 * Everything the site can check is in place.
 	 */
 	const READY = 'ready';
+
+	/**
+	 * No WordPress AI provider is registered.
+	 */
+	const NO_PROVIDER_AVAILABLE = 'no_provider_available';
+
+	/**
+	 * A WordPress AI provider exists but is not configured.
+	 */
+	const UNCONFIGURED_CONNECTOR = 'unconfigured_connector';
+
+	/**
+	 * WordPress AI support is disabled.
+	 */
+	const AI_DISABLED = 'ai_disabled';
 
 	/**
 	 * Credential storage.
@@ -68,11 +84,19 @@ final class ProviderReadiness {
 	 * @return string One of the state constants.
 	 */
 	public function state( TranslationProviderInterface $provider ) {
-		if ( ! $this->credentials->has( $provider->get_id() ) ) {
-			return self::NOT_CONFIGURED;
+		if ( $provider->is_configured() ) {
+			return self::READY;
 		}
 
-		if ( $provider->requires_model_selection() && ! $provider->is_configured() ) {
+		if ( $provider instanceof WordPressAiProvider ) {
+			return $provider->availability_state();
+		}
+
+		if (
+			$provider->manages_credentials()
+			&& $this->credentials->has( $provider->get_id() )
+			&& $provider->requires_model_selection()
+		) {
 			/*
 			 * A credential without a chosen model. The provider itself is the
 			 * authority on this -- asking it rather than re-deriving the rule
@@ -81,7 +105,7 @@ final class ProviderReadiness {
 			return self::MODEL_REQUIRED;
 		}
 
-		return $provider->is_configured() ? self::READY : self::NOT_CONFIGURED;
+		return self::NOT_CONFIGURED;
 	}
 
 	/**
@@ -97,6 +121,15 @@ final class ProviderReadiness {
 
 			case self::MODEL_REQUIRED:
 				return __( 'Model required', 'mclogiora' );
+
+			case self::NO_PROVIDER_AVAILABLE:
+				return __( 'No AI provider available', 'mclogiora' );
+
+			case self::AI_DISABLED:
+				return __( 'AI support disabled', 'mclogiora' );
+
+			case self::UNCONFIGURED_CONNECTOR:
+				return __( 'AI connector not configured', 'mclogiora' );
 
 			default:
 				return __( 'Not configured', 'mclogiora' );
@@ -117,8 +150,19 @@ final class ProviderReadiness {
 			case self::MODEL_REQUIRED:
 				return __( 'Refresh the model list, then choose a model and save.', 'mclogiora' );
 
+			case self::NO_PROVIDER_AVAILABLE:
+				return __( 'Install or activate a compatible AI provider, then configure it in Settings → Connectors.', 'mclogiora' );
+
+			case self::AI_DISABLED:
+				return __( 'Enable AI support in WordPress, then configure a provider in Settings → Connectors.', 'mclogiora' );
+
+			case self::UNCONFIGURED_CONNECTOR:
+				return __( 'Configure a connected AI provider in Settings → Connectors.', 'mclogiora' );
+
 			default:
-				return __( 'Add an API key for this provider.', 'mclogiora' );
+				return $provider->manages_credentials()
+					? __( 'Add an API key for this provider.', 'mclogiora' )
+					: __( 'Connect an AI provider in Settings → Connectors.', 'mclogiora' );
 		}
 	}
 
@@ -129,6 +173,10 @@ final class ProviderReadiness {
 	 * @return string Empty when no credential is stored.
 	 */
 	public function credential_source( TranslationProviderInterface $provider ) {
+		if ( ! $provider->manages_credentials() ) {
+			return '';
+		}
+
 		if ( $this->credentials->is_defined_by_constant( $provider->get_id() ) ) {
 			return __( 'Configured via wp-config.php', 'mclogiora' );
 		}

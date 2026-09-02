@@ -16,8 +16,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * Registration says nothing about whether a provider will ever be used. Every
  * built-in provider is registered on every site, reports its own configured
- * state, and stays completely inert until an owner supplies a credential and
- * a user asks for a suggestion. Registering is not enabling.
+ * state, and stays completely inert until an owner enables suggestions and a
+ * user asks for a suggestion. Registering is not enabling.
  */
 final class ProviderRegistry {
 	/**

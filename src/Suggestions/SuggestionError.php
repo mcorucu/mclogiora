@@ -12,12 +12,9 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Builds the small set of failures a suggestion can end in.
  *
- * Four providers fail in four vocabularies. OpenAI reports a refusal as a
- * content block, Anthropic as a `stop_reason`, Gemini as a `finishReason` or a
- * `promptFeedback.blockReason`, and DeepL cannot refuse on policy grounds at
- * all. Left unnormalised, every surface that shows an error would have to
- * understand all four, and adding a fifth provider would mean editing the
- * editor panel.
+ * Providers can fail in different vocabularies. The adapter boundary keeps
+ * provider-specific details out of every surface that shows an error, and
+ * adding a provider does not require editing the editor panel.
  *
  * So provider detail stops at the adapter boundary and one of these categories
  * comes out. The categories are chosen by what a person can *do* about them,
@@ -160,7 +157,7 @@ final class SuggestionError {
 			self::NOT_CONFIGURED,
 			sprintf(
 				/* translators: %s: provider name. */
-				__( '%s needs an API key and a selected model before it can suggest translations.', 'mclogiora' ),
+				__( '%s is not available for translation suggestions. Configure a connection in WordPress or in mcLogiora settings.', 'mclogiora' ),
 				$provider_label
 			),
 			''

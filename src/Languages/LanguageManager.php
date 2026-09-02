@@ -381,10 +381,10 @@ final class LanguageManager implements ModuleInterface {
 		$catalog = LanguageCatalog::all();
 		?>
 		<label class="mclogiora-picker-search"><span><?php esc_html_e( 'Search languages', 'mclogiora' ); ?></span><input type="search" data-mclogiora-language-search placeholder="<?php esc_attr_e( 'Search by name, code, locale, or region', 'mclogiora' ); ?>"></label>
-		<div class="mclogiora-language-options" role="<?php echo $multi ? 'group' : 'radiogroup'; ?>" aria-label="<?php esc_attr_e( 'Language catalog', 'mclogiora' ); ?>">
+		<div class="mclogiora-language-options" role="<?php echo esc_attr( $multi ? 'group' : 'radiogroup' ); ?>" aria-label="<?php esc_attr_e( 'Language catalog', 'mclogiora' ); ?>">
 			<?php foreach ( $catalog as $definition ) : ?>
 				<label class="mclogiora-language-option" data-mclogiora-language-option data-search="<?php echo esc_attr( strtolower( implode( ' ', array( $definition->code(), $definition->locale(), $definition->native_name(), $definition->english_name(), $definition->region() ) ) ) ); ?>">
-					<input type="<?php echo $multi ? 'checkbox' : 'radio'; ?>" name="<?php echo esc_attr( $name . ( $multi ? '[]' : '' ) ); ?>" value="<?php echo esc_attr( $definition->code() ); ?>" data-mclogiora-language-choice>
+					<input type="<?php echo esc_attr( $multi ? 'checkbox' : 'radio' ); ?>" name="<?php echo esc_attr( $name . ( $multi ? '[]' : '' ) ); ?>" value="<?php echo esc_attr( $definition->code() ); ?>" data-mclogiora-language-choice>
 					<span><strong><?php echo esc_html( $definition->native_name() ); ?></strong>
 					<?php
 					if ( $definition->english_name() !== $definition->native_name() ) :

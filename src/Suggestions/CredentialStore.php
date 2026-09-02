@@ -31,7 +31,7 @@ defined( 'ABSPATH' ) || exit;
  * entirely. Defining a constant in `wp-config.php` takes precedence over any
  * stored value:
  *
- *     define( 'MCLOGIORA_OPENAI_API_KEY', '...' );
+ * define( 'MCLOGIORA_DEEPL_API_KEY', '...' );
  *
  * That is real protection -- the secret never reaches the database, never
  * reaches a database backup, and never reaches a migration export -- and it

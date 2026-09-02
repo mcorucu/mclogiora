@@ -15,7 +15,8 @@ defined( 'ABSPATH' ) || exit;
  * The master switch defaults to off, and that default is the feature's most
  * important property. mcLogiora is a translation plugin that works completely
  * without any provider; suggestions are an optional accelerator a site owner
- * opts into, with their own credentials and their own bill. A site that
+ * opts into, with a WordPress-managed AI connection or their own dedicated
+ * service credential. A site that
  * updates to this version and does nothing sends no traffic anywhere, which
  * is both the WordPress.org expectation for an external service and the only
  * defensible default for a feature that spends someone's money.
@@ -83,10 +84,9 @@ final class SuggestionSettings {
 	/**
 	 * Records the provider the owner chose.
 	 *
-	 * Changing the provider deliberately touches nothing else. Another
-	 * provider's stored credential and model selection survive, so switching
-	 * to compare two providers and switching back does not mean setting the
-	 * first one up again.
+	 * Changing the provider deliberately touches nothing else. The dedicated
+	 * service credential remains stored, while WordPress AI configuration stays
+	 * owned by Core.
 	 *
 	 * @param string $provider_id Provider identifier, or an empty string.
 	 * @return void

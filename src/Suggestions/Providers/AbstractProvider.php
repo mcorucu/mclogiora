@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  * Holds the parts of a provider that are genuinely the same everywhere.
  *
  * Deliberately thin. Credential lookup and model-selection bookkeeping are
- * identical across providers and duplicating them four times would be four
+ * identical across mcLogiora-managed providers and duplicating them would be
  * places to get a security rule wrong. Everything that actually differs --
  * request shaping, response reading, and how text is protected from
  * translation -- stays in the concrete provider, because pretending those are
@@ -59,6 +59,13 @@ abstract class AbstractProvider implements TranslationProviderInterface {
 	 * {@inheritDoc}
 	 */
 	public function requires_model_selection() {
+		return true;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function manages_credentials() {
 		return true;
 	}
 

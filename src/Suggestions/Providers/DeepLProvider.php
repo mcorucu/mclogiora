@@ -18,8 +18,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * ## Not a language model, and treated accordingly
  *
- * The other three providers are general-purpose models that are asked, in
- * words, to behave like translators. DeepL is a translation service. It takes
+ * WordPress AI Client is a general-purpose model client that is asked, in
+ * words, to behave like a translator. DeepL is a translation service. It takes
  * no instructions, has no system prompt, cannot be told what a title is, and
  * cannot refuse on policy grounds. Pushing it through the same instruction
  * pipeline would mean sending prose it would faithfully translate into the

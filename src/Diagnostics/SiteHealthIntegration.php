@@ -126,7 +126,7 @@ final class SiteHealthIntegration implements ModuleInterface {
 	 * @return array<string,mixed>
 	 */
 	public function test_suggestions() {
-		return $this->result( $this->finding( 'suggestions' ), __( 'Select a provider and configure its credential/model locally; no connection test is performed.', 'mclogiora' ) );
+		return $this->result( $this->finding( 'suggestions' ), __( 'Configure WordPress AI in Settings → Connectors or configure the dedicated translation service locally; no connection test is performed.', 'mclogiora' ) );
 	}
 
 	/**

@@ -3,8 +3,8 @@
  * Plugin Name:       mcLogiora
  * Plugin URI:        https://mcorucu.com/
  * Description:       A multilingual translation and language management plugin for WordPress.
- * Version:           1.0.1
- * Requires at least: 6.5
+ * Version:           1.0.2
+ * Requires at least: 7.0
  * Tested up to:      7.1
  * Requires PHP:      7.4
  * Author:            Mehmet Can Orucu
@@ -20,7 +20,7 @@
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MCLOGIORA_VERSION' ) ) {
-	define( 'MCLOGIORA_VERSION', '1.0.1' );
+	define( 'MCLOGIORA_VERSION', '1.0.2' );
 }
 
 if ( ! defined( 'MCLOGIORA_FILE' ) ) {
@@ -48,7 +48,7 @@ if ( ! defined( 'MCLOGIORA_MINIMUM_PHP' ) ) {
 }
 
 if ( ! defined( 'MCLOGIORA_MINIMUM_WP' ) ) {
-	define( 'MCLOGIORA_MINIMUM_WP', '6.5' );
+	define( 'MCLOGIORA_MINIMUM_WP', '7.0' );
 }
 
 if ( file_exists( MCLOGIORA_PATH . 'vendor/autoload.php' ) ) {

@@ -150,6 +150,7 @@ use McLogiora\Admin\RoutingSettingsScreen;
 use McLogiora\Admin\SuggestionSettingsScreen;
 use McLogiora\Suggestions\CredentialStore;
 use McLogiora\Suggestions\HttpTransport;
+use McLogiora\Suggestions\LegacySuggestionCredentialCleanup;
 use McLogiora\Suggestions\LlmInstructions;
 use McLogiora\Suggestions\ModelCache;
 use McLogiora\Suggestions\ProviderReadiness;
@@ -158,10 +159,8 @@ use McLogiora\Suggestions\SuggestionPreviewStore;
 use McLogiora\Suggestions\SuggestionSettings;
 use McLogiora\Suggestions\TranslationSuggestionApplyService;
 use McLogiora\Suggestions\TranslationSuggestionService;
-use McLogiora\Suggestions\Providers\AnthropicProvider;
 use McLogiora\Suggestions\Providers\DeepLProvider;
-use McLogiora\Suggestions\Providers\GeminiProvider;
-use McLogiora\Suggestions\Providers\OpenAiProvider;
+use McLogiora\Suggestions\Providers\WordPressAiProvider;
 use McLogiora\Seo\AlternateUrlService;
 use McLogiora\Seo\CanonicalService;
 use McLogiora\Seo\OpenGraphLocaleService;
@@ -239,6 +238,7 @@ final class Application {
 		}
 
 		$this->register_services();
+		$this->container->get( LegacySuggestionCredentialCleanup::class )->run();
 
 		$validator = $this->container->get( EnvironmentValidator::class );
 
@@ -869,6 +869,13 @@ final class Application {
 		);
 
 		$this->container->set(
+			LegacySuggestionCredentialCleanup::class,
+			static function () {
+				return new LegacySuggestionCredentialCleanup();
+			}
+		);
+
+		$this->container->set(
 			CredentialStore::class,
 			static function () {
 				return new CredentialStore();
@@ -933,17 +940,14 @@ final class Application {
 				$registry    = new ProviderRegistry();
 				$transport   = $container->get( HttpTransport::class );
 				$credentials = $container->get( CredentialStore::class );
-				$prompts     = $container->get( LlmInstructions::class );
 
 				/*
-				 * Every provider is registered on every site and each reports
-				 * its own configured state. Registering is not enabling: none
-				 * of these touches the network until an owner supplies a
-				 * credential and explicitly asks for something.
+				 * The AI provider is an adapter over WordPress Core's provider-
+				 * agnostic client. WordPress owns provider discovery, credentials
+				 * and model selection; DeepL remains a dedicated translation
+				 * service with its own explicit site-owner credential.
 				 */
-				$registry->add( new OpenAiProvider( $transport, $credentials, $prompts ) );
-				$registry->add( new AnthropicProvider( $transport, $credentials, $prompts ) );
-				$registry->add( new GeminiProvider( $transport, $credentials, $prompts ) );
+				$registry->add( new WordPressAiProvider( $container->get( LlmInstructions::class ) ) );
 				$registry->add( new DeepLProvider( $transport, $credentials ) );
 
 				return $registry;
