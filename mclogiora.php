@@ -5,7 +5,6 @@
  * Description:       A multilingual translation and language management plugin for WordPress.
  * Version:           1.0.2
  * Requires at least: 7.0
- * Tested up to:      7.1
  * Requires PHP:      7.4
  * Author:            Mehmet Can Orucu
  * Author URI:        https://mcorucu.com
