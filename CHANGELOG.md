@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.5 — 2026-09-13
+
+- Added bundled SVG flag assets for the supported `en_US` and `tr_TR` locales.
+- Improved the reusable language switcher widget with per-instance display options and an accessible compact disclosure style.
+- Preserved routing, language availability, and existing text-flag filter behavior.
+
 ## 1.0.4
 
 - Fixed WordPress canonical redirects stripping configured default-language prefixes from static front pages.

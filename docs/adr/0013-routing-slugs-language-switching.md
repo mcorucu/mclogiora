@@ -133,7 +133,7 @@ Per-instance attributes override global settings without changing them, and ever
 
 Flags are **off by default and never the semantic default**.
 
-A language is not a country. Spanish is not Spain, Arabic belongs to no single state, English has no obvious flag, and picking one for any of these makes a political claim on a site owner's behalf. mcLogiora therefore ships **no** flag mapping at all: a site that wants flags supplies them through the `mclogiora_switcher_flag` filter, per language, deliberately.
+A language is not a country. Spanish is not Spain, Arabic belongs to no single state, English has no obvious flag, and picking one for any of these makes a political claim on a site owner's behalf. mcLogiora therefore ships only explicit mappings for the supported `en_US` and `tr_TR` locales. Unknown locales remain flagless unless a site supplies a plain-text flag through the `mclogiora_switcher_flag` filter, per language, deliberately.
 
 The readable label never depends on a flag, so a flag-only inaccessible mode is not possible.
 

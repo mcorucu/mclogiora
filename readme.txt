@@ -4,7 +4,7 @@ Tags: multilingual, translation, localization, language
 Requires at least: 7.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,8 @@ This release brings translation into the editing experience itself:
 * Setup wizard welcome and default language steps.
 * Localization and project metadata structure.
 * Migration-based database schema for language and relation data.
+* Reusable language-switcher shortcode, block, template tags, and classic widget.
+* Accessible compact switcher with optional bundled SVG flags for supported locales.
 
 Translation workflows:
 
@@ -257,6 +259,12 @@ No. If Yoast SEO, Rank Math, All in One SEO, The SEO Framework, or Slim SEO is a
 Each translation points at itself. Sending every language back to the default one would tell search engines your translations are duplicates to ignore, which is the opposite of what translating a site is for.
 
 == Changelog ==
+
+= 1.0.5 =
+
+* Added bundled SVG flag assets for the supported `en_US` and `tr_TR` locales.
+* Improved the reusable language switcher widget with per-instance display options and an accessible compact disclosure style.
+* Preserved routing, language availability, and existing text-flag filter behavior.
 
 = 1.0.4 =
 

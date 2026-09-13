@@ -49,7 +49,11 @@ final class SwitcherWidget extends \WP_Widget {
 
 		$html = $this->module->render(
 			array(
-				'style' => isset( $instance['style'] ) ? $instance['style'] : null,
+				'style'        => isset( $instance['style'] ) ? $instance['style'] : null,
+				'show_name'    => isset( $instance['show_name'] ) ? $instance['show_name'] : null,
+				'show_code'    => isset( $instance['show_code'] ) ? $instance['show_code'] : null,
+				'show_flag'    => isset( $instance['show_flag'] ) ? $instance['show_flag'] : null,
+				'show_current' => isset( $instance['show_current'] ) ? $instance['show_current'] : null,
 			)
 		);
 
@@ -82,7 +86,11 @@ final class SwitcherWidget extends \WP_Widget {
 	 */
 	public function form( $instance ): ?string {
 		$title = isset( $instance['title'] ) ? (string) $instance['title'] : '';
-		$style = isset( $instance['style'] ) ? (string) $instance['style'] : SwitcherStyle::INLINE;
+		$style = isset( $instance['style'] ) ? (string) $instance['style'] : SwitcherStyle::COMPACT;
+		$show_name = isset( $instance['show_name'] ) ? (bool) $instance['show_name'] : false;
+		$show_code = isset( $instance['show_code'] ) ? (bool) $instance['show_code'] : true;
+		$show_flag = isset( $instance['show_flag'] ) ? (bool) $instance['show_flag'] : true;
+		$show_current = isset( $instance['show_current'] ) ? (bool) $instance['show_current'] : true;
 
 		?>
 		<p>
@@ -102,6 +110,12 @@ final class SwitcherWidget extends \WP_Widget {
 				<?php endforeach; ?>
 			</select>
 		</p>
+		<p>
+			<label><input type="checkbox" name="<?php echo esc_attr( $this->get_field_name( 'show_name' ) ); ?>" value="1" <?php checked( $show_name ); ?>> <?php esc_html_e( 'Show language name', 'mclogiora' ); ?></label><br>
+			<label><input type="checkbox" name="<?php echo esc_attr( $this->get_field_name( 'show_code' ) ); ?>" value="1" <?php checked( $show_code ); ?>> <?php esc_html_e( 'Show language code', 'mclogiora' ); ?></label><br>
+			<label><input type="checkbox" name="<?php echo esc_attr( $this->get_field_name( 'show_flag' ) ); ?>" value="1" <?php checked( $show_flag ); ?>> <?php esc_html_e( 'Show bundled flag when available', 'mclogiora' ); ?></label><br>
+			<label><input type="checkbox" name="<?php echo esc_attr( $this->get_field_name( 'show_current' ) ); ?>" value="1" <?php checked( $show_current ); ?>> <?php esc_html_e( 'Include current language', 'mclogiora' ); ?></label>
+		</p>
 		<?php
 
 		return null;
@@ -120,8 +134,12 @@ final class SwitcherWidget extends \WP_Widget {
 		$style = isset( $new_instance['style'] ) ? sanitize_key( $new_instance['style'] ) : SwitcherStyle::INLINE;
 
 		return array(
-			'title' => isset( $new_instance['title'] ) ? sanitize_text_field( $new_instance['title'] ) : '',
-			'style' => SwitcherStyle::is_valid( $style ) ? $style : SwitcherStyle::INLINE,
+			'title'        => isset( $new_instance['title'] ) ? sanitize_text_field( $new_instance['title'] ) : '',
+			'style'        => SwitcherStyle::is_valid( $style ) ? $style : SwitcherStyle::COMPACT,
+			'show_name'    => ! empty( $new_instance['show_name'] ),
+			'show_code'    => ! empty( $new_instance['show_code'] ),
+			'show_flag'    => ! empty( $new_instance['show_flag'] ),
+			'show_current' => ! empty( $new_instance['show_current'] ),
 		);
 	}
 
@@ -139,7 +157,17 @@ final class SwitcherWidget extends \WP_Widget {
 			'hreflang'                => true,
 			'dir'                     => true,
 			'aria-label'              => true,
+			'aria-expanded'           => true,
+			'aria-haspopup'           => true,
+			'aria-hidden'             => true,
+			'aria-disabled'           => true,
 			'aria-current'            => true,
+			'role'                    => true,
+			'src'                     => true,
+			'width'                   => true,
+			'height'                  => true,
+			'alt'                     => true,
+			'decoding'                => true,
 			'value'                   => true,
 			'selected'                => true,
 			'disabled'                => true,
@@ -149,6 +177,7 @@ final class SwitcherWidget extends \WP_Widget {
 			'action'                  => true,
 			'type'                    => true,
 			'data-mclogiora-switcher' => true,
+			'data-mclogiora-compact'  => true,
 		);
 
 		return array(
@@ -164,6 +193,9 @@ final class SwitcherWidget extends \WP_Widget {
 			'label'    => $attributes,
 			'button'   => $attributes,
 			'noscript' => $attributes,
+			'details'  => $attributes,
+			'summary'  => $attributes,
+			'img'      => $attributes,
 		);
 	}
 }

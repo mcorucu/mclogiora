@@ -146,6 +146,10 @@ final class SwitcherModule implements ModuleInterface {
 					'type'    => 'boolean',
 					'default' => false,
 				),
+				'showFlag'    => array(
+					'type'    => 'boolean',
+					'default' => false,
+				),
 				'showCurrent' => array(
 					'type'    => 'boolean',
 					'default' => true,
@@ -173,6 +177,7 @@ final class SwitcherModule implements ModuleInterface {
 				'style'        => isset( $attributes['style'] ) ? $attributes['style'] : null,
 				'show_name'    => isset( $attributes['showName'] ) ? $attributes['showName'] : null,
 				'show_code'    => isset( $attributes['showCode'] ) ? $attributes['showCode'] : null,
+				'show_flag'    => isset( $attributes['showFlag'] ) ? $attributes['showFlag'] : null,
 				'show_current' => isset( $attributes['showCurrent'] ) ? $attributes['showCurrent'] : null,
 			)
 		);

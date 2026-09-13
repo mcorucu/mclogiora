@@ -51,7 +51,61 @@ final class SwitcherRenderer {
 			return $this->render_dropdown( $items, $options );
 		}
 
+		if ( SwitcherStyle::COMPACT === $options['style'] ) {
+			return $this->render_compact( $items, $options );
+		}
+
 		return $this->render_list( $items, $options );
+	}
+
+	/**
+	 * Renders the current language as a compact accessible disclosure.
+	 *
+	 * @param array<int,array<string,mixed>> $items Switcher items.
+	 * @param array<string,mixed>            $options Resolved options.
+	 * @return string
+	 */
+	private function render_compact( array $items, array $options ) {
+		$current = reset( $items );
+		foreach ( $items as $item ) {
+			if ( ! empty( $item['is_current'] ) ) {
+				$current = $item;
+				break;
+			}
+		}
+
+		$id      = 'mclogiora-switcher-' . wp_rand( 1000, 9999 );
+		$classes = $this->wrapper_classes( $options );
+		$label   = ! empty( $current ) ? (string) $current['name'] : __( 'Language', 'mclogiora' );
+
+		$html  = '<details class="' . esc_attr( $classes ) . '" data-mclogiora-compact="1">';
+		$html .= '<summary class="mclogiora-switcher__summary" aria-label="' . esc_attr( sprintf( __( 'Language: %s', 'mclogiora' ), $label ) ) . '" aria-haspopup="menu" aria-expanded="false" aria-controls="' . esc_attr( $id ) . '">';
+		$html .= ! empty( $current ) ? $this->label_markup( $current, $options ) : esc_html( $label );
+		$html .= '<span class="mclogiora-switcher__arrow" aria-hidden="true"></span>';
+		$html .= '</summary>';
+		$html .= '<div class="mclogiora-switcher__menu" id="' . esc_attr( $id ) . '" role="menu">';
+
+		foreach ( $items as $item ) {
+			if ( ! empty( $item['is_current'] ) ) {
+				continue;
+			}
+
+			if ( ! $item['available'] || null === $item['url'] ) {
+				$html .= '<span class="mclogiora-switcher__menu-link is-unavailable" role="menuitem" lang="' . esc_attr( $this->language_tag( $item ) ) . '" dir="' . esc_attr( $item['direction'] ) . '" aria-disabled="true">';
+				$html .= $this->label_markup( $item, $options );
+				$html .= '<span class="screen-reader-text"> ' . esc_html__( '(translation not available)', 'mclogiora' ) . '</span></span>';
+				continue;
+			}
+
+			$tag = $this->language_tag( $item );
+			$html .= '<a class="mclogiora-switcher__menu-link" role="menuitem" href="' . esc_url( $item['url'] ) . '" lang="' . esc_attr( $tag ) . '" hreflang="' . esc_attr( $tag ) . '" dir="' . esc_attr( $item['direction'] ) . '" aria-label="' . esc_attr( sprintf( __( 'Switch to %s', 'mclogiora' ), $item['name'] ) ) . '">';
+			$html .= $this->label_markup( $item, $options );
+			$html .= '</a>';
+		}
+
+		$html .= '</div></details>';
+
+		return $html;
 	}
 
 	/**
@@ -83,7 +137,7 @@ final class SwitcherRenderer {
 	 * @return string
 	 */
 	private function render_item( array $item, array $options ) {
-		$label   = $this->label( $item, $options );
+		$label   = $this->label_markup( $item, $options );
 		$classes = 'mclogiora-switcher__item';
 
 		if ( $item['is_current'] ) {
@@ -103,7 +157,7 @@ final class SwitcherRenderer {
 			 * cannot be chosen.
 			 */
 			$html .= '<span class="mclogiora-switcher__label" lang="' . esc_attr( $this->language_tag( $item ) ) . '" dir="' . esc_attr( $item['direction'] ) . '">';
-			$html .= esc_html( $label );
+			$html .= $label;
 			$html .= '<span class="screen-reader-text"> ' . esc_html__( '(translation not available)', 'mclogiora' ) . '</span>';
 			$html .= '</span>';
 			$html .= '</li>';
@@ -122,7 +176,7 @@ final class SwitcherRenderer {
 		$html .= ' hreflang="' . esc_attr( $tag ) . '"';
 		$html .= ' dir="' . esc_attr( $item['direction'] ) . '"';
 		$html .= $current_markup;
-		$html .= esc_html( $label );
+		$html .= $label;
 		$html .= '</a></li>';
 
 		return $html;
@@ -146,7 +200,7 @@ final class SwitcherRenderer {
 		foreach ( $items as $item ) {
 			if ( ! $item['available'] || null === $item['url'] ) {
 				$html .= '<option value="" disabled lang="' . esc_attr( $this->language_tag( $item ) ) . '">';
-				$html .= esc_html( $this->label( $item, $options ) );
+				$html .= esc_html( $this->label_text( $item, $options ) );
 				$html .= '</option>';
 
 				continue;
@@ -154,7 +208,7 @@ final class SwitcherRenderer {
 
 			$html .= '<option value="' . esc_url( $item['url'] ) . '" lang="' . esc_attr( $this->language_tag( $item ) ) . '"';
 			$html .= selected( $item['is_current'], true, false );
-			$html .= '>' . esc_html( $this->label( $item, $options ) ) . '</option>';
+			$html .= '>' . esc_html( $this->label_text( $item, $options ) ) . '</option>';
 		}
 
 		$html .= '</select>';
@@ -171,22 +225,47 @@ final class SwitcherRenderer {
 	}
 
 	/**
-	 * Builds the label for one language.
+	 * Builds the label markup for one language.
 	 *
 	 * @param array<string,mixed> $item Switcher item.
 	 * @param array<string,mixed> $options Resolved options.
 	 * @return string
 	 */
-	private function label( array $item, array $options ) {
+	private function label_markup( array $item, array $options ) {
 		$parts = array();
 
 		if ( $options['show_flag'] ) {
-			$flag = $this->flag_for( (string) $item['code'] );
+			$flag = $this->flag_markup( $item );
 
 			if ( '' !== $flag ) {
 				$parts[] = $flag;
 			}
 		}
+
+		if ( $options['show_name'] ) {
+			$parts[] = '<span class="mclogiora-switcher__name">' . esc_html( $item['name'] ) . '</span>';
+		}
+
+		if ( $options['show_code'] ) {
+			$parts[] = '<span class="mclogiora-switcher__code">' . esc_html( strtoupper( (string) $item['code'] ) ) . '</span>';
+		}
+
+		if ( empty( $parts ) ) {
+			$parts[] = esc_html( $item['name'] );
+		}
+
+		return implode( ' ', $parts );
+	}
+
+	/**
+	 * Builds a plain-text label for native select options.
+	 *
+	 * @param array<string,mixed> $item Switcher item.
+	 * @param array<string,mixed> $options Resolved options.
+	 * @return string
+	 */
+	private function label_text( array $item, array $options ) {
+		$parts = array();
 
 		if ( $options['show_name'] ) {
 			$parts[] = (string) $item['name'];
@@ -204,13 +283,53 @@ final class SwitcherRenderer {
 	}
 
 	/**
-	 * Returns an optional flag character for a language.
+	 * Builds decorative flag markup for a language item.
+	 *
+	 * A non-empty legacy text filter value still wins for backwards
+	 * compatibility. Otherwise supported locales use the plugin's bundled SVG.
+	 *
+	 * @param array<string,mixed> $item Switcher item.
+	 * @return string
+	 */
+	private function flag_markup( array $item ) {
+		$custom = $this->flag_for( (string) $item['code'] );
+		if ( '' !== $custom ) {
+			return '<span class="mclogiora-switcher__flag" aria-hidden="true">' . esc_html( $custom ) . '</span>';
+		}
+
+		$asset = $this->flag_asset_for( isset( $item['locale'] ) ? (string) $item['locale'] : '' );
+		if ( '' === $asset || ! defined( 'MCLOGIORA_URL' ) ) {
+			return '';
+		}
+
+		return '<img class="mclogiora-switcher__flag" src="' . esc_url( MCLOGIORA_URL . ltrim( $asset, '/' ) ) . '" width="18" height="12" alt="" aria-hidden="true" decoding="async" />';
+	}
+
+	/**
+	 * Resolves a bundled flag from a locale.
+	 *
+	 * @param string $locale Locale such as en_US or tr_TR.
+	 * @return string
+	 */
+	private function flag_asset_for( $locale ) {
+		$key = strtolower( str_replace( '-', '_', (string) $locale ) );
+		$assets = array(
+			'en_us' => 'assets/flags/us.svg',
+			'tr_tr' => 'assets/flags/tr.svg',
+		);
+
+		return isset( $assets[ $key ] ) ? $assets[ $key ] : '';
+	}
+
+	/**
+	 * Returns an optional legacy flag text for a language.
 	 *
 	 * Flags are opt-in and deliberately unopinionated. A language is not a
 	 * country: Spanish is not Spain, Arabic is not any single state, and
 	 * English belongs to no flag in particular. Rather than guess, mcLogiora
-	 * only shows a flag when a site explicitly maps one through this filter,
-	 * and the accessible label never depends on it.
+	 * shows a flag when a site explicitly maps one through this filter. When the
+	 * filter returns an empty string, the renderer may use a bundled asset for a
+	 * supported locale, and the accessible label never depends on the flag.
 	 *
 	 * @param string $code Language code.
 	 * @return string
@@ -225,10 +344,9 @@ final class SwitcherRenderer {
 		 * than rendered. Escaping is mcLogiora's responsibility, and this
 		 * filter is deliberately not an HTML injection point.
 		 *
-		 * Returning an empty string, the default, shows no flag at all. That
-		 * default is a decision, not an omission: a language is not a country,
-		 * and shipping a mapping would make a political claim on a site
-		 * owner's behalf.
+		 * Returning an empty string, the default, delegates to the renderer's
+		 * explicit supported-locale asset map. Unknown locales remain flagless:
+		 * a language is not a country, and mcLogiora does not guess one.
 		 *
 		 * Only consulted when the switcher instance has flags switched on.
 		 *

@@ -272,18 +272,20 @@ return value is the contract.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `$flag` | `string` | Flag text. Empty by default |
+| `$flag` | `string` | Optional legacy flag text. Empty by default |
 | `$code` | `string` | Language code the flag is for |
 
 **Return plain text, not HTML.** The value is placed in the switcher label and
 escaped with `esc_html()` before output, so markup is displayed literally rather
 than rendered. Escaping is mcLogiora's responsibility, and this filter is
-deliberately not an HTML injection point.
+deliberately not an HTML injection point. When it returns an empty string, the
+renderer uses its bundled locale asset for `en_US` and `tr_TR`, if flags are
+enabled for that switcher instance.
 
-Returning an empty string — the default — shows no flag. That default is a
-decision, not an omission: a language is not a country, and shipping a mapping
-would make a political claim on a site owner's behalf. Only consulted when the
-switcher instance has flags switched on.
+Returning an empty string — the default — uses a bundled flag only for the
+locales mcLogiora explicitly supports; unknown locales still show no flag. A
+language is not a country, so mcLogiora does not guess flags for other locales.
+Only consulted when the switcher instance has flags switched on.
 
 ```php
 add_filter( 'mclogiora_switcher_flag', function ( $flag, $code ) {

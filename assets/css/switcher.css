@@ -2,7 +2,7 @@
  * mcLogiora language switcher.
  *
  * Deliberately minimal and low specificity so themes can restyle it without
- * fighting. No !important, no layout framework, no web fonts, no images.
+ * fighting. No !important, no layout framework, no web fonts.
  */
 
 .mclogiora-switcher {
@@ -25,7 +25,8 @@
 }
 
 .mclogiora-switcher__link,
-.mclogiora-switcher__label {
+.mclogiora-switcher__label,
+.mclogiora-switcher__menu-link {
 	display: inline-block;
 	padding: 0.15rem 0.35rem;
 	line-height: 1.4;
@@ -34,7 +35,9 @@
 }
 
 .mclogiora-switcher__link:focus-visible,
-.mclogiora-switcher__select:focus-visible {
+.mclogiora-switcher__select:focus-visible,
+.mclogiora-switcher__summary:focus-visible,
+.mclogiora-switcher__menu-link:focus-visible {
 	outline: 2px solid currentColor;
 	outline-offset: 2px;
 }
@@ -60,6 +63,78 @@
 	gap: 0.25rem;
 }
 
+.mclogiora-switcher--compact {
+	position: relative;
+	font-size: 0.875rem;
+	line-height: 1;
+}
+
+.mclogiora-switcher--compact .mclogiora-switcher__summary {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
+	min-width: 52px;
+	height: 34px;
+	padding: 0 9px;
+	border: 1px solid currentColor;
+	border-radius: 999px;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+	list-style: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.mclogiora-switcher--compact .mclogiora-switcher__summary::-webkit-details-marker { display: none; }
+.mclogiora-switcher--compact .mclogiora-switcher__summary:hover { opacity: 0.78; }
+.mclogiora-switcher--compact .mclogiora-switcher__flag {
+	display: block;
+	width: 18px;
+	height: 12px;
+	flex: 0 0 auto;
+	object-fit: contain;
+	border-radius: 2px;
+	}
+.mclogiora-switcher--compact .mclogiora-switcher__name,
+.mclogiora-switcher--compact .mclogiora-switcher__code { font-size: 0.8rem; font-weight: 600; }
+.mclogiora-switcher--compact .mclogiora-switcher__arrow {
+	width: 6px;
+	height: 6px;
+	margin-top: -3px;
+	border-right: 1px solid currentColor;
+	border-bottom: 1px solid currentColor;
+	transform: rotate(45deg);
+}
+.mclogiora-switcher--compact[open] .mclogiora-switcher__arrow { margin-top: 3px; transform: rotate(225deg); }
+.mclogiora-switcher--compact .mclogiora-switcher__menu {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	z-index: 110;
+	min-width: 150px;
+	padding: 6px;
+	border: 1px solid currentColor;
+	background: Canvas;
+	color: CanvasText;
+	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+}
+.mclogiora-switcher--compact .mclogiora-switcher__menu-link {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	min-height: 36px;
+	padding: 7px 9px;
+	color: inherit;
+	text-decoration: none;
+	white-space: nowrap;
+}
+.mclogiora-switcher--compact .mclogiora-switcher__menu-link:hover { background: rgba(0, 0, 0, 0.06); }
+.mclogiora-switcher--compact .mclogiora-switcher__menu-link.is-unavailable { cursor: default; opacity: 0.58; }
+.mclogiora-switcher--compact .mclogiora-switcher__menu-link .mclogiora-switcher__code { margin-left: auto; opacity: 0.65; }
+
+.mclogiora-switcher__flag { vertical-align: middle; }
+
 .mclogiora-switcher__select {
 	max-width: 100%;
 }
@@ -81,7 +156,10 @@
 	}
 
 	.mclogiora-switcher__link,
-	.mclogiora-switcher__label {
+	.mclogiora-switcher__label,
+	.mclogiora-switcher__menu-link {
 		padding: 0.35rem 0.5rem;
 	}
+
+	.mclogiora-switcher--compact .mclogiora-switcher__summary { min-width: 48px; padding: 0 7px; }
 }

@@ -20,6 +20,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', __DIR__ . '/' );
 }
 
+if ( ! defined( 'MCLOGIORA_URL' ) ) {
+	define( 'MCLOGIORA_URL', 'https://example.test/wp-content/plugins/mclogiora/' );
+}
+
 require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 
 if ( ! class_exists( 'WP_Error' ) ) {
