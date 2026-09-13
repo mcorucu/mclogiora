@@ -50,6 +50,18 @@ final class RoutingModule implements ModuleInterface {
 	private $settings = null;
 
 	/**
+	 * Containers whose routing hooks have already been registered.
+	 *
+	 * The application normally registers one module instance. Keeping this
+	 * guard at the container level also makes explicit registrations harmless:
+	 * a second instance must not process the already-normalised query and reset
+	 * a valid requested language back to the default.
+	 *
+	 * @var array<string,bool>
+	 */
+	private static $registered_containers = array();
+
+	/**
 	 * Registers routing hooks.
 	 *
 	 * @param Container $container Service container.
@@ -59,6 +71,14 @@ final class RoutingModule implements ModuleInterface {
 		$this->context   = $container->get( LanguageContextInterface::class );
 		$this->readiness = $container->get( RuntimeReadiness::class );
 		$this->settings  = $container->get( RoutingSettings::class );
+
+		$container_id = spl_object_hash( $container );
+
+		if ( isset( self::$registered_containers[ $container_id ] ) ) {
+			return;
+		}
+
+		self::$registered_containers[ $container_id ] = true;
 
 		add_filter( 'query_vars', array( $this, 'register_query_var' ) );
 		add_action( 'init', array( $this, 'register_rewrite_rules' ), 20 );
@@ -193,7 +213,26 @@ final class RoutingModule implements ModuleInterface {
 		 */
 		$this->context->set_requested_code( $requested );
 
-		if ( ! is_object( $wp ) || ! isset( $wp->query_vars[ self::PATH_VAR ] ) ) {
+		/*
+		 * These query vars are routing implementation details, not content
+		 * query arguments. Leaving the language var in the main query makes
+		 * WordPress treat a prefixed bare-home request as a non-empty custom
+		 * query. That prevents WP_Query from applying its normal static-front
+		 * page correction, so `/en/` falls through to the posts index and the
+		 * theme selects `home.html` instead of `front-page.html`.
+		 *
+		 * The language is already held by LanguageContext for the rest of the
+		 * request. Removing both internal vars here lets core, the theme, and
+		 * other plugins see the same content query they would see without the
+		 * language prefix.
+		 */
+		if ( ! is_object( $wp ) || ! isset( $wp->query_vars ) || ! is_array( $wp->query_vars ) ) {
+			return;
+		}
+
+		unset( $wp->query_vars[ self::QUERY_VAR ] );
+
+		if ( ! isset( $wp->query_vars[ self::PATH_VAR ] ) ) {
 			return;
 		}
 
@@ -227,7 +266,6 @@ final class RoutingModule implements ModuleInterface {
 			return;
 		}
 
-		$language = $this->context->current_code();
 		$resolved = $this->resolve_path_query( $path );
 
 		if ( empty( $resolved ) ) {
@@ -243,8 +281,6 @@ final class RoutingModule implements ModuleInterface {
 		}
 
 		$wp->query_vars = array_merge( $wp->query_vars, $resolved );
-
-		$wp->query_vars[ self::QUERY_VAR ] = $language;
 	}
 
 	/**

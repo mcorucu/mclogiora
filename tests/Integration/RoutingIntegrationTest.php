@@ -713,4 +713,43 @@ final class RoutingIntegrationTest extends WP_UnitTestCase {
 		update_option( 'show_on_front', 'posts' );
 		delete_option( 'page_on_front' );
 	}
+
+	/**
+	 * Asserts a prefixed default-language home keeps WordPress's static front
+	 * page query semantics.
+	 *
+	 * The language rewrite var is only routing state. If it survives into the
+	 * main query, core no longer recognises the request as the empty query that
+	 * represents a configured static front page and selects the posts index
+	 * instead.
+	 *
+	 * @return void
+	 */
+	public function test_prefixed_front_page_preserves_static_front_page_query() {
+		$front = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_title'  => 'Home',
+				'post_status' => 'publish',
+			)
+		);
+
+		update_option( 'show_on_front', 'page' );
+		update_option( 'page_on_front', $front );
+		update_option(
+			RoutingSettings::OPTION_NAME,
+			array_merge(
+				RoutingSettings::defaults(),
+				array( 'default_language_prefix' => true )
+			)
+		);
+
+		$this->activate_routing();
+		$this->go_to( trailingslashit( home_url( '/' ) ) . 'en/' );
+
+		$this->assertTrue( is_front_page(), 'A prefixed static front page must remain the front page.' );
+		$this->assertFalse( is_home(), 'A prefixed static front page must not fall through to the posts index.' );
+		$this->assertSame( $front, get_queried_object_id() );
+		$this->assertSame( '', (string) get_query_var( RoutingModule::QUERY_VAR ) );
+	}
 }

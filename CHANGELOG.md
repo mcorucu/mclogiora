@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.3
+
+- Fixed static front-page detection for language-prefixed routes.
+- Fixed default-language pages incorrectly resolving as untranslated or 404.
+- Improved compatibility with WordPress block themes and static front pages.
+
 ## 1.0.2
 
 - Routed AI translation suggestions through the WordPress 7.0 AI Client and Connectors APIs.

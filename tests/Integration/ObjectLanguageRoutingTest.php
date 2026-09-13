@@ -547,6 +547,40 @@ final class ObjectLanguageRoutingTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Asserts untranslated default-language content remains valid when the
+	 * default language is configured with a URL prefix.
+	 *
+	 * @return void
+	 */
+	public function test_untranslated_default_object_under_default_prefix_is_allowed() {
+		self::factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_name'   => 'default-prefixed',
+				'post_status' => 'publish',
+			)
+		);
+
+		update_option(
+			RoutingSettings::OPTION_NAME,
+			array_merge(
+				RoutingSettings::defaults(),
+				array( 'default_language_prefix' => true )
+			)
+		);
+
+		$this->activate_routing();
+
+		$redirect = new ObjectLanguageRedirect();
+		$redirect->register( $this->container );
+
+		$this->go_to( trailingslashit( home_url( '/' ) ) . 'en/default-prefixed/' );
+
+		$this->assertFalse( is_404(), 'Default-language content must remain valid under its configured prefix.' );
+		$this->assertSame( ObjectLanguageRedirect::STAY, $this->policy()->decide()['action'] );
+	}
+
+	/**
 	 * Asserts an untranslated object at the default route is left alone.
 	 *
 	 * @return void

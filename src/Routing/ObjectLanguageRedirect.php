@@ -183,13 +183,12 @@ final class ObjectLanguageRedirect implements ModuleInterface {
 		if ( null === $language ) {
 			/*
 			 * An object with no translation relation belongs to the default
-			 * language. Reached through a language prefix it is precisely the
-			 * case Phase 12 refused to allow: source content served under a
-			 * translated URL, misrepresenting the page to readers and search
-			 * engines. There is no translation to send anyone to, so this is a
-			 * genuine 404 rather than a redirect.
+			 * language. The default-language prefix is a valid route for that
+			 * object, so it must stay when the request language is the default.
+			 * Only a non-default prefixed request is source content served under
+			 * a translated URL, which is the case Phase 12 refuses to allow.
 			 */
-			return $this->request_is_prefixed()
+			return ! $this->context->is_default() && $this->request_is_prefixed()
 				? array(
 					'action' => self::NOT_FOUND,
 					'target' => '',
