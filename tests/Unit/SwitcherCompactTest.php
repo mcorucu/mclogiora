@@ -28,6 +28,7 @@ final class SwitcherCompactTest extends TestCase {
 	 * @return void
 	 */
 	public function test_compact_mode_is_accessible_and_uses_bundled_flags() {
+		$GLOBALS['mclogiora_test_is_front_page'] = true;
 		$languages = array(
 			new Language( 'en', 'en_US', 'English', 'English', 'ltr', LanguageStatus::ACTIVE, 0, true ),
 			new Language( 'tr', 'tr_TR', 'Türkçe', 'Turkish', 'ltr', LanguageStatus::ACTIVE, 1, false ),
@@ -62,5 +63,6 @@ final class SwitcherCompactTest extends TestCase {
 		$this->assertStringContainsString( '/assets/flags/us.svg', $html );
 		$this->assertStringContainsString( '/assets/flags/tr.svg', $html );
 		$this->assertStringNotContainsString( 'epiktetos', $html );
+		$GLOBALS['mclogiora_test_is_front_page'] = false;
 	}
 }

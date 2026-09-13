@@ -158,6 +158,7 @@ final class SwitcherWidget extends \WP_Widget {
 			'dir'                     => true,
 			'aria-label'              => true,
 			'aria-expanded'           => true,
+			'aria-controls'           => true,
 			'aria-haspopup'           => true,
 			'aria-hidden'             => true,
 			'aria-disabled'           => true,

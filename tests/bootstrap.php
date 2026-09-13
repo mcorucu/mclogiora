@@ -24,6 +24,17 @@ if ( ! defined( 'MCLOGIORA_URL' ) ) {
 	define( 'MCLOGIORA_URL', 'https://example.test/wp-content/plugins/mclogiora/' );
 }
 
+if ( ! function_exists( 'is_front_page' ) ) {
+	/**
+	 * Returns the deterministic front-page state for routing tests.
+	 *
+	 * @return bool
+	 */
+	function is_front_page() {
+		return ! empty( $GLOBALS['mclogiora_test_is_front_page'] );
+	}
+}
+
 require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 
 if ( ! class_exists( 'WP_Error' ) ) {

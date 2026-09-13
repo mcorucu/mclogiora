@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.6 — 2026-09-13
+
+- Preserved language-home links on static front pages when the front page has no translated content relation.
+- Allowed the compact widget disclosure to expose its controlled menu through `aria-controls`.
+
 ## 1.0.5 — 2026-09-13
 
 - Added bundled SVG flag assets for the supported `en_US` and `tr_TR` locales.

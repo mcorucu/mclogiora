@@ -226,6 +226,15 @@ final class LanguageSwitcher {
 			return null;
 		}
 
+		/*
+		 * A static front page is the language home, not a translatable content
+		 * object. This keeps language-home links available even when the front
+		 * page itself has no translated post relation.
+		 */
+		if ( function_exists( 'is_front_page' ) && is_front_page() ) {
+			return null;
+		}
+
 		$object = get_queried_object();
 
 		if ( $object instanceof \WP_Post ) {
