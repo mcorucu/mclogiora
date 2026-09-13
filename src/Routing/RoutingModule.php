@@ -50,6 +50,13 @@ final class RoutingModule implements ModuleInterface {
 	private $settings = null;
 
 	/**
+	 * URL generator.
+	 *
+	 * @var TranslatedUrlGenerator|null
+	 */
+	private $urls = null;
+
+	/**
 	 * Containers whose routing hooks have already been registered.
 	 *
 	 * The application normally registers one module instance. Keeping this
@@ -71,6 +78,7 @@ final class RoutingModule implements ModuleInterface {
 		$this->context   = $container->get( LanguageContextInterface::class );
 		$this->readiness = $container->get( RuntimeReadiness::class );
 		$this->settings  = $container->get( RoutingSettings::class );
+		$this->urls      = $container->get( TranslatedUrlGenerator::class );
 
 		$container_id = spl_object_hash( $container );
 
@@ -83,6 +91,7 @@ final class RoutingModule implements ModuleInterface {
 		add_filter( 'query_vars', array( $this, 'register_query_var' ) );
 		add_action( 'init', array( $this, 'register_rewrite_rules' ), 20 );
 		add_action( 'parse_request', array( $this, 'resolve_request_language' ) );
+		add_filter( 'redirect_canonical', array( $this, 'preserve_prefixed_front_page_canonical' ), 10, 2 );
 		add_action( 'admin_init', array( $this, 'maybe_flush_rewrite_rules' ), 99 );
 	}
 
@@ -250,6 +259,57 @@ final class RoutingModule implements ModuleInterface {
 		}
 
 		$this->reparse_inner_path( $wp, $path );
+	}
+
+	/**
+	 * Keeps a configured default-language front page at its prefixed URL.
+	 *
+	 * WordPress's canonical redirect for a static front page is always built
+	 * from `home_url( '/' )`. That is correct when the default language lives
+	 * at the root, but it strips the configured default-language prefix after
+	 * the routing vars have been removed from the main query. The prefix is
+	 * routing state, so this narrow filter preserves it only for the front-page
+	 * request that arrived through that configured prefix.
+	 *
+	 * @param string|false $redirect_url Candidate canonical URL.
+	 * @param string       $requested_url URL WordPress is canonicalising.
+	 * @return string|false
+	 */
+	public function preserve_prefixed_front_page_canonical( $redirect_url, $requested_url ) {
+		if ( ! is_front_page() || ! $this->settings->default_language_has_prefix() ) {
+			return $redirect_url;
+		}
+
+		$default = $this->context->default_language();
+
+		if ( ! $default instanceof Language || $this->context->current_code() !== $default->code() ) {
+			return $redirect_url;
+		}
+
+		$home_path      = $this->path_from_url( $this->urls->home_url_for( $default->code() ) );
+		$requested_path = $this->path_from_url( $requested_url );
+
+		if ( '' === $home_path || '' === $requested_path ) {
+			return $redirect_url;
+		}
+
+		if ( $requested_path === $home_path || 0 === strpos( $requested_path, $home_path . '/' ) ) {
+			return false;
+		}
+
+		return $redirect_url;
+	}
+
+	/**
+	 * Returns a normalised path from a URL.
+	 *
+	 * @param string $url URL.
+	 * @return string
+	 */
+	private function path_from_url( $url ) {
+		$path = wp_parse_url( (string) $url, PHP_URL_PATH );
+
+		return untrailingslashit( '/' . ltrim( is_string( $path ) ? $path : '', '/' ) );
 	}
 
 	/**

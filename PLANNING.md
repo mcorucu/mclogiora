@@ -1,6 +1,6 @@
 # mcLogiora Planning
 
-Current phase: Phase 18, Slice 2 complete (Performance, Accessibility, RTL & WordPress.org Compliance Hardening), on the `1.0.3` version line. Phase 17 is complete (Developer & Operations Layer). The 1.0.3 pre-submission candidate declares `Tested up to: 7.1`; WordPress.org submission remains a separate manual step.
+Current phase: Phase 18, Slice 2 complete (Performance, Accessibility, RTL & WordPress.org Compliance Hardening), on the `1.0.4` version line. Phase 17 is complete (Developer & Operations Layer). The 1.0.4 pre-submission candidate declares `Tested up to: 7.1`; WordPress.org submission remains a separate manual step.
 
 This document is the product and engineering plan for mcLogiora, a free and open-source multilingual platform for WordPress. It contains planning guidance only; implementation lives in `src/`, and architectural decisions are recorded in `docs/adr/`.
 

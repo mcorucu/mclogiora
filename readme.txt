@@ -4,7 +4,7 @@ Tags: multilingual, translation, localization, language
 Requires at least: 7.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -257,6 +257,13 @@ No. If Yoast SEO, Rank Math, All in One SEO, The SEO Framework, or Slim SEO is a
 Each translation points at itself. Sending every language back to the default one would tell search engines your translations are duplicates to ignore, which is the opposite of what translating a site is for.
 
 == Changelog ==
+
+= 1.0.4 =
+
+* Fixed WordPress canonical redirects stripping configured default-language prefixes from static front pages.
+* Preserved prefixed default-language static front-page routing.
+* Added regression coverage based on the production routing configuration.
+* Improved multilingual routing stability under WordPress 7.1.
 
 = 1.0.3 =
 

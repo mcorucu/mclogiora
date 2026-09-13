@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.4
+
+- Fixed WordPress canonical redirects stripping configured default-language prefixes from static front pages.
+- Preserved prefixed default-language static front-page routing.
+- Added regression coverage based on the production routing configuration.
+- Improved multilingual routing stability under WordPress 7.1.
+
 ## 1.0.3
 
 - Fixed static front-page detection for language-prefixed routes.

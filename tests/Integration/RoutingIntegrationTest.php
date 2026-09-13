@@ -744,12 +744,19 @@ final class RoutingIntegrationTest extends WP_UnitTestCase {
 			)
 		);
 
-		$this->activate_routing();
+		$module = $this->activate_routing();
 		$this->go_to( trailingslashit( home_url( '/' ) ) . 'en/' );
 
 		$this->assertTrue( is_front_page(), 'A prefixed static front page must remain the front page.' );
 		$this->assertFalse( is_home(), 'A prefixed static front page must not fall through to the posts index.' );
 		$this->assertSame( $front, get_queried_object_id() );
 		$this->assertSame( '', (string) get_query_var( RoutingModule::QUERY_VAR ) );
+		$this->assertFalse(
+			$module->preserve_prefixed_front_page_canonical(
+			 home_url( '/' ),
+			 $this->container->get( TranslatedUrlGenerator::class )->home_url_for( 'en' )
+			),
+			'A configured default-language prefix must remain canonical for the static front page.'
+		);
 	}
 }

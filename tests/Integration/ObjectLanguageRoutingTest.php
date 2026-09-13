@@ -581,6 +581,41 @@ final class ObjectLanguageRoutingTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Asserts an untranslated front page under a secondary prefix is not used
+	 * as a fallback homepage.
+	 *
+	 * @return void
+	 */
+	public function test_untranslated_front_page_under_secondary_prefix_is_not_found() {
+		$front = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_name'   => 'front-without-translation',
+				'post_status' => 'publish',
+			)
+		);
+
+		update_option( 'show_on_front', 'page' );
+		update_option( 'page_on_front', $front );
+		update_option(
+			RoutingSettings::OPTION_NAME,
+			array_merge(
+				RoutingSettings::defaults(),
+				array( 'default_language_prefix' => true )
+			)
+		);
+
+		$this->activate_routing();
+
+		$redirect = new ObjectLanguageRedirect();
+		$redirect->register( $this->container );
+
+		$this->go_to( trailingslashit( home_url( '/' ) ) . 'tr/' );
+
+		$this->assertTrue( is_404(), 'A secondary-language homepage without a translation must 404.' );
+	}
+
+	/**
 	 * Asserts an untranslated object at the default route is left alone.
 	 *
 	 * @return void
