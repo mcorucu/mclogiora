@@ -78,7 +78,8 @@ final class SwitcherRenderer {
 		$classes = $this->wrapper_classes( $options );
 		$label   = ! empty( $current ) ? (string) $current['name'] : __( 'Language', 'mclogiora' );
 
-		$html  = '<details class="' . esc_attr( $classes ) . '" data-mclogiora-compact="1">';
+		$html = '<details class="' . esc_attr( $classes ) . '" data-mclogiora-compact="1">';
+		/* translators: %s: current language name. */
 		$html .= '<summary class="mclogiora-switcher__summary" aria-label="' . esc_attr( sprintf( __( 'Language: %s', 'mclogiora' ), $label ) ) . '" aria-haspopup="menu" aria-expanded="false" aria-controls="' . esc_attr( $id ) . '">';
 		$html .= ! empty( $current ) ? $this->label_markup( $current, $options ) : esc_html( $label );
 		$html .= '<span class="mclogiora-switcher__arrow" aria-hidden="true"></span>';
@@ -98,6 +99,7 @@ final class SwitcherRenderer {
 			}
 
 			$tag = $this->language_tag( $item );
+			/* translators: %s: target language name. */
 			$html .= '<a class="mclogiora-switcher__menu-link" role="menuitem" href="' . esc_url( $item['url'] ) . '" lang="' . esc_attr( $tag ) . '" hreflang="' . esc_attr( $tag ) . '" dir="' . esc_attr( $item['direction'] ) . '" aria-label="' . esc_attr( sprintf( __( 'Switch to %s', 'mclogiora' ), $item['name'] ) ) . '">';
 			$html .= $this->label_markup( $item, $options );
 			$html .= '</a>';
@@ -312,7 +314,7 @@ final class SwitcherRenderer {
 	 * @return string
 	 */
 	private function flag_asset_for( $locale ) {
-		$key = strtolower( str_replace( '-', '_', (string) $locale ) );
+		$key    = strtolower( str_replace( '-', '_', (string) $locale ) );
 		$assets = array(
 			'en_us' => 'assets/flags/us.svg',
 			'tr_tr' => 'assets/flags/tr.svg',

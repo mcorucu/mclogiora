@@ -85,11 +85,11 @@ final class SwitcherWidget extends \WP_Widget {
 	 * @return string|null
 	 */
 	public function form( $instance ): ?string {
-		$title = isset( $instance['title'] ) ? (string) $instance['title'] : '';
-		$style = isset( $instance['style'] ) ? (string) $instance['style'] : SwitcherStyle::COMPACT;
-		$show_name = isset( $instance['show_name'] ) ? (bool) $instance['show_name'] : false;
-		$show_code = isset( $instance['show_code'] ) ? (bool) $instance['show_code'] : true;
-		$show_flag = isset( $instance['show_flag'] ) ? (bool) $instance['show_flag'] : true;
+		$title        = isset( $instance['title'] ) ? (string) $instance['title'] : '';
+		$style        = isset( $instance['style'] ) ? (string) $instance['style'] : SwitcherStyle::COMPACT;
+		$show_name    = isset( $instance['show_name'] ) ? (bool) $instance['show_name'] : false;
+		$show_code    = isset( $instance['show_code'] ) ? (bool) $instance['show_code'] : true;
+		$show_flag    = isset( $instance['show_flag'] ) ? (bool) $instance['show_flag'] : true;
 		$show_current = isset( $instance['show_current'] ) ? (bool) $instance['show_current'] : true;
 
 		?>
